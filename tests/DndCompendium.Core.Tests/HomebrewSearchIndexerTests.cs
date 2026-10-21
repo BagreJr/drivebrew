@@ -214,6 +214,68 @@ public sealed class HomebrewSearchIndexerTests
             && entry.Kind == SearchContentKind.SubclassFeature && entry.ParentSubclass == "Beguiler");
     }
 
+    [Theory]
+    [InlineData("Gadgeteer", "Tech Specialties", "Futurist", "Recursive Deterrence")]
+    [InlineData("Ranger", "Ranger Archetype", "Nomad", "Expunging Strikes")]
+    [InlineData("Savant", "Academic Disciplines", "Philosopher", "Power Word: Confound")]
+    public void IndexDocument_RecognizesNamedSubclassSectionsAndDeepFeatures(
+        string className,
+        string sectionName,
+        string subclassName,
+        string featureName)
+    {
+        var document = CreateDocument(DocumentCategory.Classes, className);
+        var source = $"# {className}\n## {sectionName}\n### {subclassName}\n#### Words of Power\n##### {featureName}\nThe target makes an Intelligence saving throw.";
+        var content = new LocalDocumentContent(document.Id, className, source, $"documents/{document.Id}.txt", "named-section");
+
+        var entries = HomebrewSearchIndexer.IndexDocument(document, content);
+
+        Assert.Contains(entries, entry => entry.Name == subclassName && entry.Kind == SearchContentKind.Subclass);
+        var feature = Assert.Single(entries, entry => entry.Name == featureName);
+        Assert.Equal(SearchContentKind.SubclassFeature, feature.Kind);
+        Assert.Equal(subclassName, feature.ParentSubclass);
+    }
+
+    [Fact]
+    public void IndexDocument_StopsSubclassContextAtASeparateFeatureSystem()
+    {
+        var document = CreateDocument(DocumentCategory.Classes, "Psion");
+        const string source = "# Psion\n## Psionic Archetypes\n### Awakened Mind\n#### Mind Reader\nIntelligence saving throw.\n## Psionic Disciplines\n### Mesmerism Discipline\n#### Illusory Image\nIntelligence saving throw.";
+        var content = new LocalDocumentContent("psion", "Psion", source, "documents/psion.txt", "boundary");
+
+        var entries = HomebrewSearchIndexer.IndexDocument(document, content);
+
+        Assert.Contains(entries, entry => entry.Name == "Mind Reader" && entry.Kind == SearchContentKind.SubclassFeature);
+        Assert.Contains(entries, entry => entry.Name == "Illusory Image" && entry.Kind != SearchContentKind.SubclassFeature);
+    }
+
+    [Fact]
+    public void IndexDocument_KeepsMonsterBlockTextInsideItsSubclassFeature()
+    {
+        var document = CreateDocument(DocumentCategory.Classes, "Vessel");
+        const string source = """
+            # Vessel
+            ## Sealed Spirit
+            ### The Trickster
+            #### Trickster Archon
+            You assume the following form:
+            {{monster,frame
+            ## Trickster Archon
+            ***Twisted Logic.*** A creature must make an Intelligence saving throw.
+            }}
+            #### Master of Mischief
+            At 6th level, your tricks improve.
+            """;
+        var content = new LocalDocumentContent("vessel", "Vessel", source, "documents/vessel.txt", "monster");
+
+        var entries = HomebrewSearchIndexer.IndexDocument(document, content);
+
+        var archon = Assert.Single(entries, entry => entry.Name == "Trickster Archon");
+        Assert.Equal(SearchContentKind.SubclassFeature, archon.Kind);
+        Assert.Equal("The Trickster", archon.ParentSubclass);
+        Assert.Contains("Intelligence saving throw", archon.Description, StringComparison.OrdinalIgnoreCase);
+    }
+
     [Fact]
     public void IndexDocument_DoesNotTreatNestedDisciplineSpecializationsAsClassSubclasses()
     {

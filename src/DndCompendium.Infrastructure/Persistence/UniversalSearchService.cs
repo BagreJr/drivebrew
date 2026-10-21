@@ -10,7 +10,7 @@ namespace DndCompendium.Infrastructure.Persistence;
 
 public sealed class UniversalSearchService : IUniversalSearchService, IDisposable
 {
-    private const int IndexVersion = 5;
+    private const int IndexVersion = 6;
     private static readonly IReadOnlyDictionary<string, string> SearchAliases =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -123,7 +123,7 @@ public sealed class UniversalSearchService : IUniversalSearchService, IDisposabl
         foreach (var entry in entries)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (request.Kind.HasValue && entry.Kind != request.Kind.Value) continue;
+            if (request.Kind.HasValue && !MatchesKind(entry.Kind, request.Kind.Value)) continue;
             if (!MatchesOrigin(entry, request.Origin) || !MatchesLevel(entry, request.Level)) continue;
             var score = Score(entry, query);
             if (score <= 0) continue;
@@ -156,7 +156,7 @@ public sealed class UniversalSearchService : IUniversalSearchService, IDisposabl
         {
             var state = await EnsureStateAsync(cancellationToken).ConfigureAwait(false);
             var entries = state.Sources.Values.SelectMany(source => source.Entries)
-                .Where(entry => !kind.HasValue || entry.Kind == kind.Value).ToArray();
+                .Where(entry => !kind.HasValue || MatchesKind(entry.Kind, kind.Value)).ToArray();
             var origins = entries.SelectMany(OriginValues).Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(value => value, StringComparer.OrdinalIgnoreCase).ToArray();
             var levels = entries.Select(entry => entry.Level).Where(value => !string.IsNullOrWhiteSpace(value))
@@ -423,6 +423,11 @@ public sealed class UniversalSearchService : IUniversalSearchService, IDisposabl
         var target = HomebrewSearchIndexer.NormalizeForSearch(requested);
         return OriginValues(entry).Any(value => HomebrewSearchIndexer.NormalizeForSearch(value) == target);
     }
+
+    private static bool MatchesKind(SearchContentKind actual, SearchContentKind requested)
+        => requested == SearchContentKind.Subclass
+            ? actual is SearchContentKind.Subclass or SearchContentKind.SubclassFeature
+            : actual == requested;
 
     private static IEnumerable<string> OriginValues(SearchIndexEntry entry)
     {

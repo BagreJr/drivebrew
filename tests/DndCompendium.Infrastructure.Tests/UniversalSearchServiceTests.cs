@@ -119,6 +119,32 @@ public sealed class UniversalSearchServiceTests
     }
 
     [Fact]
+    public async Task Search_SubclassFilterIncludesSubclassFeaturesForIntelligenceSavingThrow()
+    {
+        using var directory = new TemporaryDirectory();
+        const string text = "# Ranger\n## Ranger Archetype\n### Nomad\n#### Expunging Strikes\nThe target must make an Intelligence saving throw.";
+        var source = TestDocuments.Create("ranger", "Ranger", "Ranger.txt", text);
+        await using var documents = new LocalDocumentRepository(directory.Path);
+        await documents.UpsertCatalogAsync([source]);
+        await using (var stream = TestDocuments.Stream(text)) await documents.InstallAsync(source, stream);
+        using var search = new UniversalSearchService(directory.Path, documents,
+            new MemorySpellRepository([]), new MemoryExploitRepository([]), new JsonCharacterProfileStore(directory.Path));
+        await search.RefreshIndexAsync();
+
+        var results = await search.SearchAsync(new SearchRequest
+        {
+            Query = "Intelligence Saving Throw",
+            Kind = SearchContentKind.Subclass,
+            Limit = 20
+        });
+
+        var feature = Assert.Single(results);
+        Assert.Equal("Expunging Strikes", feature.Entry.Name);
+        Assert.Equal(SearchContentKind.SubclassFeature, feature.Entry.Kind);
+        Assert.Equal("Nomad", feature.Entry.ParentSubclass);
+    }
+
+    [Fact]
     public async Task Search_UsesTheRealOfflineSpellAndExploitCatalogs()
     {
         using var directory = new TemporaryDirectory();

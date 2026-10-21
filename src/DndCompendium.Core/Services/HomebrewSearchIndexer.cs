@@ -19,6 +19,21 @@ public static partial class HomebrewSearchIndexer
         "quick build", "hit points", "proficiencies", "equipment", "multiclassing",
         "the class", "actions", "runes", "companions", "companion", "spell list"
     };
+    private static readonly HashSet<string> NamedSubclassSections = new(StringComparer.Ordinal)
+    {
+        "academic disciplines", "academy of war", "artisan s guilds", "champion s call",
+        "diabolic contracts", "divine domains", "grave ambitions", "gunslinger s creeds",
+        "mortal burdens", "occult order", "sealed spirit", "sorcererous origins",
+        "spirituality", "tech specialties", "trades", "wanderer s roads", "warmage house",
+        "witch s crafts"
+    };
+    private static readonly HashSet<string> SubclassSectionBoundaries = new(StringComparer.Ordinal)
+    {
+        "blood rites", "eldritch invocations", "eldritch melodies", "familiars", "gadgets",
+        "hexes", "maneuvers", "masterwork properties", "psionic disciplines", "ranger traps",
+        "scholarly pursuits", "survivalist knacks", "techniques", "totem spirits", "warmage tricks",
+        "weird arcana"
+    };
 
     public static IReadOnlyList<SearchIndexEntry> IndexDocument(
         LibraryDocument document,
@@ -54,6 +69,7 @@ public static partial class HomebrewSearchIndexer
         var page = 1;
         var inFence = false;
         var tocDepth = 0;
+        var ignoredHomebrewBlockDepth = 0;
 
         for (var index = 0; index < lines.Length; index++)
         {
@@ -64,6 +80,17 @@ public static partial class HomebrewSearchIndexer
                 continue;
             }
             if (inFence) continue;
+            if (ignoredHomebrewBlockDepth > 0)
+            {
+                ignoredHomebrewBlockDepth = Math.Max(0,
+                    ignoredHomebrewBlockDepth + CountToken(trimmed, "{{") - CountToken(trimmed, "}}"));
+                continue;
+            }
+            if (trimmed.StartsWith("{{monster", StringComparison.OrdinalIgnoreCase))
+            {
+                ignoredHomebrewBlockDepth = Math.Max(0, CountToken(trimmed, "{{") - CountToken(trimmed, "}}"));
+                continue;
+            }
             if (PageBreakRegex().IsMatch(trimmed))
             {
                 page++;
@@ -94,6 +121,14 @@ public static partial class HomebrewSearchIndexer
         {
             var heading = headings[position];
             var normalizedHeading = NormalizeForSearch(heading.Title);
+            if (subclassSectionLevel.HasValue
+                && heading.Level <= subclassSectionLevel.Value
+                && IsSubclassSectionBoundary(normalizedHeading))
+            {
+                subclassSectionLevel = null;
+                subclassRootLevel = null;
+                activeSubclass = null;
+            }
             if (subclassSectionLevel.HasValue && heading.Level < subclassSectionLevel.Value)
             {
                 subclassSectionLevel = null;
@@ -160,6 +195,14 @@ public static partial class HomebrewSearchIndexer
         }
 
         return entries;
+    }
+
+    private static int CountToken(string value, string token)
+    {
+        var count = 0;
+        for (var index = 0; (index = value.IndexOf(token, index, StringComparison.Ordinal)) >= 0; index += token.Length)
+            count++;
+        return count;
     }
 
     public static string NormalizeForSearch(string value)
@@ -247,16 +290,19 @@ public static partial class HomebrewSearchIndexer
         if (document.Category == DocumentCategory.Classes)
         {
             if (startsSubclassSection || IsNarrativeClassHeading(title)) return SearchContentKind.Other;
-            if (subclassSectionLevel.HasValue && (heading.Level == subclassSectionLevel.Value
-                || subclassRootLevel.HasValue && heading.Level == subclassRootLevel.Value))
+            if (subclassSectionLevel.HasValue
+                && ((!subclassRootLevel.HasValue && heading.Level == subclassSectionLevel.Value)
+                    || subclassRootLevel.HasValue && heading.Level == subclassRootLevel.Value))
                 return SearchContentKind.Subclass;
             if (subclassSectionLevel.HasValue && activeSubclass is not null
                 && heading.Level > (subclassRootLevel ?? subclassSectionLevel).Value)
-                return heading.Level <= 4 ? SearchContentKind.SubclassFeature : SearchContentKind.Other;
+                return SearchContentKind.SubclassFeature;
             if (subclassSectionLevel.HasValue && activeSubclass is null
                 && parent?.Kind == SearchContentKind.Other && heading.Level > subclassSectionLevel.Value
                 || title.StartsWith("subclass ", StringComparison.Ordinal)
                 || title.StartsWith("archetype ", StringComparison.Ordinal)) return SearchContentKind.Subclass;
+            if (subclassSectionLevel.HasValue && heading.Level <= subclassSectionLevel.Value)
+                return SearchContentKind.Other;
             if (parent?.Kind == SearchContentKind.Subclass
                 || ancestry.Any(item => item.Kind == SearchContentKind.Subclass)
                 || normalizedParent.StartsWith("subclass ", StringComparison.Ordinal)
@@ -334,16 +380,27 @@ public static partial class HomebrewSearchIndexer
     private static bool IsSubclassSection(string value)
     {
         var normalized = NormalizeForSearch(value);
-        return normalized is "subclass" or "subclasses" or "archetype" or "archetypes"
+        return NamedSubclassSections.Contains(normalized)
+            || normalized is "subclass" or "subclasses" or "archetype" or "archetypes"
             or "specialization" or "specializations" or "fields of study" or "field of study"
             or "orders" or "esoteric orders" or "arcane traditions" or "primal paths" or "martial archetypes" or "sacred oaths"
             or "druid circles" or "bard colleges" or "roguish archetypes" or "otherworldly patrons"
             || normalized.EndsWith(" subclasses", StringComparison.Ordinal)
+            || normalized.EndsWith(" subclass", StringComparison.Ordinal)
             || normalized.EndsWith(" archetypes", StringComparison.Ordinal)
+            || normalized.EndsWith(" archetype", StringComparison.Ordinal)
             || normalized.EndsWith(" traditions", StringComparison.Ordinal)
             || normalized.EndsWith(" schools", StringComparison.Ordinal)
             || normalized.EndsWith(" paths", StringComparison.Ordinal)
             || normalized.EndsWith(" orders", StringComparison.Ordinal);
+    }
+
+    private static bool IsSubclassSectionBoundary(string value)
+    {
+        var normalized = NormalizeForSearch(value);
+        return SubclassSectionBoundaries.Contains(normalized)
+            || normalized.EndsWith(" exploits", StringComparison.Ordinal)
+            || normalized.EndsWith(" grafts", StringComparison.Ordinal);
     }
 
     private static string ExtractDescription(string[] lines, int start, int end)
