@@ -43,6 +43,10 @@ public abstract partial class SpellListViewModel : ObservableObject
         ["Todos", "Truco (0)", "Nivel 1", "Nivel 2", "Nivel 3", "Nivel 4", "Nivel 5", "Nivel 6", "Nivel 7", "Nivel 8", "Nivel 9"];
     public IReadOnlyList<string> OriginOptions { get; } = ["Todos", "Arcano", "Divino", "Primal"];
     public IReadOnlyList<string> BooleanOptions { get; } = ["Todos", "Sí", "No"];
+    public IReadOnlyList<string> CastingTimeOptions { get; } =
+        ["Todos", "Action", "Bonus Action", "Reaction", "Otro"];
+    public IReadOnlyList<string> ComponentOptions { get; } =
+        ["Todos", "Verbal (V)", "Somático (S)", "Material (M)"];
     public IReadOnlyList<string> SortOptions { get; } =
         ["A–Z", "Z–A", "Nivel mayor a menor", "Nivel menor a mayor"];
 
@@ -85,6 +89,12 @@ public abstract partial class SpellListViewModel : ObservableObject
     private string selectedRitual = "Todos";
 
     [ObservableProperty]
+    private string selectedCastingTime = "Todos";
+
+    [ObservableProperty]
+    private string selectedComponent = "Todos";
+
+    [ObservableProperty]
     private string selectedSort = "A–Z";
 
     partial void OnSearchQueryChanged(string value) => ApplyFilter();
@@ -94,6 +104,8 @@ public abstract partial class SpellListViewModel : ObservableObject
     partial void OnSelectedSchoolChanged(string value) => ApplyFilter();
     partial void OnSelectedConcentrationChanged(string value) => ApplyFilter();
     partial void OnSelectedRitualChanged(string value) => ApplyFilter();
+    partial void OnSelectedCastingTimeChanged(string value) => ApplyFilter();
+    partial void OnSelectedComponentChanged(string value) => ApplyFilter();
     partial void OnSelectedSortChanged(string value) => ApplyFilter();
 
     [RelayCommand(AllowConcurrentExecutions = false)]
@@ -209,6 +221,18 @@ public abstract partial class SpellListViewModel : ObservableObject
         if (SelectedSchool != "Todas") filtered = filtered.Where(spell => string.Equals(spell.SchoolText, SelectedSchool, StringComparison.CurrentCultureIgnoreCase));
         if (SelectedConcentration != "Todos") filtered = filtered.Where(spell => spell.Model.IsConcentration == (SelectedConcentration == "Sí"));
         if (SelectedRitual != "Todos") filtered = filtered.Where(spell => spell.Model.IsRitual == (SelectedRitual == "Sí"));
+        if (SelectedCastingTime != "Todos")
+            filtered = filtered.Where(spell => SpellDisplay.CastingTimeCategory(spell.Model.CastingTime) == SelectedCastingTime);
+        if (SelectedComponent != "Todos")
+        {
+            filtered = SelectedComponent switch
+            {
+                "Verbal (V)" => filtered.Where(spell => spell.Model.HasVerbalComponent),
+                "Somático (S)" => filtered.Where(spell => spell.Model.HasSomaticComponent),
+                "Material (M)" => filtered.Where(spell => spell.Model.HasMaterialComponent),
+                _ => filtered
+            };
+        }
 
         filtered = SelectedSort switch
         {

@@ -1,13 +1,28 @@
+using System.Globalization;
 using DndCompendium.Core.Models;
 
 namespace DndCompendium.App.ViewModels;
 
 public sealed class SearchResultItemViewModel
 {
-    public SearchResultItemViewModel(SearchResult result) => Result = result;
+    private readonly HighlightedText _highlightedName;
+    private readonly HighlightedText _highlightedSnippet;
+
+    public SearchResultItemViewModel(SearchResult result)
+    {
+        Result = result;
+        _highlightedName = Highlight(result.Entry.Name, result.MatchedTerms);
+        _highlightedSnippet = Highlight(result.Snippet, result.MatchedTerms);
+    }
     public SearchResult Result { get; }
     public string Name => Result.Entry.Name;
     public string Snippet => Result.Snippet;
+    public string NameBeforeMatch => _highlightedName.Before;
+    public string NameMatch => _highlightedName.Match;
+    public string NameAfterMatch => _highlightedName.After;
+    public string SnippetBeforeMatch => _highlightedSnippet.Before;
+    public string SnippetMatch => _highlightedSnippet.Match;
+    public string SnippetAfterMatch => _highlightedSnippet.After;
     public string CategoryText => SearchViewModel.CategoryLabel(Result.Entry.Kind);
     public string OriginText => Result.Entry.Kind switch
     {
@@ -38,5 +53,22 @@ public sealed class SearchResultItemViewModel
             ? $"Página {page[1..]}"
             : "Documento";
     }
+
+    private static HighlightedText Highlight(string text, IReadOnlyList<string> matchedTerms)
+    {
+        foreach (var term in matchedTerms.Where(term => !string.IsNullOrWhiteSpace(term)))
+        {
+            var position = CultureInfo.InvariantCulture.CompareInfo.IndexOf(
+                text,
+                term.Trim(),
+                CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace);
+            if (position < 0) continue;
+            var length = Math.Min(term.Trim().Length, text.Length - position);
+            return new HighlightedText(text[..position], text.Substring(position, length), text[(position + length)..]);
+        }
+        return new HighlightedText(text, string.Empty, string.Empty);
+    }
+
+    private sealed record HighlightedText(string Before, string Match, string After);
 
 }

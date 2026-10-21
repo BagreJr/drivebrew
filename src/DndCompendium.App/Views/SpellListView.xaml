@@ -98,6 +98,20 @@
                         SelectedItem="{Binding SelectedRitual}"
                         Style="{StaticResource CompactPickerStyle}" />
                 </VerticalStackLayout>
+                <VerticalStackLayout WidthRequest="150" Spacing="2">
+                    <Label Style="{StaticResource EyebrowLabelStyle}" Text="CASTEO" />
+                    <Picker
+                        ItemsSource="{Binding CastingTimeOptions}"
+                        SelectedItem="{Binding SelectedCastingTime}"
+                        Style="{StaticResource CompactPickerStyle}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout WidthRequest="150" Spacing="2">
+                    <Label Style="{StaticResource EyebrowLabelStyle}" Text="COMPONENTE" />
+                    <Picker
+                        ItemsSource="{Binding ComponentOptions}"
+                        SelectedItem="{Binding SelectedComponent}"
+                        Style="{StaticResource CompactPickerStyle}" />
+                </VerticalStackLayout>
                 <VerticalStackLayout WidthRequest="180" Spacing="2">
                     <Label Style="{StaticResource EyebrowLabelStyle}" Text="ORDEN" />
                     <Picker

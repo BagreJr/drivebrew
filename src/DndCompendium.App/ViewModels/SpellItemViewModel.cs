@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using DndCompendium.Core.Models;
+using DndCompendium.Core.Services;
 
 namespace DndCompendium.App.ViewModels;
 
@@ -58,6 +59,15 @@ public partial class SpellItemViewModel : ObservableObject
 
 internal static class SpellDisplay
 {
+    public static string CastingTimeCategory(string castingTime)
+        => SpellCastingTimeClassifier.Classify(castingTime) switch
+        {
+            SpellCastingTimeKind.Action => "Action",
+            SpellCastingTimeKind.BonusAction => "Bonus Action",
+            SpellCastingTimeKind.Reaction => "Reaction",
+            _ => "Otro"
+        };
+
     public static string School(string school) => school.Trim().ToLowerInvariant() switch
     {
         "abjuration" => "Abjuración",

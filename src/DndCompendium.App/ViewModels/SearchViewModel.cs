@@ -40,10 +40,13 @@ public partial class SearchViewModel(IUniversalSearchService searchService) : Ob
     public bool HasResults => Groups.Count > 0;
     public string ResultSummary => !HasQuery
         ? $"{IndexEntryCount:N0} entradas offline indexadas"
+        : !HasSubmittedSearch
+            ? "Pulsá Buscar para ejecutar la consulta"
         : ResultCount == 1 ? "1 resultado" : $"{ResultCount} resultados";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasQuery))]
+    [NotifyPropertyChangedFor(nameof(ResultSummary))]
     private string query = string.Empty;
 
     [ObservableProperty]
@@ -70,9 +73,14 @@ public partial class SearchViewModel(IUniversalSearchService searchService) : Ob
     [NotifyPropertyChangedFor(nameof(ResultSummary))]
     private int indexEntryCount;
 
-    partial void OnQueryChanged(string value) => ScheduleSearch();
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ResultSummary))]
+    private bool hasSubmittedSearch;
+
+    partial void OnQueryChanged(string value) => MarkSearchPending();
     partial void OnSelectedCategoryChanged(string value)
     {
+        MarkSearchPending();
         _filterCancellation?.Cancel();
         _filterCancellation?.Dispose();
         var cancellation = _filterCancellation = new CancellationTokenSource();
@@ -89,10 +97,9 @@ public partial class SearchViewModel(IUniversalSearchService searchService) : Ob
         {
             return;
         }
-        ScheduleSearch(immediate: true);
     }
-    partial void OnSelectedOriginChanged(string value) => ScheduleSearch(immediate: true);
-    partial void OnSelectedLevelChanged(string value) => ScheduleSearch(immediate: true);
+    partial void OnSelectedOriginChanged(string value) => MarkSearchPending();
+    partial void OnSelectedLevelChanged(string value) => MarkSearchPending();
 
     [RelayCommand(AllowConcurrentExecutions = false)]
     public async Task LoadAsync()
@@ -106,7 +113,6 @@ public partial class SearchViewModel(IUniversalSearchService searchService) : Ob
             IndexEntryCount = await searchService.GetEntryCountAsync();
             await RefreshFilterOptionsAsync(SelectedCategory);
             _initialized = true;
-            await SearchNowAsync(Query, SelectedCategory, CancellationToken.None);
         }
         catch (Exception exception)
         {
@@ -129,24 +135,28 @@ public partial class SearchViewModel(IUniversalSearchService searchService) : Ob
         return Shell.Current.GoToAsync($"{AppRoutes.Reader}?documentId={Uri.EscapeDataString(entry.DocumentId)}{target}");
     }
 
-    private void ScheduleSearch(bool immediate = false)
+    [RelayCommand(AllowConcurrentExecutions = false)]
+    private async Task SearchAsync()
     {
+        if (!_initialized) return;
         _searchCancellation?.Cancel();
         _searchCancellation?.Dispose();
         var cancellation = _searchCancellation = new CancellationTokenSource();
-        _ = RunScheduledSearchAsync(Query, SelectedCategory, immediate, cancellation.Token);
-    }
-
-    private async Task RunScheduledSearchAsync(string requestedQuery, string requestedCategory, bool immediate, CancellationToken token)
-    {
         try
         {
-            if (!immediate) await Task.Delay(180, token);
-            if (!_initialized) return;
-            await SearchNowAsync(requestedQuery, requestedCategory, token);
+            await SearchNowAsync(Query, SelectedCategory, cancellation.Token);
         }
-        catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
         catch (Exception exception) { ErrorMessage = $"No se pudo completar la búsqueda: {exception.Message}"; }
+    }
+
+    private void MarkSearchPending()
+    {
+        _searchCancellation?.Cancel();
+        HasSubmittedSearch = false;
+        Groups.Clear();
+        ResultCount = 0;
+        OnPropertyChanged(nameof(HasResults));
     }
 
     private async Task SearchNowAsync(string requestedQuery, string requestedCategory, CancellationToken token)
@@ -155,6 +165,7 @@ public partial class SearchViewModel(IUniversalSearchService searchService) : Ob
         {
             Groups.Clear();
             ResultCount = 0;
+            HasSubmittedSearch = false;
             OnPropertyChanged(nameof(HasResults));
             return;
         }
@@ -179,6 +190,7 @@ public partial class SearchViewModel(IUniversalSearchService searchService) : Ob
                 Groups.Add(new SearchResultGroup(CategoryLabel(category.Key), category.Select(result => new SearchResultItemViewModel(result))));
             }
             ResultCount = results.Count;
+            HasSubmittedSearch = true;
             OnPropertyChanged(nameof(HasResults));
         }
         finally { IsBusy = false; }
