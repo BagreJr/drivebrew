@@ -1,0 +1,26 @@
+<!-- OFFLINE FIXTURE: PSION / UTOPIAN MIND. Test data only; not canonical D&D rules content. -->
+```metadata
+title: Psion (Offline Fixture)
+description: Fixture containing the searchable Utopian Mind section.
+tags: [fixture, class, subclass, offline]
+renderer: V3
+```
+
+# Psion
+
+The Psion fixture demonstrates local full-text search while completely disconnected.
+
+## Psionic Orders
+
+### Utopian Mind
+
+**Utopian Mind is deliberately present as fixture text.** It is used by automated offline search tests and must not be interpreted as canonical game content.
+
+{{descriptive
+##### Shared Ideal
+At 3rd level, this fixture paragraph provides a unique searchable phrase: *concordant dream lattice*.
+}}
+
+#### Thoughtful Concord
+
+This subsection verifies direct section discovery without consulting a remote source.

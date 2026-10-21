@@ -1,0 +1,17 @@
+<!-- OFFLINE FIXTURE: ARCANE ARMORY. Test data only; not canonical D&D rules content. -->
+```metadata
+title: Arcane Armory (Offline Fixture)
+tags: [fixture, equipment, offline]
+renderer: V3
+```
+
+# Arcane Armory
+
+| Fixture Item | Cost | Property |
+|:---|---:|:---|
+| Emberglass Blade | 25 gp | Test row |
+| Quiet Buckler | 10 gp | Test row |
+
+{{note
+This document exists only to exercise a third catalog category.
+}}

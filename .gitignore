@@ -2,9 +2,9 @@
 .tools/
 .vs/
 .idea/
-AGENTS.md
-sources/
-pwa/
+/AGENTS.md
+/sources/
+/pwa/
 **/bin/
 **/obj/
 TestResults/

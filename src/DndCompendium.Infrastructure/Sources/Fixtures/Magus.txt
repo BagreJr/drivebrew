@@ -1,0 +1,40 @@
+<!-- OFFLINE FIXTURE: MAGUS. Test data only; not canonical D&D rules content. -->
+```metadata
+title: Magus (Offline Fixture)
+description: Fixture for persistent offline installation and Homebrewery syntax.
+tags: [fixture, class, offline]
+systems: [5e]
+renderer: V3
+```
+
+# Magus
+
+{{note
+##### Offline fixture
+This clearly marked fixture exists to verify that notes, symbols, tables and navigation survive local storage.
+}}
+
+## Class Features
+
+| Level | Proficiency | Feature |
+|:---:|:---:|:---|
+| 1st | +2 | Arcane Bond |
+| 2nd | +2 | Spellstrike |
+
+{{classTable,frame,decoration
+##### The Magus
+| Level | Features |
+|:---:|:---|
+| 1st | Arcane Bond |
+| 2nd | Spellstrike |
+}}
+
+\page
+
+# Magus Paths
+
+Internal navigation target: [Magus Paths](#p2)
+
+{{wide
+**Symbols fixture:** ◆ d20 • ✦
+}}
