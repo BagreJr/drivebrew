@@ -4,7 +4,7 @@ El actualizador de la aplicación es independiente de las actualizaciones de TXT
 
 ## Estado de firma
 
-Las APK verificadas hasta la versión 1.7/código 8 tienen:
+Las APK verificadas hasta la versión 1.8/código 9 tienen:
 
 - package ID: `com.march.dndcompendium`
 - certificado SHA-256: `0393be8524f1adea9c58b3cfccfe2f2f51a2c08049d664d666f87aecbd2b2fe3`
