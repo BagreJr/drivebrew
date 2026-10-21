@@ -1,0 +1,3 @@
+# These fixtures are verified byte-for-byte and embedded into the application.
+# Do not normalize their Homebrewery export line endings on checkout.
+test-data/homebrewery-real/*.txt -text
