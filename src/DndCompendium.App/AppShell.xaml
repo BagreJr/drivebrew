@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="DndCompendium.App.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:DndCompendium.App.Views"
+    FlyoutBehavior="Disabled"
+    Title="D&amp;D Compendium">
+
+    <TabBar Route="tabs">
+        <ShellContent
+            Title="Biblioteca"
+            ContentTemplate="{DataTemplate views:LibraryPage}"
+            Route="library" />
+        <ShellContent
+            Title="Buscar"
+            ContentTemplate="{DataTemplate views:SearchPage}"
+            Route="search" />
+        <ShellContent
+            Title="Spells"
+            ContentTemplate="{DataTemplate views:SpellsPage}"
+            Route="spells" />
+        <ShellContent
+            Title="Exploits"
+            ContentTemplate="{DataTemplate views:ExploitsPage}"
+            Route="exploits" />
+        <ShellContent
+            Title="..."
+            ContentTemplate="{DataTemplate views:MorePage}"
+            Route="more" />
+    </TabBar>
+
+</Shell>

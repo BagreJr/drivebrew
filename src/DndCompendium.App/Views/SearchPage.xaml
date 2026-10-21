@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="DndCompendium.App.Views.SearchPage"
+    x:Name="SearchRoot"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:DndCompendium.App.ViewModels"
+    x:DataType="viewModels:SearchViewModel"
+    Title="Buscar">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+        <Border Grid.Row="0" Margin="12,6,12,4" Padding="12,8" Style="{StaticResource HeroCardStyle}">
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                <Label FontAttributes="Bold" FontSize="18" Text="Búsqueda universal" TextColor="{StaticResource PaperLight}" />
+                <Label Grid.Row="1" Margin="0,3,8,0" FontSize="11" Text="{Binding ResultSummary}" TextColor="{StaticResource TextMuted}" />
+                <ActivityIndicator Grid.RowSpan="2" Grid.Column="1" HeightRequest="24" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" WidthRequest="24" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="12,3" ColumnDefinitions="*,145" ColumnSpacing="8">
+            <SearchBar Placeholder="Buscar teleport, Psion, reaction…" Style="{StaticResource CompendiumSearchBarStyle}" Text="{Binding Query}" />
+            <Picker Grid.Column="1" ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding SelectedCategory}" Style="{StaticResource CompactPickerStyle}" />
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="12,3" ColumnDefinitions="*,130" ColumnSpacing="8">
+            <Picker Title="Clase u origen" ItemsSource="{Binding OriginOptions}" SelectedItem="{Binding SelectedOrigin}" Style="{StaticResource CompactPickerStyle}" />
+            <Picker Grid.Column="1" Title="Nivel" ItemsSource="{Binding LevelOptions}" SelectedItem="{Binding SelectedLevel}" Style="{StaticResource CompactPickerStyle}" />
+        </Grid>
+
+        <Border Grid.Row="3" Margin="16,3" Padding="10,7" BackgroundColor="{StaticResource ErrorSurface}" IsVisible="{Binding HasError}" Stroke="{StaticResource Error}">
+            <Border.StrokeShape><RoundRectangle CornerRadius="10" /></Border.StrokeShape>
+            <Label Style="{StaticResource ErrorLabelStyle}" Text="{Binding ErrorMessage}" />
+        </Border>
+
+        <CollectionView
+            Grid.Row="4"
+            Margin="10,3,10,0"
+            IsGrouped="True"
+            ItemsSource="{Binding Groups}"
+            SelectionMode="None">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="30,56" Spacing="9">
+                    <Label HorizontalTextAlignment="Center" Style="{StaticResource TitleLabelStyle}" Text="Buscá en toda tu biblioteca" />
+                    <Label HorizontalTextAlignment="Center" Style="{StaticResource MutedLabelStyle}" Text="Los resultados usan solamente TXT y JSON guardados en este dispositivo." />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.GroupHeaderTemplate>
+                <DataTemplate x:DataType="viewModels:SearchResultGroup">
+                    <Label Margin="8,10,8,5" Style="{StaticResource SectionLabelStyle}" Text="{Binding Header}" />
+                </DataTemplate>
+            </CollectionView.GroupHeaderTemplate>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="viewModels:SearchResultItemViewModel">
+                    <Border Margin="2,0,2,8" Padding="13" Style="{StaticResource CardStyle}">
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="5">
+                            <Label FontAttributes="Bold" FontSize="16" LineBreakMode="TailTruncation" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
+                            <Label Grid.Column="1" FontAttributes="Bold" FontSize="9" Text="{Binding FavoriteText}" TextColor="{StaticResource Gold}" />
+                            <Grid Grid.Row="1" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*" ColumnSpacing="7">
+                                <Border Padding="6,2" BackgroundColor="#352A1E" Stroke="{StaticResource Gold}">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="7" /></Border.StrokeShape>
+                                    <Label FontAttributes="Bold" FontSize="9" Text="{Binding CategoryText}" TextColor="{StaticResource Gold}" />
+                                </Border>
+                                <Label Grid.Column="1" FontSize="11" LineBreakMode="TailTruncation" Text="{Binding OriginText}" TextColor="{StaticResource Gold}" VerticalTextAlignment="Center" />
+                            </Grid>
+                            <Label Grid.Row="2" Grid.ColumnSpan="2" FontSize="10" Text="{Binding MetadataText}" TextColor="{StaticResource TextMuted}" />
+                            <Label Grid.Row="3" Grid.ColumnSpan="2" FontSize="12" FormattedText="{Binding HighlightedSnippet}" LineBreakMode="TailTruncation" MaxLines="3" TextColor="{StaticResource TextMuted}" />
+                            <Grid Grid.Row="4" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto" Margin="0,3,0,0">
+                                <Label FontSize="10" Text="{Binding LocationText}" TextColor="{StaticResource TextMuted}" VerticalTextAlignment="Center" />
+                                <Button Grid.Column="1" Command="{Binding BindingContext.OpenCommand, Source={x:Reference SearchRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallAccentButtonStyle}" Text="Abrir" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="DndCompendium.App.Views.ResourceManagerPage"
+    x:Name="ResourcesRoot"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:DndCompendium.App.ViewModels"
+    x:DataType="viewModels:ResourceManagerViewModel">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="12,6,12,26" Spacing="10">
+            <Border Padding="12,9" Style="{StaticResource HeroCardStyle}">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                    <Label FontAttributes="Bold" FontSize="18" Text="Resources" TextColor="{StaticResource PaperLight}" />
+                    <Label Grid.Row="1" Margin="0,3,8,0" FontSize="11" Text="{Binding ActiveSummary}" TextColor="{StaticResource Gold}" />
+                    <ActivityIndicator Grid.RowSpan="2" Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+                </Grid>
+            </Border>
+
+            <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="7">
+                <Button Clicked="OnShortRestClicked" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Descanso corto" />
+                <Button Grid.Column="1" Clicked="OnLongRestClicked" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Descanso largo" />
+                <Button Grid.Column="2" Clicked="OnAddClicked" Style="{StaticResource SmallAccentButtonStyle}" Text="＋" />
+            </Grid>
+
+            <Label IsVisible="{Binding HasError}" Style="{StaticResource ErrorLabelStyle}" Text="{Binding ErrorMessage}" />
+            <VerticalStackLayout IsVisible="{Binding IsEmpty}" Padding="18,30" Spacing="6">
+                <Label HorizontalTextAlignment="Center" Style="{StaticResource TitleLabelStyle}" Text="No hay recursos configurados" />
+                <Label HorizontalTextAlignment="Center" Style="{StaticResource MutedLabelStyle}" Text="Agregá solamente los recursos que usa este personaje." />
+            </VerticalStackLayout>
+
+            <Label IsVisible="{Binding HasSpellSlots}" Style="{StaticResource SectionLabelStyle}" Text="SPELL SLOTS" />
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding SpellSlots}" IsVisible="{Binding HasSpellSlots}" Spacing="8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:ResourceItemViewModel">
+                        <Border Padding="12" Style="{StaticResource CardStyle}">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
+                                    <Button Grid.Column="1" Clicked="OnEditClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallGhostButtonStyle}" Text="Editar" />
+                                </Grid>
+                                <FlexLayout BindableLayout.ItemsSource="{Binding Dots}" Direction="Row" Wrap="Wrap" JustifyContent="Start">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="viewModels:ResourceSlotDotViewModel">
+                                            <Button SemanticProperties.Description="{Binding AccessibilityText}" Command="{Binding BindingContext.ToggleSlotCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding .}" FontSize="24" HeightRequest="42" Padding="5,0" Text="{Binding Glyph}" TextColor="{StaticResource Gold}" WidthRequest="42" />
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </FlexLayout>
+                                <Label FontSize="11" Text="{Binding RecoveryText}" TextColor="{StaticResource TextMuted}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Label IsVisible="{Binding HasPactSlots}" Style="{StaticResource SectionLabelStyle}" Text="PACT MAGIC" />
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding PactSlots}" IsVisible="{Binding HasPactSlots}" Spacing="8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:ResourceItemViewModel">
+                        <Border Padding="12" Style="{StaticResource CardStyle}">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
+                                    <Button Grid.Column="1" Clicked="OnEditClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallGhostButtonStyle}" Text="Editar" />
+                                </Grid>
+                                <FlexLayout BindableLayout.ItemsSource="{Binding Dots}" Direction="Row" Wrap="Wrap">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="viewModels:ResourceSlotDotViewModel">
+                                            <Button SemanticProperties.Description="{Binding AccessibilityText}" Command="{Binding BindingContext.ToggleSlotCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding .}" FontSize="24" HeightRequest="42" Padding="5,0" Text="{Binding Glyph}" TextColor="{StaticResource Gold}" WidthRequest="42" />
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </FlexLayout>
+                                <Label FontSize="11" Text="{Binding RecoveryText}" TextColor="{StaticResource TextMuted}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Label IsVisible="{Binding HasOtherResources}" Style="{StaticResource SectionLabelStyle}" Text="OTROS RECURSOS" />
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding OtherResources}" IsVisible="{Binding HasOtherResources}" Spacing="8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:ResourceItemViewModel">
+                        <Border Padding="12" Style="{StaticResource CardStyle}">
+                            <Grid ColumnDefinitions="54,*,54" RowDefinitions="Auto,Auto,Auto" RowSpacing="5">
+                                <Button Command="{Binding BindingContext.AdjustCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding Spend}" FontSize="22" Style="{StaticResource SmallSecondaryButtonStyle}" Text="−" />
+                                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="0">
+                                    <Label FontAttributes="Bold" HorizontalTextAlignment="Center" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
+                                    <Label FontSize="20" HorizontalTextAlignment="Center" Text="{Binding CountText}" TextColor="{StaticResource Gold}" />
+                                </VerticalStackLayout>
+                                <Button Grid.Column="2" Command="{Binding BindingContext.AdjustCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding Recover}" FontSize="22" Style="{StaticResource SmallAccentButtonStyle}" Text="＋" />
+                                <Label Grid.Row="1" Grid.ColumnSpan="3" HorizontalTextAlignment="Center" Style="{StaticResource MutedLabelStyle}" Text="{Binding DetailText}" />
+                                <Button Grid.Row="2" Grid.ColumnSpan="3" Clicked="OnEditClicked" CommandParameter="{Binding .}" HorizontalOptions="End" Style="{StaticResource SmallGhostButtonStyle}" Text="Editar / cantidad manual" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Label Margin="0,8,0,0" IsVisible="{Binding HasPrepared}" Style="{StaticResource SectionLabelStyle}" Text="PREPARADOS" />
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding PreparedItems}" IsVisible="{Binding HasPrepared}" Spacing="8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:PreparedResourceItemViewModel">
+                        <Border Padding="12" Style="{StaticResource CardStyle}">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+                                <Label FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
+                                <Label Grid.Column="1" FontAttributes="Bold" FontSize="10" Text="{Binding KindText}" TextColor="{StaticResource Gold}" />
+                                <Label Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource MutedLabelStyle}" Text="{Binding DetailText}" />
+                                <HorizontalStackLayout Grid.Row="2" Grid.ColumnSpan="2" HorizontalOptions="End" Spacing="6">
+                                    <Button Command="{Binding BindingContext.OpenPreparedCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Ver" />
+                                    <Button Clicked="OnUsePreparedClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallAccentButtonStyle}" Text="{Binding UseText}" />
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentView>

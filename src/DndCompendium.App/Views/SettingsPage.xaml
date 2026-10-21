@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="DndCompendium.App.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:DndCompendium.App.ViewModels"
+    x:DataType="viewModels:SettingsViewModel">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,14,16,32" Spacing="16">
+            <Border Padding="20" Style="{StaticResource HeroCardStyle}">
+                <VerticalStackLayout Spacing="6">
+                    <Label Style="{StaticResource EyebrowLabelStyle}" Text="PREFERENCIAS" />
+                    <Label Style="{StaticResource DisplayLabelStyle}" Text="Configuración" />
+                    <Label
+                        Margin="0,4,0,0"
+                        Style="{StaticResource MutedLabelStyle}"
+                        Text="Ajustá la futura sincronización sin afectar tus copias locales." />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Style="{StaticResource SectionLabelStyle}" Text="Sincronización" />
+            <Border Padding="16,6" Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="0">
+                    <Grid Padding="0,10" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                        <Label Style="{StaticResource TitleLabelStyle}" Text="Sincronizar al abrir" />
+                        <Label
+                            Grid.Row="1"
+                            Margin="0,3,16,0"
+                            Style="{StaticResource MutedLabelStyle}"
+                            Text="Comprobar nuevas versiones cuando haya conexión." />
+                        <Switch
+                            Grid.RowSpan="2"
+                            Grid.Column="1"
+                            IsToggled="{Binding AutomaticSync}"
+                            VerticalOptions="Center" />
+                    </Grid>
+                    <BoxView HeightRequest="1" Style="{StaticResource DividerStyle}" />
+                    <Grid Padding="0,10" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                        <Label Style="{StaticResource TitleLabelStyle}" Text="Solo por Wi-Fi" />
+                        <Label
+                            Grid.Row="1"
+                            Margin="0,3,16,0"
+                            Style="{StaticResource MutedLabelStyle}"
+                            Text="Evitar descargas automáticas con datos móviles." />
+                        <Switch
+                            Grid.RowSpan="2"
+                            Grid.Column="1"
+                            IsToggled="{Binding WifiOnly}"
+                            VerticalOptions="Center" />
+                    </Grid>
+                    <BoxView HeightRequest="1" Style="{StaticResource DividerStyle}" />
+                    <Grid Padding="0,10" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                        <Label Style="{StaticResource TitleLabelStyle}" Text="Actualizar copias guardadas" />
+                        <Label
+                            Grid.Row="1"
+                            Margin="0,3,16,0"
+                            Style="{StaticResource MutedLabelStyle}"
+                            Text="Aplicar actualizaciones solo a documentos ya elegidos." />
+                        <Switch
+                            Grid.RowSpan="2"
+                            Grid.Column="1"
+                            IsToggled="{Binding AutoUpdateDownloaded}"
+                            VerticalOptions="Center" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Style="{StaticResource SectionLabelStyle}" Text="App Updates" />
+            <Border Padding="16" Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="11">
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="4">
+                        <Label Style="{StaticResource TitleLabelStyle}" Text="Current Version" />
+                        <Label Grid.Column="1" Style="{StaticResource MutedLabelStyle}" Text="{Binding CurrentAppVersionText}" />
+                        <Label Grid.Row="1" Style="{StaticResource TitleLabelStyle}" Text="Latest Available Version" />
+                        <Label Grid.Row="1" Grid.Column="1" Style="{StaticResource MutedLabelStyle}" Text="{Binding LatestAppVersionText}" />
+                    </Grid>
+                    <Label FontAttributes="Bold" Text="{Binding AppUpdateStatusText}" TextColor="{StaticResource Gold}" />
+                    <Label Style="{StaticResource MutedLabelStyle}" Text="{Binding LastAppUpdateCheckText, StringFormat='Last Update Check: {0}'}" />
+
+                    <Label Style="{StaticResource TitleLabelStyle}" Text="Update manifest URL" />
+                    <Entry
+                        Keyboard="Url"
+                        Placeholder="https://…/app-update.json"
+                        Text="{Binding UpdateManifestUrl}" />
+                    <Label
+                        FontSize="11"
+                        Style="{StaticResource MutedLabelStyle}"
+                        Text="Debe ser una URL HTTPS. Hasta configurarla, el actualizador permanece desactivado." />
+
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                        <Label Style="{StaticResource TitleLabelStyle}" Text="Automatically Check for Updates" />
+                        <Label Grid.Row="1" Margin="0,3,16,0" Style="{StaticResource MutedLabelStyle}" Text="Al abrir y mediante una tarea periódica de Android." />
+                        <Switch Grid.RowSpan="2" Grid.Column="1" IsToggled="{Binding AutomaticallyCheckForAppUpdates}" VerticalOptions="Center" />
+                    </Grid>
+                    <BoxView HeightRequest="1" Style="{StaticResource DividerStyle}" />
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                        <Label Style="{StaticResource TitleLabelStyle}" Text="Automatically Download Updates" />
+                        <Label Grid.Row="1" Margin="0,3,16,0" Style="{StaticResource MutedLabelStyle}" Text="Opcional. Android siempre pedirá confirmación antes de instalar." />
+                        <Switch Grid.RowSpan="2" Grid.Column="1" IsToggled="{Binding AutomaticallyDownloadAppUpdates}" VerticalOptions="Center" />
+                    </Grid>
+
+                    <ActivityIndicator IsRunning="{Binding IsCheckingForAppUpdate}" IsVisible="{Binding IsCheckingForAppUpdate}" />
+                    <ProgressBar Progress="{Binding AppUpdateProgress}" IsVisible="{Binding IsDownloadingAppUpdate}" />
+                    <Button
+                        Command="{Binding CancelAppUpdateCommand}"
+                        IsVisible="{Binding IsDownloadingAppUpdate}"
+                        Style="{StaticResource SmallSecondaryButtonStyle}"
+                        Text="Cancel Download" />
+                    <HorizontalStackLayout HorizontalOptions="End" Spacing="8">
+                        <Button
+                            Command="{Binding CheckForAppUpdatesCommand}"
+                            IsEnabled="{Binding IsDownloadingAppUpdate, Converter={StaticResource InvertedBoolConverter}}"
+                            Style="{StaticResource SmallSecondaryButtonStyle}"
+                            Text="Check for Updates" />
+                        <Button
+                            Command="{Binding UpdateAppNowCommand}"
+                            IsVisible="{Binding IsAppUpdateAvailable}"
+                            Style="{StaticResource SmallAccentButtonStyle}"
+                            Text="Update Now" />
+                    </HorizontalStackLayout>
+                    <Label Style="{StaticResource TitleLabelStyle}" Text="Release Notes" />
+                    <Label LineBreakMode="WordWrap" Style="{StaticResource MutedLabelStyle}" Text="{Binding AppReleaseNotes}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Style="{StaticResource SectionLabelStyle}" Text="Almacenamiento" />
+            <Border Padding="16" Style="{StaticResource CardStyle}">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                    <Label Style="{StaticResource TitleLabelStyle}" Text="Documentos sin conexión" />
+                    <Label
+                        Grid.Row="1"
+                        Margin="0,4,12,0"
+                        Style="{StaticResource MutedLabelStyle}"
+                        Text="{Binding StorageUsageText}" />
+                    <Button
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        Command="{Binding LoadCommand}"
+                        Style="{StaticResource SmallSecondaryButtonStyle}"
+                        Text="Actualizar"
+                        VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <Border
+                Padding="12,9"
+                BackgroundColor="{StaticResource ErrorSurface}"
+                IsVisible="{Binding HasError}"
+                Stroke="{StaticResource Error}">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Label Style="{StaticResource ErrorLabelStyle}" Text="{Binding ErrorMessage}" />
+            </Border>
+
+            <Label
+                HorizontalTextAlignment="Center"
+                Style="{StaticResource MutedLabelStyle}"
+                Text="La lectura local nunca requiere iniciar sesión." />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentView>

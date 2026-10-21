@@ -1,0 +1,337 @@
+:root {
+  color-scheme: light;
+  --reader-zoom: 1;
+  --reader-font-scale: 1;
+  --scaled-page-width: 816px;
+  --scaled-page-height: 1056px;
+  --reader-surround: #171318;
+  --reader-surround-soft: #292129;
+  --reader-accent: #7d1f23;
+  --reader-gold: #b38a43;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--reader-surround);
+}
+
+body {
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+.readerShell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: max(18px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  background:
+    radial-gradient(circle at 50% -15%, rgb(125 31 35 / 32%), transparent 38rem),
+    linear-gradient(145deg, var(--reader-surround-soft), var(--reader-surround));
+}
+
+.readerStatus {
+  position: sticky;
+  z-index: 1000;
+  top: max(8px, env(safe-area-inset-top));
+  width: min(34rem, calc(100vw - 32px));
+  margin: 0 auto 18px;
+  padding: 12px 16px;
+  border: 1px solid rgb(179 138 67 / 55%);
+  border-radius: 10px;
+  color: #f7edd7;
+  background: rgb(31 23 27 / 94%);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 30%);
+  font: 600 0.92rem/1.35 system-ui, sans-serif;
+  text-align: center;
+}
+
+.readerStatus[hidden] { display: none; }
+
+.readerStatus.isError,
+.readerError {
+  color: #fff4ef;
+  border-color: #c85b55;
+  background: #6d2022;
+}
+
+.documentRoot {
+  width: 100%;
+  min-height: 1px;
+  outline: none;
+}
+
+.documentPages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+}
+
+/* Book mode intentionally leaves Homebrewery's theme rules intact. CSS zoom is
+   also the mechanism used by Homebrewery and keeps page parity selectors valid. */
+.mode-book .page {
+  flex: 0 0 auto;
+  zoom: var(--reader-zoom);
+  box-shadow: 0 18px 45px rgb(0 0 0 / 45%);
+}
+
+.renderError {
+  margin: 1rem;
+  padding: 1rem;
+  border: 2px solid #9d292c;
+  color: #5f1619;
+  background: #f5d7c4;
+  font: 600 14px/1.4 system-ui, sans-serif;
+}
+
+.resourceMissing:not(a) {
+  min-width: 4rem;
+  min-height: 3rem;
+  border: 2px dashed #9d292c !important;
+  background: repeating-linear-gradient(135deg, #f5d7c4, #f5d7c4 8px, #fff4ef 8px, #fff4ef 16px) !important;
+}
+
+.visuallyHidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.mode-mobile.readerShell {
+  padding-right: max(8px, env(safe-area-inset-right));
+  padding-left: max(8px, env(safe-area-inset-left));
+  background: #d8c39a;
+}
+
+.mode-mobile .documentPages {
+  gap: 12px;
+}
+
+.mode-mobile .page {
+  width: 100% !important;
+  max-width: 52rem !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 38px clamp(18px, 5vw, 44px) 42px !important;
+  contain: none !important;
+  content-visibility: visible !important;
+  overflow: hidden !important;
+  columns: 1 !important;
+  column-width: auto !important;
+  column-count: 1 !important;
+  column-gap: 0 !important;
+  border-radius: 5px;
+  box-shadow: 0 5px 18px rgb(67 45 25 / 28%);
+  font-size: calc(0.36cm * var(--reader-font-scale)) !important;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.mode-mobile .page h1 {
+  font-size: clamp(2rem, 12vw, 3.25rem) !important;
+  line-height: 1.05 !important;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+.mode-mobile .page h2 {
+  font-size: clamp(1.5rem, 8vw, 2.25rem) !important;
+  line-height: 1.1 !important;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+.mode-mobile .page h3 {
+  font-size: clamp(1.15rem, 6vw, 1.65rem) !important;
+  line-height: 1.15 !important;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+/* Homebrewery documents deliberately position artwork over a fixed paper canvas.
+   In mobile mode every authored element returns to normal flow so illustrations can
+   never cover prose on a narrow screen. Book mode remains pixel-faithful. */
+.mode-mobile .page * {
+  position: static !important;
+  inset: auto !important;
+  float: none !important;
+  z-index: auto !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+.mode-mobile .page img,
+.mode-mobile .page svg,
+.mode-mobile .page video {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: min(62vh, 34rem) !important;
+  margin: 1rem auto !important;
+  object-fit: contain !important;
+  mix-blend-mode: normal !important;
+}
+
+.mode-mobile .page [class*="imageMask"],
+.mode-mobile .page [class*="image-mask"] {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 1rem 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  clip-path: none !important;
+}
+
+.mode-mobile .page [class*="watercolor"],
+.mode-mobile .page [class*="stain"],
+.mode-mobile .page .watermark {
+  display: none !important;
+}
+
+.mode-mobile .columnWrapper {
+  max-height: none !important;
+  columns: 1 !important;
+  column-width: auto !important;
+  column-count: 1 !important;
+  column-gap: 0 !important;
+  overflow: visible !important;
+}
+
+.mode-mobile .columnSplit {
+  visibility: visible !important;
+  height: 1px !important;
+  margin: 1.4em 8% !important;
+  break-after: auto !important;
+  background: linear-gradient(90deg, transparent, #b8965d, transparent);
+}
+
+.mode-mobile .wide {
+  column-span: none !important;
+  max-width: 100%;
+}
+
+.mode-mobile table {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: calc(0.84rem * var(--reader-font-scale)) !important;
+  line-height: 1.3 !important;
+  font-variant-numeric: tabular-nums;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+}
+
+.mode-mobile table th,
+.mode-mobile table td {
+  padding: 0.35em 0.45em !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  vertical-align: top !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+}
+
+.mode-mobile table th {
+  white-space: nowrap;
+}
+
+.mode-mobile .classTable,
+.mode-mobile table.classTable,
+.mode-mobile .classTable table {
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: calc(0.78rem * var(--reader-font-scale)) !important;
+  line-height: 1.26 !important;
+  letter-spacing: 0;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+}
+
+.mode-mobile .classTable h5 {
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: calc(0.96rem * var(--reader-font-scale)) !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0 !important;
+}
+
+.mode-mobile .classTable th,
+.mode-mobile .classTable td,
+.mode-mobile table.classTable th,
+.mode-mobile table.classTable td {
+  padding: 0.28em 0.34em !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+}
+
+.mode-mobile .classTable th,
+.mode-mobile table.classTable th {
+  font-weight: 700 !important;
+}
+
+.mode-mobile .pageNumber,
+.mode-mobile .footnote {
+  position: static !important;
+  display: block;
+  width: auto !important;
+  margin-top: 1.2em;
+  text-align: right !important;
+}
+
+.mode-mobile pre,
+.mode-mobile code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mode-mobile .page::after { display: none; }
+
+@media (max-width: 560px) {
+  .mode-book .documentPages { align-items: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@media print {
+  html, body, .readerShell { background: #fff; }
+  .readerShell { padding: 0; }
+  .readerStatus { display: none !important; }
+  .documentPages { gap: 0; }
+  .mode-book .page { zoom: 1; box-shadow: none; break-after: page; }
+}

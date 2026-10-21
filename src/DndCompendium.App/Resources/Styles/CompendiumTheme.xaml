@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:app="clr-namespace:DndCompendium.App">
+
+    <app:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+
+    <Color x:Key="Primary">#A83F45</Color>
+    <Color x:Key="PrimaryDark">#E7B65B</Color>
+    <Color x:Key="PrimaryDarkText">#171319</Color>
+    <Color x:Key="Secondary">#332930</Color>
+    <Color x:Key="SecondaryDarkText">#F6ECD1</Color>
+    <Color x:Key="Tertiary">#D4A64A</Color>
+    <Color x:Key="Accent">#B5484F</Color>
+    <Color x:Key="AccentPressed">#873239</Color>
+    <Color x:Key="Gold">#D4A64A</Color>
+    <Color x:Key="PaperLight">#FFF4D6</Color>
+    <Color x:Key="CompendiumBackground">#171319</Color>
+    <Color x:Key="Surface">#241E26</Color>
+    <Color x:Key="SurfaceRaised">#2E2630</Color>
+    <Color x:Key="SurfaceHero">#302127</Color>
+    <Color x:Key="Outline">#594A53</Color>
+    <Color x:Key="TextPrimary">#F7EFDF</Color>
+    <Color x:Key="TextMuted">#BFB2A2</Color>
+    <Color x:Key="Error">#FF9A91</Color>
+    <Color x:Key="ErrorSurface">#40242A</Color>
+
+    <Style TargetType="ContentPage">
+        <Setter Property="BackgroundColor" Value="{StaticResource CompendiumBackground}" />
+    </Style>
+
+    <Style TargetType="Shell">
+        <Setter Property="Shell.BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="Shell.ForegroundColor" Value="{StaticResource PaperLight}" />
+        <Setter Property="Shell.TitleColor" Value="{StaticResource PaperLight}" />
+        <Setter Property="Shell.TabBarBackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="Shell.TabBarForegroundColor" Value="{StaticResource Gold}" />
+        <Setter Property="Shell.TabBarTitleColor" Value="{StaticResource Gold}" />
+        <Setter Property="Shell.TabBarUnselectedColor" Value="{StaticResource TextMuted}" />
+    </Style>
+
+    <Style x:Key="HeroCardStyle" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource SurfaceHero}" />
+        <Setter Property="Stroke" Value="{StaticResource Gold}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="22" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="CardStyle" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="Stroke" Value="{StaticResource Outline}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="16" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ToolbarCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="BackgroundColor" Value="{StaticResource SurfaceRaised}" />
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="14" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="StatusPillStyle" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="#3A2D2C" />
+        <Setter Property="Stroke" Value="{StaticResource Gold}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape">
+            <Setter.Value>
+                <RoundRectangle CornerRadius="99" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DisplayLabelStyle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="26" />
+        <Setter Property="LineBreakMode" Value="WordWrap" />
+        <Setter Property="TextColor" Value="{StaticResource PaperLight}" />
+    </Style>
+
+    <Style x:Key="TitleLabelStyle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+    </Style>
+
+    <Style x:Key="SectionLabelStyle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="CharacterSpacing" Value="0.5" />
+        <Setter Property="TextColor" Value="{StaticResource Gold}" />
+    </Style>
+
+    <Style x:Key="EyebrowLabelStyle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="CharacterSpacing" Value="1.2" />
+        <Setter Property="TextColor" Value="{StaticResource Gold}" />
+    </Style>
+
+    <Style x:Key="BodyLabelStyle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="LineHeight" Value="1.2" />
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+    </Style>
+
+    <Style x:Key="MutedLabelStyle" TargetType="Label" BasedOn="{StaticResource BodyLabelStyle}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+    </Style>
+
+    <Style x:Key="StatusLabelStyle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="TextColor" Value="{StaticResource PaperLight}" />
+    </Style>
+
+    <Style x:Key="ErrorLabelStyle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextColor" Value="{StaticResource Error}" />
+    </Style>
+
+    <Style x:Key="AccentButtonStyle" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+        <Setter Property="TextColor" Value="{StaticResource PaperLight}" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="16,11" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+
+    <Style x:Key="SmallAccentButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="12,7" />
+        <Setter Property="MinimumHeightRequest" Value="38" />
+    </Style>
+
+    <Style x:Key="SmallSecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource SmallAccentButtonStyle}">
+        <Setter Property="BackgroundColor" Value="{StaticResource SurfaceRaised}" />
+        <Setter Property="BorderColor" Value="{StaticResource Gold}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="TextColor" Value="{StaticResource PaperLight}" />
+    </Style>
+
+    <Style x:Key="SmallGhostButtonStyle" TargetType="Button" BasedOn="{StaticResource SmallAccentButtonStyle}">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderColor" Value="{StaticResource Outline}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+    </Style>
+
+    <Style x:Key="ModeButtonStyle" TargetType="Button" BasedOn="{StaticResource SmallGhostButtonStyle}">
+        <Setter Property="MinimumWidthRequest" Value="72" />
+    </Style>
+
+    <Style x:Key="CompendiumSearchBarStyle" TargetType="SearchBar">
+        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="CancelButtonColor" Value="{StaticResource Gold}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource TextMuted}" />
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
+    <Style x:Key="CompactPickerStyle" TargetType="Picker">
+        <Setter Property="BackgroundColor" Value="{StaticResource SurfaceRaised}" />
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+        <Setter Property="TitleColor" Value="{StaticResource TextMuted}" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="MinimumHeightRequest" Value="42" />
+    </Style>
+
+    <Style x:Key="DividerStyle" TargetType="BoxView">
+        <Setter Property="BackgroundColor" Value="{StaticResource Outline}" />
+    </Style>
+
+    <Style TargetType="ProgressBar">
+        <Setter Property="ProgressColor" Value="{StaticResource Gold}" />
+    </Style>
+
+    <Style TargetType="Switch">
+        <Setter Property="OnColor" Value="{StaticResource Accent}" />
+        <Setter Property="ThumbColor" Value="{StaticResource PaperLight}" />
+    </Style>
+</ResourceDictionary>

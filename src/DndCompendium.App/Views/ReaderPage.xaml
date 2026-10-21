@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="DndCompendium.App.Views.ReaderPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:DndCompendium.App.ViewModels"
+    x:DataType="viewModels:ReaderViewModel"
+    Shell.TabBarIsVisible="False"
+    Title="{Binding Title}">
+
+    <Grid RowDefinitions="Auto,*">
+        <Border
+            Grid.Row="0"
+            Margin="12,10"
+            Padding="10"
+            Style="{StaticResource ToolbarCardStyle}">
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                <Button Command="{Binding UseBookModeCommand}" Style="{StaticResource ModeButtonStyle}" Text="Libro">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsBookMode}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                            <Setter Property="TextColor" Value="{StaticResource PaperLight}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <Button
+                    Grid.Column="1"
+                    Command="{Binding UseMobileModeCommand}"
+                    Style="{StaticResource ModeButtonStyle}"
+                    Text="Móvil">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsMobileMode}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                            <Setter Property="TextColor" Value="{StaticResource PaperLight}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <Label
+                    Grid.Column="2"
+                    FontSize="10"
+                    HorizontalOptions="End"
+                    HorizontalTextAlignment="End"
+                    LineBreakMode="TailTruncation"
+                    MaxLines="1"
+                    Text="{Binding OfflineStatus}"
+                    TextColor="{StaticResource Gold}"
+                    VerticalTextAlignment="Center" />
+                </Grid>
+
+                <ScrollView Grid.Row="1" HorizontalScrollBarVisibility="Never" Orientation="Horizontal">
+                    <HorizontalStackLayout Spacing="4">
+                        <Button
+                            SemanticProperties.Description="Página anterior"
+                            Command="{Binding PreviousPageCommand}"
+                            IsEnabled="{Binding CanGoPrevious}"
+                            MinimumWidthRequest="40"
+                            Padding="4"
+                            Style="{StaticResource ModeButtonStyle}"
+                            Text="‹"
+                            WidthRequest="40" />
+                        <Label
+                            MinimumWidthRequest="48"
+                            HorizontalTextAlignment="Center"
+                            Style="{StaticResource MutedLabelStyle}"
+                            Text="{Binding PageLabel}"
+                            VerticalTextAlignment="Center"
+                            WidthRequest="48" />
+                        <Button
+                            SemanticProperties.Description="Página siguiente"
+                            Command="{Binding NextPageCommand}"
+                            IsEnabled="{Binding CanGoNext}"
+                            MinimumWidthRequest="40"
+                            Padding="4"
+                            Style="{StaticResource ModeButtonStyle}"
+                            Text="›"
+                            WidthRequest="40" />
+                        <BoxView Margin="2,4" WidthRequest="1" Color="{StaticResource Outline}" />
+
+                        <Button
+                            SemanticProperties.Description="Alejar página"
+                            Command="{Binding ZoomOutCommand}"
+                            IsVisible="{Binding IsBookMode}"
+                            MinimumWidthRequest="40"
+                            Padding="4"
+                            Style="{StaticResource ModeButtonStyle}"
+                            Text="−"
+                            WidthRequest="40" />
+                        <Button
+                            SemanticProperties.Description="Restablecer zoom"
+                            Command="{Binding ResetZoomCommand}"
+                            IsVisible="{Binding IsBookMode}"
+                            MinimumWidthRequest="56"
+                            Padding="4"
+                            Style="{StaticResource ModeButtonStyle}"
+                            Text="{Binding ZoomLabel}"
+                            WidthRequest="56" />
+                        <Button
+                            SemanticProperties.Description="Acercar página"
+                            Command="{Binding ZoomInCommand}"
+                            IsVisible="{Binding IsBookMode}"
+                            MinimumWidthRequest="40"
+                            Padding="4"
+                            Style="{StaticResource ModeButtonStyle}"
+                            Text="+"
+                            WidthRequest="40" />
+
+                        <Button
+                            SemanticProperties.Description="Reducir texto"
+                            Command="{Binding DecreaseFontCommand}"
+                            IsVisible="{Binding IsMobileMode}"
+                            MinimumWidthRequest="40"
+                            Padding="4"
+                            Style="{StaticResource ModeButtonStyle}"
+                            Text="A−"
+                            WidthRequest="40" />
+                        <Button
+                            SemanticProperties.Description="Restablecer tamaño de texto"
+                            Command="{Binding ResetFontCommand}"
+                            IsVisible="{Binding IsMobileMode}"
+                            MinimumWidthRequest="56"
+                            Padding="4"
+                            Style="{StaticResource ModeButtonStyle}"
+                            Text="{Binding FontScaleLabel}"
+                            WidthRequest="56" />
+                        <Button
+                            SemanticProperties.Description="Ampliar texto"
+                            Command="{Binding IncreaseFontCommand}"
+                            IsVisible="{Binding IsMobileMode}"
+                            MinimumWidthRequest="40"
+                            Padding="4"
+                            Style="{StaticResource ModeButtonStyle}"
+                            Text="A+"
+                            WidthRequest="40" />
+                    </HorizontalStackLayout>
+                </ScrollView>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <HybridWebView
+                x:Name="ReaderWebView"
+                DefaultFile="index.html"
+                HybridRoot="wwwroot"
+                IsVisible="{Binding HasContent}"
+                RawMessageReceived="OnRawMessageReceived"
+                WebResourceRequested="OnWebResourceRequested" />
+
+            <VerticalStackLayout
+                Padding="32"
+                HorizontalOptions="Center"
+                IsVisible="{Binding IsBusy}"
+                Spacing="14"
+                VerticalOptions="Center">
+                <ActivityIndicator IsRunning="{Binding IsBusy}" />
+                <Label Style="{StaticResource MutedLabelStyle}" Text="Abriendo la copia local…" />
+            </VerticalStackLayout>
+
+            <Border
+                Margin="24"
+                Padding="24"
+                IsVisible="{Binding HasError}"
+                Style="{StaticResource CardStyle}"
+                VerticalOptions="Center">
+                <VerticalStackLayout Spacing="10">
+                    <Label Style="{StaticResource TitleLabelStyle}" Text="No se puede abrir el documento" />
+                    <Label Style="{StaticResource ErrorLabelStyle}" Text="{Binding ErrorMessage}" />
+                    <Button
+                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=Navigation.PopAsync}"
+                        IsVisible="False"
+                        Text="Volver" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border
+                Margin="16"
+                Padding="10,7"
+                BackgroundColor="#E6FFF4D8"
+                HorizontalOptions="Center"
+                InputTransparent="True"
+                IsVisible="{Binding HasRendererWarning}"
+                Stroke="{StaticResource Gold}"
+                VerticalOptions="End">
+                <Label Style="{StaticResource MutedLabelStyle}" Text="{Binding RendererWarning}" />
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="DndCompendium.App.Views.LibraryPage"
+    x:Name="LibraryPageRoot"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:DndCompendium.App.ViewModels"
+    xmlns:views="clr-namespace:DndCompendium.App.Views"
+    x:DataType="viewModels:LibraryViewModel"
+    Title="Biblioteca">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+        <Border
+            Grid.Row="0"
+            Margin="16,6,16,4"
+            Padding="10,4"
+            Style="{StaticResource HeroCardStyle}">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <Label
+                    Grid.Column="0"
+                    FontAttributes="Bold"
+                    FontSize="15"
+                    LineBreakMode="TailTruncation"
+                    MaxLines="1"
+                    Text="Tu biblioteca"
+                    TextColor="{StaticResource PaperLight}"
+                    VerticalTextAlignment="Center" />
+                <Button
+                    Grid.Column="1"
+                    Command="{Binding DownloadAllCommand}"
+                    FontSize="11"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                    MinimumHeightRequest="32"
+                    Padding="10,4"
+                    Style="{StaticResource SmallAccentButtonStyle}"
+                    Text="{Binding BulkDownloadText}"
+                    VerticalOptions="Center" />
+            </Grid>
+        </Border>
+
+        <SearchBar
+            Grid.Row="1"
+            Margin="16,4"
+            Placeholder="Buscar por título, categoría o descripción"
+            SearchCommand="{Binding RefreshCommand}"
+            Style="{StaticResource CompendiumSearchBarStyle}"
+            Text="{Binding SearchQuery}" />
+
+        <Grid Grid.Row="2" Margin="20,4,20,8" ColumnDefinitions="*,Auto">
+            <Label Style="{StaticResource SectionLabelStyle}" Text="{Binding ResultSummary}" />
+            <ActivityIndicator
+                Grid.Column="1"
+                HeightRequest="22"
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}"
+                WidthRequest="22" />
+        </Grid>
+
+        <Grid Grid.Row="3">
+            <RefreshView
+                Command="{Binding RefreshCommand}"
+                IsRefreshing="{Binding IsRefreshing}">
+                <CollectionView
+                    Margin="12,0"
+                    ItemsSource="{Binding Documents}"
+                    SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout
+                            Padding="32,64"
+                            HorizontalOptions="Center"
+                            Spacing="10">
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                Style="{StaticResource TitleLabelStyle}"
+                                Text="La estantería está vacía" />
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                Style="{StaticResource MutedLabelStyle}"
+                                Text="Actualizá la biblioteca o cambiá el término de búsqueda." />
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:LibraryDocumentItemViewModel">
+                            <Border Margin="4,4,4,10" Padding="16" Style="{StaticResource CardStyle}">
+                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="9">
+                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                        <VerticalStackLayout Spacing="3">
+                                            <Label Style="{StaticResource TitleLabelStyle}" Text="{Binding Title}" />
+                                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="{Binding CategoryText}" />
+                                        </VerticalStackLayout>
+                                        <Border
+                                            Grid.Column="1"
+                                            Padding="9,5"
+                                            Style="{StaticResource StatusPillStyle}">
+                                            <Label
+                                                FontSize="11"
+                                                Style="{StaticResource StatusLabelStyle}"
+                                                Text="{Binding StatusText}" />
+                                        </Border>
+                                    </Grid>
+
+                                    <Label
+                                        Grid.Row="1"
+                                        MaxLines="3"
+                                        Style="{StaticResource BodyLabelStyle}"
+                                        Text="{Binding Description}" />
+
+                                    <Grid
+                                        Grid.Row="2"
+                                        IsVisible="{Binding IsProgressVisible}"
+                                        RowDefinitions="Auto,Auto"
+                                        RowSpacing="4">
+                                        <ProgressBar Progress="{Binding Progress}" />
+                                        <Label
+                                            Grid.Row="1"
+                                            FontSize="11"
+                                            HorizontalOptions="End"
+                                            Style="{StaticResource MutedLabelStyle}"
+                                            Text="{Binding StatusText}" />
+                                    </Grid>
+
+                                    <Label
+                                        Grid.Row="3"
+                                        IsVisible="{Binding HasError}"
+                                        Style="{StaticResource ErrorLabelStyle}"
+                                        Text="{Binding ErrorMessage}" />
+
+                                    <Grid Grid.Row="4" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <Label
+                                            VerticalOptions="Center"
+                                            Style="{StaticResource MutedLabelStyle}"
+                                            Text="{Binding SizeText}" />
+                                        <HorizontalStackLayout
+                                            Grid.Column="2"
+                                            HorizontalOptions="End"
+                                            Spacing="8">
+                                            <Button
+                                                Command="{Binding BindingContext.ReadCommand, Source={RelativeSource AncestorType={x:Type views:LibraryPage}}}"
+                                                CommandParameter="{Binding .}"
+                                                IsVisible="{Binding CanRead}"
+                                                Style="{StaticResource SmallAccentButtonStyle}"
+                                                Text="Leer" />
+                                            <Button
+                                                Command="{Binding BindingContext.DownloadCommand, Source={RelativeSource AncestorType={x:Type views:LibraryPage}}}"
+                                                CommandParameter="{Binding .}"
+                                                IsVisible="{Binding CanDownload}"
+                                                Style="{StaticResource SmallSecondaryButtonStyle}"
+                                                Text="{Binding DownloadActionText}" />
+                                            <Button
+                                                Command="{Binding BindingContext.DeleteCommand, Source={RelativeSource AncestorType={x:Type views:LibraryPage}}}"
+                                                CommandParameter="{Binding .}"
+                                                IsVisible="{Binding CanDelete}"
+                                                Style="{StaticResource SmallGhostButtonStyle}"
+                                                Text="Eliminar" />
+                                        </HorizontalStackLayout>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+
+            <Border
+                Margin="16,0,16,14"
+                Padding="12,9"
+                BackgroundColor="{StaticResource ErrorSurface}"
+                IsVisible="{Binding HasError}"
+                Stroke="{StaticResource Error}"
+                VerticalOptions="End">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Label Style="{StaticResource ErrorLabelStyle}" Text="{Binding ErrorMessage}" />
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>

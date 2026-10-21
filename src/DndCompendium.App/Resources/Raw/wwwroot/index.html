@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' data: blob:; connect-src 'none'; child-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+  />
+  <meta name="color-scheme" content="light" />
+  <title>Lector offline</title>
+  <link rel="stylesheet" href="themes/V3/Blank/style.css" />
+  <link id="document-theme" rel="stylesheet" href="themes/V3/5ePHB/style.css" />
+  <link rel="stylesheet" href="css/reader.css" />
+  <script defer="defer" src="_framework/hybridwebview.js"></script>
+  <script defer="defer" src="vendor/hbfm-dependencies.min.js"></script>
+  <script defer="defer" src="vendor/marked-hbfm.umd.js"></script>
+  <script defer="defer" src="js/reader.js"></script>
+</head>
+<body>
+  <div id="reader-app" class="readerShell mode-book" data-reader-state="booting">
+    <header class="visuallyHidden">
+      <h1 id="reader-title">Lector offline de D&amp;D Compendium</h1>
+    </header>
+    <div id="reader-status" class="readerStatus" role="status" aria-live="polite">
+      Preparando el lector offline…
+    </div>
+    <main
+      id="document-root"
+      class="documentRoot"
+      aria-labelledby="reader-title"
+      tabindex="-1"
+    ></main>
+    <noscript>
+      <p class="readerError">Este lector necesita JavaScript local para interpretar HBFM.</p>
+    </noscript>
+  </div>
+</body>
+</html>

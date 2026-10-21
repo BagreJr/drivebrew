@@ -1,0 +1,12 @@
+{
+  "versionCode": 6,
+  "versionName": "1.5",
+  "packageId": "com.march.dndcompendium",
+  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.5/DndCompendium.apk",
+  "sha256": "REPLACE_WITH_64_CHARACTER_SHA256",
+  "releaseNotes": "Describe the stable changes in this release.",
+  "publishedAt": "2026-01-01T00:00:00Z",
+  "minimumAndroidApi": 21,
+  "channel": "stable",
+  "isPrerelease": false
+}

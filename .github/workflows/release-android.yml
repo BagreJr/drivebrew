@@ -1,0 +1,125 @@
+name: Publish stable Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Stable release tag, for example v1.5
+        required: true
+        type: string
+      version_name:
+        description: Android versionName, for example 1.5
+        required: true
+        type: string
+      version_code:
+        description: Android versionCode; must be greater than every published build
+        required: true
+        type: number
+      release_notes:
+        description: Notes shown inside D&D Compendium
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    environment: android-production
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: microsoft
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android and MAUI workloads
+        shell: pwsh
+        run: |
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          dotnet workload install maui-android
+
+      - name: Restore signing keystore
+        shell: pwsh
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:KEYSTORE_BASE64)) { throw "ANDROID_KEYSTORE_BASE64 is not configured." }
+          [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\dnd-release.keystore", [Convert]::FromBase64String($env:KEYSTORE_BASE64))
+
+      - name: Test
+        shell: pwsh
+        run: |
+          dotnet test tests/DndCompendium.Core.Tests/DndCompendium.Core.Tests.csproj -c Release
+          dotnet test tests/DndCompendium.Infrastructure.Tests/DndCompendium.Infrastructure.Tests.csproj -c Release
+
+      - name: Build signed APK
+        shell: pwsh
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          VERSION_NAME: ${{ inputs.version_name }}
+          VERSION_CODE: ${{ inputs.version_code }}
+          UPDATE_MANIFEST_URL: https://github.com/${{ github.repository }}/releases/latest/download/app-update.json
+        run: |
+          dotnet publish src/DndCompendium.App/DndCompendium.App.csproj `
+            -f net10.0-android -c Release `
+            -p:ApplicationDisplayVersion="$env:VERSION_NAME" `
+            -p:ApplicationVersion="$env:VERSION_CODE" `
+            -p:AppUpdateManifestUrl="$env:UPDATE_MANIFEST_URL" `
+            -p:AndroidPackageFormat=apk `
+            -p:AndroidKeyStore=true `
+            -p:AndroidSigningKeyStore="$env:RUNNER_TEMP\dnd-release.keystore" `
+            -p:AndroidSigningStorePass="$env:KEYSTORE_PASSWORD" `
+            -p:AndroidSigningKeyAlias="$env:KEY_ALIAS" `
+            -p:AndroidSigningKeyPass="$env:KEY_PASSWORD"
+          $apk = Get-ChildItem src/DndCompendium.App/bin/Release/net10.0-android -Filter '*-Signed.apk' -Recurse | Select-Object -First 1
+          if (-not $apk) { throw "The signed APK was not generated." }
+          Copy-Item -LiteralPath $apk.FullName -Destination DndCompendium.apk
+
+      - name: Generate update manifest
+        shell: pwsh
+        env:
+          VERSION_NAME: ${{ inputs.version_name }}
+          VERSION_CODE: ${{ inputs.version_code }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          $sha = (Get-FileHash DndCompendium.apk -Algorithm SHA256).Hash.ToLowerInvariant()
+          $manifest = [ordered]@{
+            versionCode = [int]$env:VERSION_CODE
+            versionName = $env:VERSION_NAME
+            packageId = "com.march.dndcompendium"
+            apkUrl = "https://github.com/$env:REPOSITORY/releases/download/$env:RELEASE_TAG/DndCompendium.apk"
+            sha256 = $sha
+            releaseNotes = $env:RELEASE_NOTES
+            publishedAt = (Get-Date).ToUniversalTime().ToString("O")
+            minimumAndroidApi = 21
+            channel = "stable"
+            isPrerelease = $false
+          }
+          $manifest | ConvertTo-Json -Depth 4 | Set-Content -Encoding utf8NoBOM app-update.json
+          $env:RELEASE_NOTES | Set-Content -Encoding utf8NoBOM release-notes.md
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          VERSION_NAME: ${{ inputs.version_name }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          gh release create $env:RELEASE_TAG DndCompendium.apk app-update.json `
+            --title "D&D Compendium $env:VERSION_NAME" `
+            --notes-file release-notes.md `
+            --target $env:TARGET_SHA

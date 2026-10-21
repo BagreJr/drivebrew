@@ -1,0 +1,102 @@
+# Estado de pruebas — Fase 2
+
+Este archivo distingue lo ejecutado de lo pendiente. Compilar no equivale a
+aprobar una prueba de dispositivo.
+
+## Automatización ejecutada
+
+| Verificación | Resultado |
+|---|---|
+| `DndCompendium.Core.Tests` | 25/25 aprobadas |
+| `DndCompendium.Infrastructure.Tests` | 55/55 aprobadas |
+| Smart Search: mayúsculas, tildes, puntuación y aliases | Aprobada |
+| Smart Search: full-text real (`Dexterity Saving Throw` → Acid Splash) | Aprobada con `artifacts/spells.json` (814 spells) |
+| Smart Search: Class Feature/Subclass Feature | Aprobada con Wizard, Alchemist, Magus y Psion |
+| Smart Search: Exploit real (`Defensive Stance`) | Aprobada con `artifacts/exploit.json` (264 entradas) |
+| Smart Search: frase, todas las palabras, parcial, typo y ranking | Aprobada; consultas múltiples no aceptan una sola palabra aislada |
+| Smart Search: filtros combinados y deduplicación | Aprobada |
+| Smart Search: actualización incremental y perfiles | Aprobada; altas/bajas no cambian personaje ni favoritos |
+| Actualizador APK: detección, versión superior y canal estable | Aprobada; compara `versionCode`, no texto |
+| Actualizador APK: descarga, progreso, SHA-256 y cancelación | Aprobada; elimina archivos parciales |
+| Actualizador APK: paquete, firma, API mínima y downgrade | Aprobada; rechaza candidatos incompatibles |
+| Actualizador APK: servidor caído/offline | Aprobada; no altera la copia local |
+| Actualizador APK: postergación del aviso | Aprobada; no repite la misma versión antes de 24 h y avisa de inmediato una versión distinta |
+| Actualizador APK: transporte y manifiesto hostil | Aprobada; rechaza HTTP inicial/final y paquetes ajenos |
+| Workflow de GitHub Releases | YAML validado; ejecución remota pendiente hasta crear/conectar el repositorio |
+| Catálogo Drive | 35 clases + 7 suplementos; 42/42 TXT descargados en el dispositivo |
+| `spells.json` de Drive | 814/814 filas cargadas; caché y preparado persistentes aprobados |
+| `exploit.json` de Drive | 264/264 filas cargadas; caché, cuatro tipos y clases inferidas aprobados |
+| Favoritos de Spells | Escritura, reapertura offline y listado persistente aprobados |
+| Detección de actualización por versión remota | Aprobada; conserva la copia local validada |
+| Persistencia/reapertura de TXT y SQLite | Aprobada |
+| Staging, checksum, reemplazo atómico y rutas hostiles | Aprobada |
+| Búsqueda local sin fuente remota | Aprobada |
+| Pausa, reanudación, cancelación y reintento | Aprobada |
+| Descargar todo: continúa tras fallo y prioriza todos los TXT | Aprobada |
+| Recursos externos fallidos: aislamiento y espera antes del reintento | Aprobada; una segunda descarga termina sin bucle |
+| Extracción de imágenes, fuentes y estilos | Aprobada |
+| Manifiesto y recursos persistentes tras reinicio | Aprobada |
+| Fallo parcial: conserva recursos válidos y marca faltantes | Aprobada |
+| Bloqueo de red privada/redirección SSRF y validación MIME | Aprobada |
+| Verificador HBFM | 162 páginas reales aprobadas |
+| Regresión visual Chromium | 3/3 documentos aprobados |
+| Vista móvil de 390 px: ancho, imágenes y posicionamiento | Aprobada en 162 páginas reales |
+| Metadata, CSS, tema 5ePHB, tablas y bloques | Aprobada |
+| Tipografía móvil de tablas, espaciado y números tabulares | Aprobada |
+| Portadas desde recursos blob offline | Aprobada |
+| Enlaces internos, navegación, zoom y modo móvil | Aprobada |
+| Hoja CSS externa almacenada y aplicada sin red | Aprobada |
+| Solicitudes de red durante render visual | 0 |
+| Compilación Android Debug | Aprobada; 0 errores, 0 advertencias |
+| Compilación compartida iOS Simulator | Aprobada; 0 errores, 0 advertencias |
+| APK autónomo (sin Fast Deployment) | Instalación y arranque aprobados |
+| Mensajes HybridWebView en hilo principal | Lector estable; sin crash nativo/administrado |
+
+Resultado .NET total: **80 aprobadas, 0 fallidas, 0 omitidas**.
+
+El corpus es el descargado del Drive suministrado por el propietario. Los hashes
+y los IDs de archivo se documentan en
+[`test-data/homebrewery-real/PROVENANCE.md`](../test-data/homebrewery-real/PROVENANCE.md).
+
+## Matriz de dispositivo
+
+| Caso | Android | iOS | Observación |
+|---|---|---|---|
+| Instalar y abrir biblioteca/Backgrounds | Aprobado | Pendiente | TECNO SPARK 30 Pro, Android 14; iOS exige Mac |
+| Abrir sin Wi-Fi ni datos móviles | Aprobado | Pendiente | Wizard abrió 56 páginas con recursos offline |
+| Reemplazar APK, reabrir y conservar la copia local | Aprobado | Pendiente | Wizard permaneció disponible tras varias reinstalaciones `-r` |
+| Actualizar APK 1.1/código 2 a 1.3/código 4 | Aprobado | No aplica | Misma fecha de primera instalación; 42 TXT, 484 recursos, perfiles, favoritos y preparados presentes |
+| Comprobación periódica de nueva APK | Aprobado | No aplica | `JobScheduler` registrado y en estado `waiting` con requisito de red |
+| Comparar páginas, tablas, imágenes y TOC | WebView y Chromium aprobados | Pendiente | Backgrounds renderizó 83 páginas en Android |
+| Navegación entre páginas | Aprobado | Pendiente | Wizard: cambio comprobado de 1/56 a 2/56 |
+| Tamaño de texto y controles compactos | Aprobado | Pendiente | 100 % → 110 %; todos los controles visibles a 360 px |
+| Gestos, zoom y rotación | Parcial | Pendiente | Zoom y navegación aprobados; rotación manual pendiente |
+| Descargar recursos remotos desde red real | Aprobado | Pendiente | Wizard quedó “Offline completo” |
+| Descargar todo el catálogo | Aprobado | Pendiente | 42/42 TXT, `spells.json` y `exploit.json`; repetición completada sin quedar bloqueada por enlaces caídos |
+| Filtros, orden y preparados de spells | Aprobado | Pendiente | Nivel, concentración, ritual, Z–A, detalle y persistencia comprobados por ADB |
+| Favoritos de spells | Aprobado | Pendiente | Abduct marcado, persistido y mostrado en Favoritos por ADB |
+| Filtros y detalle de Exploits | Aprobado | Pendiente | Clase, tipo, nivel, Z–A y ficha completa comprobados por ADB |
+| Instalar Smart Search 1.4/código 5 preservando datos | Aprobado | No aplica | Primera instalación conservada; 42 TXT y JSON siguen presentes |
+| Actualizar 1.4/código 5 a 1.5/código 6 | Aprobado | No aplica | `adb install -r` aceptó la misma firma y package ID; `firstInstallTime` permaneció en 18/10/2026 y la app abrió sin excepción fatal |
+| Smart Search visual y navegación desde resultado | Pendiente por bloqueo de pantalla | Pendiente | El teléfono conectado exige huella/patrón; navegación y ancla están cubiertas por código/pruebas |
+| Compilar/firmar paquete | APK Debug aprobado | Pendiente | El código iOS y `ios-arm64` compilan; la IPA se detiene por ausencia de firma Apple/Xcode |
+
+La APK más reciente, con actualizador instalable, catálogo Drive, spells,
+descarga masiva en dos fases, tablas adaptadas y reflujo móvil, compiló sin
+errores y se instaló por USB el 21 de octubre de 2026. La variante Release
+conservó la fecha de instalación original, abrió con los 42 documentos y no
+produjo ninguna excepción fatal. En Wizard completo (56 páginas),
+la inspección del DOM en Android obtuvo 0 superposiciones, 0 medios fuera del
+ancho, 0 elementos posicionados y ancho de documento igual al viewport.
+El APK final 1.5/código 6 se instaló por USB sobre 1.4/código 5 y tiene SHA-256
+`B32CF9DBFEC6D95467008378A71E9639C557EB5165A6683ED132EC0395D30DDE`.
+
+## Limitaciones del equipo
+
+- Android Studio aporta SDK Platform 36 y ADB.
+- El dispositivo Android se conectó y probó mediante depuración USB.
+- La CPU soporta virtualización, pero el firmware informa
+  `VirtualizationFirmwareEnabled=False`; no se puede ejecutar un emulador
+  acelerado hasta habilitar AMD-V/SVM en BIOS/UEFI.
+- iOS conserva configuración arm64 para iPhone/iPad y el mismo código MAUI,
+  pero necesita un Mac con Xcode, simulador/dispositivo y firma de Apple.

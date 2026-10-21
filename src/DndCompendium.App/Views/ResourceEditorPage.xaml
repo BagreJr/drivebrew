@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="DndCompendium.App.Views.ResourceEditorPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:DndCompendium.App.ViewModels"
+    x:DataType="viewModels:ResourceEditorViewModel"
+    Title="Configurar recurso">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,12,16,30" Spacing="12">
+            <Border Padding="14" Style="{StaticResource HeroCardStyle}">
+                <VerticalStackLayout Spacing="3">
+                    <Label FontAttributes="Bold" FontSize="20" Text="Configurar recurso" TextColor="{StaticResource PaperLight}" />
+                    <Label Style="{StaticResource MutedLabelStyle}" Text="Las cantidades y recuperaciones son siempre elegidas por vos." />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Style="{StaticResource SectionLabelStyle}" Text="Tipo" />
+            <Picker ItemsSource="{Binding KindOptions}" SelectedItem="{Binding SelectedKind}" Style="{StaticResource CompactPickerStyle}" />
+
+            <VerticalStackLayout IsVisible="{Binding IsSlot}" Spacing="5">
+                <Label Style="{StaticResource SectionLabelStyle}" Text="Nivel del slot (1–9)" />
+                <Entry Keyboard="Numeric" MaxLength="1" Placeholder="1" Text="{Binding LevelText}" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout IsVisible="{Binding IsSlot, Converter={StaticResource InvertedBoolConverter}}" Spacing="5">
+                <Label Style="{StaticResource SectionLabelStyle}" Text="Nombre" />
+                <Entry MaxLength="80" Placeholder="Ej.: Exploit Dice" Text="{Binding Name}" />
+            </VerticalStackLayout>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <VerticalStackLayout Spacing="5">
+                    <Label Style="{StaticResource SectionLabelStyle}" Text="Máximo" />
+                    <Entry Keyboard="Numeric" MaxLength="4" Text="{Binding MaximumText}" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1" Spacing="5">
+                    <Label Style="{StaticResource SectionLabelStyle}" Text="Actual" />
+                    <Entry Keyboard="Numeric" MaxLength="4" Text="{Binding CurrentText}" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <Label Style="{StaticResource SectionLabelStyle}" Text="Unidad opcional" />
+            <Entry MaxLength="30" Placeholder="puntos, dados, usos…" Text="{Binding Unit}" />
+            <Label Style="{StaticResource SectionLabelStyle}" Text="Descripción opcional" />
+            <Editor AutoSize="TextChanges" MaxLength="500" MinimumHeightRequest="80" Text="{Binding Description}" />
+
+            <Label Style="{StaticResource SectionLabelStyle}" Text="Recuperación" />
+            <Picker ItemsSource="{Binding RecoveryOptions}" SelectedItem="{Binding SelectedRecovery}" Style="{StaticResource CompactPickerStyle}" />
+            <Label Style="{StaticResource SectionLabelStyle}" Text="Cantidad recuperada" />
+            <Entry Keyboard="Numeric" MaxLength="4" Placeholder="Vacío = recuperar hasta el máximo" Text="{Binding RecoveryAmountText}" />
+
+            <Label IsVisible="{Binding HasError}" Style="{StaticResource ErrorLabelStyle}" Text="{Binding ErrorMessage}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <Button Command="{Binding SaveCommand}" Style="{StaticResource AccentButtonStyle}" Text="Guardar recurso" />
+            <Button Clicked="OnDeleteClicked" IsVisible="{Binding IsEditing}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Eliminar recurso" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

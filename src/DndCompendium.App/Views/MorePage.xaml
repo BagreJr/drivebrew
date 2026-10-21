@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="DndCompendium.App.Views.MorePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="">
+
+    <Grid RowDefinitions="Auto,*">
+        <ScrollView
+            Grid.Row="0"
+            Margin="10,6,10,4"
+            HorizontalScrollBarVisibility="Never"
+            Orientation="Horizontal">
+            <HorizontalStackLayout Spacing="7">
+                <Button x:Name="CharactersTab" Clicked="OnCharactersClicked" Style="{StaticResource SmallAccentButtonStyle}" Text="Personajes" />
+                <Button x:Name="ResourcesTab" Clicked="OnResourcesClicked" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Resources" />
+                <Button x:Name="RulesTab" Clicked="OnRulesClicked" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Reglas" />
+                <Button x:Name="PreparedTab" Clicked="OnPreparedClicked" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Preparados" />
+                <Button x:Name="FavoritesTab" Clicked="OnFavoritesClicked" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Favoritos" />
+                <Button x:Name="DownloadsTab" Clicked="OnDownloadsClicked" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Descargas" />
+                <Button x:Name="SettingsTab" Clicked="OnSettingsClicked" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Configuración" />
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <ContentView x:Name="SectionHost" Grid.Row="1" />
+    </Grid>
+</ContentPage>

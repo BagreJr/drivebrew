@@ -1,0 +1,2447 @@
+```metadata
+title: Magus
+description: ''
+tags: []
+renderer: V3
+theme: 5ePHB
+bleedSize: {}
+safetySpace: {}
+trimSize: {}
+
+```
+
+```css
+.page{
+	width  : 210mm;
+	height : 296.3mm;
+}
+
+css
+
+.page .columnWrapper {
+	height: 100%
+}
+
+.page .toc.wide {
+	columns: 1;
+	height: 100%;
+}
+
+.page .toc > ul > li {
+	font-weight:100;
+	margin-bottom:-2.1px;
+
+}
+
+.page .toc ul ul {
+	margin-left: 0;
+	font-weight: 50;
+	color: black;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+{{frontCover}}
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+# Magus
+![background image](https://i.imgur.com/ov0LfAA.jpg){position:absolute,bottom:0,left:0,height:110%}
+
+\page
+{{toc,wide
+  - ### [{{ Magus}}{{ 3}}](#p3)
+    -  [{{ Sword & Spell}}{{ 3}}](#p3)
+    -  [{{ Secret Orders}}{{ 3}}](#p3)
+    - ###  [{{ Creating Your Magus}}{{ 3}}](#p3)
+    -  [{{ Arcane Armory}}{{ 5}}](#p5)
+    -  [{{ Fighting Style}}{{ 5}}](#p5)
+    -  [{{ Spellcasting}}{{ 6}}](#p6)
+    -  [{{ Spellstrike}}{{ 6}}](#p6)
+    -  [{{ Arcane Regeneration}}{{ 7}}](#p7)
+    -  [{{ Esoteric Order}}{{ 7}}](#p7)
+    -  [{{ Ability Score Improvement}}{{ 7}}](#p7)
+    -  [{{ Extra Attack}}{{ 7}}](#p7)
+    -  [{{ Spellsight}}{{ 7}}](#p7)
+    -  [{{ Ethereal Jaunt}}{{ 7}}](#p7)
+    -  [{{ Spellsunder}}{{ 7}}](#p7)
+    -  [{{ Mystical Ward}}{{ 7}}](#p7)
+    -  [{{ Arcane Conservation}}{{ 7}}](#p7)
+    -  [{{ Prismatic Strikes}}{{ 7}}](#p7)
+    -  [{{ Superior Spellsunder}}{{ 7}}](#p7)
+  - ### [{{ Esoteric Orders}}{{ 8}}](#p8)
+    -  [{{ Order of Adamant}}{{ 8}}](#p8)
+    -  [{{ Order of Aether Blade}}{{ 9}}](#p9)
+    -  [{{ Orders of Animists}}{{ 10}}](#p10)
+    -  [{{ Order of Arcanists}}{{ 11}}](#p11)
+    -  [{{ Order of Arcane Archers}}{{ 12}}](#p12)
+    -  [{{ Order of Armorers}}{{ 13}}](#p13)
+    -  [{{ Order of Astrologers}}{{ 14}}](#p14)
+    -  [{{ Order of the Aurora}}{{ 15}}](#p15)
+    -  [{{ Order of Blades}}{{ 16}}](#p16)
+    -  [{{ Order of Blade Dancers}}{{ 17}}](#p17)
+    -  [{{ Order of Chromatic Knights}}{{ 18}}](#p18)
+    -  [{{ Order of Cold Iron}}{{ 19}}](#p19)
+    -  [{{ Order of Conduits}}{{ 20}}](#p20)
+    -  [{{ Order of the Dawn}}{{ 21}}](#p21)
+    -  [{{ Order of the Earthshaker}}{{ 22}}](#p22)
+    -  [{{ Order of Evolution}}{{ 23}}](#p23)
+    -  [{{ Order of Gateways}}{{ 24}}](#p24)
+    -  [{{ Order of Hexblades}}{{ 25}}](#p25)
+    -  [{{ Order of Hexshots}}{{ 26}}](#p26)
+    -  [{{ Order of the Occultism}}{{ 27}}](#p27)
+    -  [{{ Order of Runecarvers}}{{ 28}}](#p28)
+    -  [{{ Order of Scales}}{{ 30}}](#p30)
+    -  [{{ Order of the Serpent Bearer}}{{ 32}}](#p32)
+    -  [{{ Order of Spellslinger}}{{ 33}}](#p33)
+    -  [{{ Order of Spellswords}}{{ 34}}](#p34)
+    -  [{{ Order of Sentinels}}{{ 35}}](#p35)
+    -  [{{ Order of Spellbreakers}}{{ 36}}](#p36)
+    -  [{{ Order of the Torch}}{{ 37}}](#p37)
+    -  [{{ Order of Travelers}}{{ 38}}](#p38)
+    -  [{{ Order of Voyager}}{{ 39}}](#p39)
+}}
+
+
+
+
+\page
+## Magus
+As the swordsman made his way
+through the busy marketplace, his
+eyes flashed with green for a moment.
+He could see the unmistakable aura of
+arcane magic surrounding the humble
+dwarf shopping for wares. He had found
+his target. As the warrior drew his blade,
+what had appeared to be a dwarf mere
+peasant seconds before reverting to its
+true form. As the demon lunged forward,
+the swordsman met claw with his blade.
+
+The assassin watched as the Duke walked
+the streets with a single guard at his side. As
+the would-be assassin's blade darted toward
+the Duke's exposed neck, glee turned to fear as
+the armored guard appeared where the Duke had
+been moments before. Before the killer could react,
+a blade of emerald flame had pierced his chest.
+
+The halfling knelt before the three hooded figures that stood before her. She had spent nearly two years of her life searching for a member of this secret order, and now she had found three. Consumed by sorrow after her father's death
+at the hands of a wicked sorcerer, the young halfling swore she would do whatever it took to gain the power to exact her revenge. Now that the moment was at hand, she swore fealty to the secretive order, offering up her life in return for power.
+
+All three of the warriors described above are Magi, users of sword and spell, weaving both together in a deadly dance.
+
+### Sword & Spell
+Known by many names throughout the multiverse, those who are able to wield both sword and spell are collectively known as Magi. Rather than dedicate their lives to studying arcane magic or mastering martial techniques, Magi are dedicated
+to a middle path. Though they may never command the earth-shattering magic of an archmage, or go toe to toe with a true master of the blade, a Magus is able to master a unique form of arcane combat only used by the members of their Order.
+
+Their unique style of magic allows them to channel potent spells through their weapon strikes, sense the presence of arcane magic in the world around them, and blunt the force of even the most powerful spells with their signature Aegis.
+
+\column
+
+### Secret Orders
+The magic of the Magi is not something everyone can learn. Over time, these arcane warriors have organized themselves into clandestine societies, content to operate in the shadows. Potential Magi are often identified from a young age and are inducted into an Order only after they have proven their skill and dedication. While some Orders are more secretive than others, nearly every Order of Magi is thought to be nothing more than legend and myths to most of the common folk.
+
+As Magi rise through the ranks of their secret society, they are expected to infiltrate and form relationships with those who wield power. They often set themselves up as personal advisors, guards, and consorts to influential nobles, powerful archmages, and wealthy merchants. Though Magi may form
+    relationships, their primary loyalty remains in their Order.
+
+### Creating Your Magus
+Those who pursue life as a Magus often give up everything in order to be accepted and trained by a master. What motivates your Magus? Have you always had an unquenchable thirst for knowledge and skill? Was one of your loved ones slain by an evil mage, setting you on the path of revenge, no matter the personal cost? Or, do you simply desire to increase your skill with both sword and sorcery in tandem with one another?
+
+Also, decide where you acquired your training as a Magi. Are you an initiate in a secret society of arcane warriors? Or, were you trained in secret by a renegade member of an order of powerful magi who work to control the world? Maybe you were raised from birth so as to perfectly develop your talent in the art of war alongside your arcane potential.
+
+#### Quick Build
+You can make a Magus quickly by using these suggestions. First, depending on the weapons you wish to use, make your Strength (heavy or melee weapons) or your Dexterity (ranged weapons or dual wielding) your highest ability score, followed by your Intelligence. Second, choose the Sage background.
+
+{{imageMaskEdge1,--offset:35%,--rotation:0
+  ![](https://www.gmbinder.com/images/A5pte0y.jpg){height:40%,top:800px}
+}}
+<!-- Use --offset to shift the mask away from page center (can use cm instead of %)
+     Use --rotation to set rotation angle in degrees. -->
+
+
+
+{{pageNumber,auto}}
+\page
+
+{{classTable,frame,decoration,wide
+##### The Magus
+| Level | Proficiency | Features     |Cantrips| Spells |--- Spell Slots Per Spell Level ---|||||
+|      ^| Bonus      ^|             ^|Know| Known ^|  1st  |  2nd  |  3rd  |  4th  |  5th  |
+|:-----:|:-----------:|:-------------|:-:|:------:|:-----:|:-----:|:-----:|:-----:|:-----:|
+|  1st  | +2 | Arcane Armory, Fighting Style|— |  —    |   —   |   —   |   —   |   —   |   —   |
+|  2nd  | +2 | Spellcasting, Spellstrike   |2 |  2    |   2   |   —   |   —   |   —   |   —   |
+|  3rd  | +2 | Arcane Regeneration, Esoteric Order|2 |  3    |   3   |   —   |   —   |   —   |   —   |
+|  4th  | +2 | Ability Score Improvement  |3 |  3    |   3   |   —   |   —   |   —   |   —   |
+|  5th  | +3 | Extra Attack, Spellsight  |3 |  4    |   4   |   2   |   —   |   —   |   —   |
+|  6th  | +3 | Ethereal Jaunt |3|  4    |   4   |   2   |   —   |   —   |   —   |
+|  7th  | +3 | Esoteric Order Feature  |3|  5    |   4   |   3   |   —   |   —   |   —   |
+|  8th  | +3 | Ability Score Improvement|3|  5    |   4   |   3   |   —   |   —   |   —   |
+|  9th  | +4 | Spellsunder |3|  6    |   4   |   3   |   2   |   —   |   —   |
+| 10th  | +4 | Mystical Ward |4|  6    |   4   |   3   |   2   |   —   |   —   |
+| 11th  | +4 | Arcane Conservation, Prismatic Strikes |4|  7    |   4   |   3   |   3   |   —   |   —   |
+| 12th  | +4 | Ability Score Improvement     |4|  7    |   4   |   3   |   3   |   —   |   —   |
+| 13th  | +5 | ─ |4|  8    |   4   |   3   |   3   |   1   |   —   |
+| 14th  | +5 | Superior Spellsunder|4|  8    |   4   |   3   |   3   |   1   |   —   |
+| 15th  | +5 | Esoteric Order Feature |4|  9    |   4   |   3   |   3   |   2   |   —   |
+| 16th  | +5 | Ability Score Improvement     |4|  9    |   4   |   3   |   3   |   2   |   —   |
+| 17th  | +6 | —    |4|  10   |   4   |   3   |   3   |   3   |   1   |
+| 18th  | +6 | Improved Arcane Conservation|4|  10   |   4   |   3   |   3   |   3   |   1   |
+| 19th  | +6 | Ability Score Improvement   |4|  11   |   4   |   3   |   3   |   3   |   2   |
+| 20th  | +6 | Esoteric Order Feature |4|  11   |   4   |   3   |   3   |   3   |   2   |
+}}
+
+
+
+#### Hit Points
+**Hit Dice:**                    :: 1d10 per magus level
+**Hit Points at 1st Level:**     :: 10 + your Constitution modifier
+**Hit Points at Higher Levels:** :: 1d10 (or 6) + your Constitution modifier per magus level after 1st
+
+#### Proficiencies
+**Armor:**   :: Light armor, medium armor, shields
+**Weapons:** :: Simple weapons, martial weapons
+**Tools:**   :: None
+
+**Saving Throws:** :: Constitution, Intelligence
+**Skills:**        :: Choose two of the following: Acrobatics, Arcana, Athletics, History, Investigation, Nature, Performance.
+
+#### Equipment
+As a Magus, you start with the following equipment, inaddition to the equipment granted by your background:
+- (a) martial weapon and shield or (b) two martial weapons
+- (a) scale mail or (b) leather armor
+- (a) a light crossbow and 20 bolts or (b) five javelins
+- (a) a dungeoneer’s pack or (b) an explorer’s pack
+
+
+{{imageMaskEdge5,--offset:5%,--rotation:270
+![](https://i.imgur.com/oAzBd4l.png){height:100%,left:50px,bottom:-1px}
+}}
+
+
+![homebrew mug](http://i.imgur.com/UmE6eIx.png) {position:absolute,top:590px,right:-60px,width:550px}
+
+
+
+{{artist,position:relative,top:40px,left:220px
+##### Atlas Dynamite
+}}
+
+{{pageNumber,auto}}
+\page
+
+### Arcane Armory
+At 1st level, you learn the signature enchantment of the Magi, marking you as a member of their ranks. Over the course of 1 hour, which can be during a short or long rest, you can touch one melee weapon, shield, or set of armor to perform a ritual adding the item to your Arcane Armory. Your Arcane Armory is an extradimensional space that only its Magus can access.
+
+Objects in your Arcane Armory gain the following benefits:
+
+- They count as magical weapons, shields, or sets of armor.
+- You can use your Intelligence, in place of Dexterity, when calculating Armor Class in this light and medium armor.
+- As a bonus action, you can shunt or summon any number of objects of your choice from within your Arcane Armory, instantly equipping, donning, or doffing those items.
+
+Your Arcane Armory can hold a total number of objects equal to 1 + your Intelligence modifier (a minimum of 1) at one time, but one of those objects must always be a weapon. If you perform this ritual on another object while the Armory is at its maximum, one object of your choice is removed.
+
+{{note
+##### Arcane Armory & Antimagic Effects
+The effects of the antimagic field spell, and other similar effects, suppress the effects of your Arcane Armory while you are within the area of anitmagic. These benefits return when you leave the area.
+}}
+
+
+### Fighting Style
+At 1st level, you adopt a Fighting Style that best reflects your training. You cannot select a Fighting Style more than once, even if a feature allows you to select another Fighting Style.
+
+Whenever you gain a level in this class, you can switch your Fighting Style for another Fighting Style of your choice.
+
+
+#### Arcane Warrior
+You learn two cantrips of your choice from the Wizard spell list. They count as Magus spells for you, but they don't count against your total number of Spells Known. When you gain alevel in this class, you can replace one of these cantrips with another cantrip of your choice from the Wizard spell list.
+Arcane Warrior
+You learn two cantrips of your choice from the Wizard spell list, and Intelligence is your Spellcasting modifier for them.
+
+At 2nd level, they become Magus spells for you, but they don't count against your total number of Cantrips Known.
+
+#### Archery
+You gain a +2 bonus to attack rolls with ranged weapons.
+
+#### Brawler
+Your unarmed strikes deal bludgeoning damage equal to 1d6 + your Strength modifier on hit. If you have two free hands and use your action to make only unarmed strikes you can make a single unarmed strike as a bonus action on that turn.
+
+#### Classical Swordplay
+While wielding a finesse weapon and no other weapons, you gain a +2 bonus to weapon attack rolls and a +1 to Armor Class so long as you are not using heavy armor or a shield.
+
+#### Defensive Fighting
+While you are wearing armor or wielding a shield, you gain a +1 bonus to your Armor Class.
+
+#### Dual Wielding
+When you take the Attack action while two-weapon fighting, you can make a single additional attack with your off-hand weapon as part of your action instead of your bonus action, adding your ability modifier to the damage of this attack.
+
+#### Dueling
+When wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to weapon damage rolls.
+#### Featherweight Fighting
+While you are unarmed or wielding only light weapons, and are not wearing medium or heavy armor, your walking speed increases by 10 feet, and you gain a +1 bonus to your damage rolls with light melee weapons and unarmed strikes.
+
+#### Heavyweight Fighting
+You can use your weight, and the weight of your weapon,
+to land devastating blows. While you are wielding a heavy weapon, you gain a +1 bonus to damage rolls and you have advantage on Strength (Athletics) checks made to Shove.
+
+#### Mounted Warrior
+While you are riding a controlled mount, both you and your mount gain a +1 bonus to your Armor Class, and you can use a bonus action on each of your turns to command the mount to take one action from its stat block or another action.
+
+#### Protector
+When a creature you can see attacks you, or a target within 5 feet, you can use a reaction to add
+your proficiency bonus to the target's Armor Class against that attack. You must be wielding a shield or melee weapon to gain this benefit.
+
+
+
+
+{{pageNumber,auto}}
+\page
+#### Shield Warrior
+You gain proficiency with shields as a martial melee weapon, and on hit, your shield deals 2d4 bludgeoning damage. If you are wielding a shield and nothing else, you gain a +1 bonus to attack rolls with your shield and to your Armor Class.
+
+#### Thrown Weapon Fighting
+You can draw a weapon that has the thrown property as part of the attack you make with the weapon. Moreover, when you hit with a ranged weapon attack using a thrown weapon, you gain a +2 bonus to the damage roll of that attack.
+
+#### Versatile Fighting
+While wielding a single versatile weapon and no shield, you gain a +1 bonus to your attack rolls with that weapon. While doing so, you can also use your bonus action to make a single grapple or shove attack, or to take the Use an Object action.
+
+### Spellcasting
+At 2nd level, you memorize a few potent arcane spells which you can use to enhance your martial abilities in combat. 
+#### Cantrips
+You learn two cantrips of your choice from the Magus spell list, which can be found at the end of this class description. You learn another Magus cantrip at 4th and 10th level, as shown in the Cantrips Known column of the Magus table.
+
+#### Spell Slots
+The Magus table shows how many spell slots you have to casts pells of 1st-level and higher. To cast a spell, you must expend a spell slot of the spell's level or higher, and you regain all of your expended spell slots when you finish a long rest.
+
+#### Spells Known of 1st-Level & Up
+You know two 1st-level spells of your choice from the Magus spell list. The Spells Known column of
+the Magus table shows when you learn more Magus spells. Each Magus spell you learn must be of a level for which you have spell slots. For instance, when you reach 6th level, you learn a spell of your choice from the Magus spell list of either 1st-level or 2nd-level.
+
+Whenever you gain a Magus level, you can choose one Magus spell you know and replace it with another Magus spell of your choice, of a level that you have spell slots for.
+{{note
+##### Alternative Spellcasting List
+**Ask your DM**  
+The Magus Spell List can be replaced by the Arcane Spell List. These can be any abjuration conjuration, evocation, transmutation spells. 
+}}
+\column
+
+#### Spellcasting Ability
+Intelligence is your spellcasting ability for your Magus spells, as you commit magic to memory. You use Intelligence when a spell refers to your spellcasting ability, or when you set the saving throw DC or make a spell attack roll for a Magus spell.
+
+
+{{text-alignment:center
+
+**Spell save DC** = 8 + your proficiency bonus + your Intelligence modifier::
+
+**Spell attack modifier** = your proficiency bonus + your Intelligence modifier
+
+}}
+
+#### Spellcasting Focus
+You can use any weapon or shield that is part of your Arcane Armory as a spellcasting focus for your Magus spells, and can perform somatic components of spells with them.
+
+### Spellstrike
+Starting at 2nd level, you learn to channel your spells through weapons. Once per turn when you would make an attack, you can cast a Magus spell, expending a spell slot as normal, and make an attack with a melee Arcane Armory weapon. To be channeled through a Spellstrike attack attack in this way, the spell must meet the following requirements:
+
+- The Magus spell must have a casting time of 1 action.
+- The Magus spell must require a single spell attack roll, force its target to make a saving throw, or affect a total number of hit points worth of creatures (like sleep).
+
+If your attack misses, the spell fails and has no effect. On a hit, the spell takes effect immediately after the normal effects and damage of your weapon attack, using the rules below:
+
+**Area of Effect.** If the spell targets an area greater than a 10-foot cube, it takes effect as a 15-foot cone originating from you, which must include your target, or it is contained to only affect the target of your attack (your choice on hit)
+
+**Cantrips.** You do not deal the damage of the Cantrip along with the damage of your weapon. Instead, your weapon deals the damage type dealt by the Cantrip, and applies the Cantrip's additional effects, other than damage, on hit.
+
+**Concentration.** If the spell requires your concentration, you must concentrate on it as soon as it takes effect on hit.
+
+**Saving Throws.** If the spell requires a saving throw when cast, the target fails it on hit. If you score a critical hit on your weapon attack, it critically fails this saving throw.
+
+**Spell Attacks.** If the spell requires a spell attack roll, your weapon attack roll replaces the spell attack roll, and the spell takes effect on hit.
+
+
+
+{{pageNumber,auto}}
+\page
+### Arcane Regeneration
+Starting at 3rd level, you can meditate on your knowledge of the arcane to regenerate magic potential. During a short rest, you can recover spell slots of a combined level equal to your Intelligence modifier. Once you do so, you must finish a long rest before you can use this feature again.
+
+
+### Esoteric Order
+At 3rd level, choose the Esoteric Order that best representsthe skill of your Magus.
+
+Your Esoteric Order grants you features at 3rd level, andagain when you reach 7th, 15th, and 20th level in this class.
+
+#### Order Spells
+Each Esoteric Order has a list of Order Spells that you learn at the Magus levels noted in your Order's description. These Order Spells count as Magus spells for you, but they do not count against your total number of Magus Spells Known.
+
+When you gain a level in this class, you can replace on of the Order Spells you know with another spell of the same level, of your choice, from a specific category of spells, as determined by your Esoteric Order.
+
+### Ability Score Improvement
+When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or two ability scores by 1. As normal, you can't increase one of your ability scores above 20 using this feature.
+
+### Extra Attack
+Beginning at 5th level, you can attack twice, instead of once, whenever you take the Attack action on your turn. Moreover, if you use your action to cast a Magus spell, you can make one weapon attack as a bonus action on that turn. 
+
+You can still only make one Spellstrike attack per turn.
+
+
+
+### Spellsight
+Also at 5th level, you can use an action awaken your senses to the presence of magic within 30 feet as if you had cast *detect magic*. While this sense is active, you can touch an object and gain knowledge as if you had cast *identify*. 
+
+This special sense requires your concentration, and it lasts for 1 minute.
+
+You can use this feature a number of times equal to your Intelligence modifier (minimum of once), and you regain all expended uses when you finish a long rest.
+
+\column
+
+### Ethereal Jaunt
+Starting at 6th level, you can focus residual power from spells to slip through the Ethereal Plane. On your turn, immediately before or after you cast a Magus spell or Spellstrike, you can teleport to an unoccupied space you can see within 10 feet.
+
+The range of this feature is 10 feet, plus an extra 10 feet for each level of the spell slot you expended (maximum 60 feet).
+
+### Spellsunder
+You can use Spellstrike to cut down hostile spells. Starting at 9th level, when you see a creature cast a spell that will affect you, you can use a reaction to expend a spell slot and use an Arcane Armory weapon to attack the spell as it takes effect.
+
+If the spell was cast at a level equal to the level of the spell slot you expended or lower, the spell fails and has no effect. If it was cast at a level higher than the slot you expended, make an attack roll with your weapon. If your attack roll exceeds 12 + twice the level of the spell, the spell fails and has no effect.
+
+### Mystical Ward
+You can cast your spells in battle and avoid their most potent effects. Beginning at 10th level, you are immune to the effects of any Magus spell you cast, unless you wish to be affected.
+
+
+
+### Arcane Conservation
+Starting at 11th level, when you use Spellstrike and miss with your weapon attack, you can regain one expended spell slot. When you do so, you cannot also use Ethereal Jaunt.
+
+The spell slot you regain with this feature must be a lower level than the slot you expended as part of your Spellstrike.
+
+At 18th level, you regain the same spell slot you expended.
+
+### Prismatic Strikes
+Your weapons are infused with the arcane power you channel through them. Starting at 11th level, your attacks with Arcane Armory weapons deal a bonus 1d8 damage on hit.
+
+This bonus damage must be a damage type dealt by one of the Magus spells you know, and it can be chosen on hit.
+
+### Superior Spellsunder
+Starting at 14th level, when a creature you can see within 30 feet is targeted by a spell you can see, you can use a reaction to teleport to an unoccupied space within 5 feet of it and use your Spellsunder reaction against the triggering spell. 
+{{pageNumber,auto}}
+\page
+## Esoteric Orders
+### Order of Adamant
+Magi of the Order of Adamant are unyielding in their resolve
+and unflinching in their convictions. They focus the wondrous
+power of their mind and magic back into their Arcane Armory
+and are capable of great feats while maintaining their focus.
+
+
+
+
+
+
+#### Adamant Spells
+You gain spells at the magus levels listed.
+Magus Level| Spells
+:-:|:-:
+3rd| faerie fire, shield of faith
+5th| barkskin, magic weapon
+9th| protection from energy, slow
+13th| resilient sphere, stoneskin
+17th| circle of power, wall of stone
+
+#### Resolute Focus
+Starting at 3rd level when you select this archetype, your unyielding focus improves your abilities so long as you can maintain concentration. When you begin to concentrate on a spell, choose one of the benefits below. For the duration
+of your concentration, a corresponding object in your Arcane
+Armory gains the associated benefit:
+
+**Armor.** When you take acid, cold, fire, lightning, poison, or
+thunder damage, you can use a reaction reduce the damage
+you take by twice your Intelligence modifier (minimum of 2).
+
+**Shield.** If you are forced to make a saving throw against a
+spell or magical effect, you can use your reaction to add your
+Intelligence modifier (minimum of +1) to your d20 roll.
+
+**Weapon.** Whenever you succeed on a Constitution saving
+throw to maintain your concentration, you can make a single
+weapon attack against a creature in range as a reaction.
+
+#### Arcane Bulwark
+Starting at 7th level, your wondrous focus manifests itself as a powerful ward to
+deflect attacks. When you begin concentrating on a spell, you
+gain temporary hit points equal to twice the level of the spell.
+
+Also, when you succeed on a Constitution saving throw to
+maintain concentration you gain temporary hit points equal
+to twice the level of the spell you are concentrating on.
+
+\column
+
+#### Unyielding Force
+At 15th level, your mind is as unflinching as the mountains. When you fail a Constitution saving throw to maintain your concentration, you can choose to succeed instead. Once you do so, you must finish a short or long rest before you can do so again.
+
+You also gain two benefits of your choice from Resolute Focus each time you begin concentrating on a spell.
+
+Finally, whenever you succeed on a saving throw, you can use your reaction to force creatures of your choice within 15 feet of you to make a Dexterity saving throw. They take 4d8 force damage on a failed save, and half on a successful save.
+
+#### Adamantine Mind
+At 20th level, you have mastered the secret magicks of your Order and your focus now rivals that of demigods and primordial beings. You can maintain concentration on two Magus spells at one time.
+
+However, when you are forced to make a Constitution saving throw to maintain concentration while doing so, you have disadvantage on your saving throw.
+
+Finally, you gain all three benefits of Resolute Focus while you are concentrating on at least one spell.
+
+{{pageNumber,auto}}
+\page
+### Order of Aether Blade
+
+Order of  Aether Blade Magus make use of their magical techniques to create a weapon of pure arcane power, with most of their abilities revolving around mastering the use of this weapon.
+
+#### Aether Blade Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | *Arcane Weapon, magic missile*
+|5th | *Aura of Frost, Magic Weapon*
+|9th | *Force Hammer, Polybrachia*
+|13th | *Dimension Door, Hammer of the Gods*
+|17th | *Banishing Smite, Vorpal Blade*
+
+#### Aether Blade
+Starting at 3rd level when you select this archetype, when you roll initiative or as a bonus action at any
+time, you can manifest an oversized melee weapon of pure force energy. This can take the shape of any
+bladed melee weapon, but it is a one-handed weapon that deals 1d10 force damage with a range of 5 feet regardless of its form.
+
+When you attack with this weapon, you can add
+your Intelligence modifier for damage rolls. 
+
+This weapon lasts until you let go of it, become incapacitated, or dismiss it as a bonus action.
+
+While this weapon is temporary, it counts as having a value of 1 sp for purposes of being
+treated as a material component in spells. 
+
+#### Aether Great Weapon
+Starting at 7th level, the aether weapon manifested by Aether sword grows larger and more powerful. Its
+damage increases to 2d10, and it gains the reach property.
+
+#### Empowering Spellstrike
+Starting at 15th level, when you hit a creature with a Spellstrike, you deal an extra weapon damage die of the same type as the weapon used.
+
+Additionally, when you roll weapon damage for your Aether Blade, you can reroll any of the weapon's damage dice once. You must use the new roll.
+
+\column
+
+#### Massive Blade
+Starting at 20th level, you can overcharge your Aether Blade for 1 minute (no action required). 
+
+For the duration, when you attack with your Aether Blade, you ignore all non-magical armor and defenses
+to treat the target’s AC as 10 + their Dexterity modifier for that attack (magical defenses like the mage armor or shield are not bypassed). 
+
+While attacking in this way with your Aether Blade, your attacks can target up to 2 creatures as long as they
+are within 10 feet of each other, though if an attack triggers a spell through Spellstrike, it does not affect
+the second target unless the spell can target multiple
+creatures.
+
+
+Once you use this feature, you must finish a long rest before you can use it again. If you have no uses left you can expend a 5th-level spell slot to use it again.
+{{pageNumber,auto}}
+\page
+### Orders of Animists
+One of the eldest Orders of Magi, Animists believe that spirits
+dwell in and control all things, including themselves. Through
+spiritual practices and meditations, they learn to manifest the
+spirit within them, and merge with it to change their form.
+
+#### Animist Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | *find familiar, identify*
+|5th | *detect thoughts, healing spirit*
+|9th | *clairvoyance, speak with dead*
+|13th | *arcane eye, divination*
+|17th | *commune, scrying*
+
+#### Spiritual Familiar
+
+Starting at 3rd level when you select this archetype, you are able to draw your own spirit from your body, and use it to enhance your esoteric abilities. You can cast *find familiar* as a ritual, however, you are the spell's material component.
+
+If you cast *find familiar* this way it gains the benefits below:
+- Its creature type is always humanoid.
+- It doesn’t require sleep. While it is within 100 feet of you,
+- it can awaken you from sleep as a bonus action.
+- In combat, it shares your initiative and acts on your turn.
+- As an action, it can merge with you, hiding in your body until it uses another action to reemerge from within you. While merged in this way, you can add your Intelligence modifier (minimum of +1) to any Wisdom (Insight) and Wisdom (Perception) checks you make.
+
+Your Spiritual Familiar vanishes if you die or if separated from you by more than 1 mile. If it is killed, you can't move or take actions until after your next turn, as you reel from shock.
+
+
+\column
+
+#### Spiritual Symbiosis
+Also at 3rd level, the magic of your Spiritual Familiar grants you wondrous abilities. While it is merged with you, you can use your action to transform into its physical shape with the changes below:
+
+- You retain your current hit points. If you are reduced to 0 hit points you instantly revert to your normal form and make death saving throw as normal.
+
+- You retain your Intelligence, Wisdom, and Charisma, your personality and your alignment when transformed.
+
+- Any equipment that is part of your Arcane Armory merges into this new form. If your Armory objects have benefits, you retain those benefits while you are in this new form.
+
+- You can't cast spells, but you can maintain concentration on and activate a spell that you have already cast.
+
+- As an action, you can revert back to your normal form.
+
+
+#### Advanced Spiritualist
+At 7th level, your bond with your Spiritual Familiar has grown. As a bonus action, you can teleport and instantly switch places with your Spiritual Familiar, so long as you can see it.
+
+#### Arcane Conduit
+
+At 15th level, your Spiritual Familiar is a true mirror for your soul. When you cast a Magus spell, you can choose for it to originate from
+you or your Spiritual Familiar. 
+
+You can also cast Magus spells while you are transformed into your Spiritual Familiar's form.
+
+Finally, while your Spiritual Familiar is merged with you, you have advantage on saving throws to resist spells.
+#### Ascended Animist
+
+At 20th level, you have ascended to the spiritual peak of your Order. As an action on your turn, you can cause your Spiritual Familiar to transform into an exact duplicate of yourself, including a copy of any objects in your Arcane Armory, for 1 minute.
+
+You determine how this duplicate acts, and it is capable of anything your character is capable of doing. However, both of you share the same spell slots, and while it is present, neither of you can conjure a Spiritual Familiar.
+
+
+Once you use this feature you must finish a long rest before you can use it again.
+
+
+
+
+{{pageNumber,auto}}
+\page
+### Order of Arcanists
+Magi who join the Order of Arcanists often serve wizards andother learned practitioners of the arcane. While most magi only study magic for use in combat, those who join this Order are interested in broader uses of the arcane and learn minor spells and rituals to aid them in their quest for knowledge.
+
+#### Arcanist Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | *arcane lance, find familiar*
+|5th | *arcanist's magic aura, rope trick*
+|9th | *clairvoyance, tiny servant*
+|13th | *arcane eye, private sanctum*
+|17th | *passwall, scrying*
+
+
+#### Arcanist's Armory
+At 3rd level, You have expanded your Armory for more academic uses. If you store a book, scroll, tome, or another Tiny object capable of storing written information within your Arcane Armory, it does not count against the total objects you can store.
+
+Additionally, if you perform the ritual to store a Spell Scroll or another Spellbook in your Arcane Armory, you can choose to copy knowledge of the spell into your Spellbook instead, so long as it is a Magus or Wizard spell you have slots for. If you do this for another Spellbook, you must perform the ritual on one spell within the Spellbook at a time.
+#### Arcane Spellbook
+At 3rd level, Unlike other Magi who memorize spells for use in battle, you maintain a spellbook from which you can prepare spells:
+
+**Spellbook.** You have crafted a Spellbook for yourself. You decide what it looks like, but it must be a Tiny object capable of storing written information. It contains knowledge of your Magus Spells Known, along with three extra 1st-level spells of your choice from the Magus or Wizard spell lists.
+
+This Spellbook and the spells within replace your Spells Known. You now ignore that column of the Magus table.
+
+**Preparing Spells.** Over the course of a long rest, you can spend 1 hour studying your Spellbook to prepare your spells. Choose a number of spells from this Spellbook equal to your Intelligence modifier + half your Magus level, rounded down. While prepared, they count as Magus spells for you.
+
+**Ritual Casting.** You can cast the ritual version of any spell in your Spellbook even if you do not have the spell prepared.
+
+**Learning New Spells.** Each time you gain a Magus level, you add a single Magus or Wizard spell of your choice to your Spellbook. It must be of a level for which you have spell slots, as per your Magus level.
+
+\column
+
+#### Esoteric Knoweldge
+
+At 7th level, any knowledge stored within your Arcane Armory is always at your fingertips. Whenever you make an Intelligence ability check to recall knowledge from any of the writings contained within your Arcane Armory, you treat a d20 roll lower than your Magus level as equal to your Magus level.
+
+You must have read the relevant text at least once before storing it within your Arcane Armory to gain this benefit.
+
+#### Stored Spells
+At 15th level, you can store spells within your Arcane Armory for use at a later time. During a long rest, you can perform a 1-hour ritual where you fill each vacant slot in your Arcane Armory with a single spell of 3rd-level or lower from your Spellbook.
+
+You can cast each spell once, with its normal casting time, without expending a spell slot. 
+
+Once cast, they are lost.
+
+
+#### Grand Arcanist
+At 20th level, you wield arcane magic that rivals an archmage. You add one 6th-level and one 7th-level Wizard spell of your choice to your Spellbook. 
+
+You can cast each spell once without expending a spell slot, and regain the ability to do so after a long rest.
+{{pageNumber,auto}}
+\page
+
+### Order of Arcane Archers
+Originally founded by elvish warrior mages, the Magi known as Arcane Archers are masters of both bow and arrow, and the arcane arts. While most Magi thrive in close-quarters combat, Arcane Archers strike at their foes from afar, raining enchanted arrows down on their enemies.
+
+While most members of this Order serve as guardians, some strike out into the world as adventurers.
+
+
+#### Arcane Archer Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | *ensnaring strike, hail of thorns*
+|5th | *acid arrow, cordon of arrows*
+|9th | *flame arrows, lightning arrow*
+|13th | *elemental bane, freedom of movement*
+|17th | *conjure volley, swift quiver*
+
+#### Arcane Quiver
+At 3rd level, you have learned to use the signature enchantments of the Magi with ranged weapons. You gain the following benefits:
+
+- You can add ranged weapons and quivers containing up to 20 pieces of ammunition each to your Arcane Armory.
+- The weapon you must always have in your Armory can be a ranged weapon instead of a melee weapon.
+- You can use Spellstrike with ranged weapons that are part of your Arcane Armory. However, any spells that have an area of effect are contained to only affect your target.
+
+#### Eagle Eyed
+Also 3rd level, training has honed your sight to near-supernatural levels. You gain proficiency in Perception, and can use Intelligence in place of Wisdom for any Perception check you make.
+#### Enchanted Shot
+At 7th level, when you make an attack roll with a ranged Arcane Armory weapon and miss, you can use a reaction to magically curve your shot and re-roll that attack against a different target that you can see within 60 feet of your attack's original target.
+
+#### Ranged Transposition
+Starting at 15th level, as an action, you can enchant a piece of ammunition with conjuration magic and fire it from a ranged Arcane Armory weapon at a point you can see. When it comes to a stop, you instantly teleport to an unoccupied space within 5 feet of it.
+
+Once you use this feature you must finish a short or long rest before you
+can use it again. If you have no uses left, you can expend a spell slot to use this feature again.
+
+\column
+
+#### Elite Archer
+At 20th level, as a bonus action, you can enter a heightened state of arcane focus which grants you the following benefits:
+
+- Ranged attacks with your Arcane Armory weapons deal force damage in place of their normal damage.
+- You can use Ethereal Jaunt to teleport up to 10 feet after each ranged Arcane Armory attack you make.
+- When you hit a target with a ranged Arcane Armory attack, you can expend a spell slot to deal extra force damage to the target. This bonus damage is 2d4 per level of the spell slot you expended.
+
+This heightened state lasts for 1 minute, but ends early if you are incapacitated or you end it as a bonus action. Once you use this feature, you must finish a long rest before you can use it again. If you have no uses left, you can expend a 5th-level spell slot to enter this heightened state again.
+
+
+{{pageNumber,auto}}
+\page
+### Order of Armorers
+Magi of the Order of Armorers claim to be the students of the original Magus, the creator of the enchantment which would become the Arcane Armory. While every Order now shares in the knowledge of this enchantment, only Armorers can use it to its fullest potential. These warriors learn to summon their Arcane Armory as deadly projectiles for use in battle.
+
+#### Arcane Armorer
+At 3rd level, you have studied metallurgy and smithing along with the arts common to every Magi; spellcasting and martial combat. You gain proficiency with smith's tools and heavy armor.
+
+Moreover, whenever you make an ability check that makes use of your smith's tools, you gain a bonus to your roll equal to your Intelligence modifier (minimum of +1).
+
+
+#### Armorer Spells
+Magus Level|	Spells
+:-:|:-:
+3rd|	compelled duel, hail of thorns
+5th|	cloud of daggers, heat metal
+9th|	conjure volley, haste
+13th|	fabricate, freedom of movement
+17th|	steel wind strike, vorpal blade
+
+#### Awakened Armory
+At 3rd level, as a bonus action, you can summon any number of the onehanded melee weapons within your Arcane Armory, causing them to levitate around you in your space. This requires your concentration. If it ends, the weapons return to your Armory.
+
+While levitating, these weapons have the Thrown (20/60) property, you can add your Intelligence modifier to the damage rolls, and you are
+considered to be wielding the weapons one-handed.  You can only attack with each levitating blade once per turn.
+
+Whenever you can normally make an attack, you can make an attack with one of these levitating blades, then it instantly returns to levitate in your space regardless of a hit or miss.
+
+
+#### Armorer's Focus
+At 7th level, you are able to concentrate on one Magus spell while you are concentrating on your Awakened Armory. If you are forced to make a Constitution saving throw to maintain concentration, you make one saving throw for both effects.
+
+Also, while your Awakened Armory is active, the normal and long range of your Thrown weapons becomes (40/120).
+
+
+\column
+
+#### Whirlwind of Steel
+At 7th level, you can strike with all of your levitating weapons at once. As an action, you can force a number of creatures within 20 feet equal to your number of levitating blades to make a Dexterity saving throw against your Spell save DC. Targets take 2d10 damage on a failure, and half that on a success. This damage matches the damage dealt by the levitating blade you used to force each creature to make this saving throw. 
+
+The damage dealt by this feature increases to 3d10 at 14th level and increases again to 4d10 when you reach 20th level.
+
+#### Conjured Defense
+Starting 15th level, as a bonus action, you can place one of your levitating blades in a defensive posture, and add your Intelligence modifier to your Armor Class until the start of your next turn. 
+
+You cannot make attacks with this levitating blade for the duration.
+
+
+#### Death Strike
+At 20th level, once per turn when you hit a creature with an Arcane Armory weapon, you can end your Arcane Armory enchantment for that weapon, causing it to explode outward in a wondrous explosion of magical force. Creatures of your choice within 20 feet of it must succeed a on Dexterity saving throw against your Spell save DC, taking 8d6 force damage of a failed save, and half as much damage on a success.
+
+
+{{pageNumber,auto}}
+\page
+### Order of Astrologers
+Known as Astrologers, these luminous Magi channel radiant
+magic of the heavens and use it to augment their unique style
+of combat. Master students of the night sky, they use magic of
+the stars to predict the future and blind their foes with light.
+
+#### Astrological Spells
+You gain spells at the magus levels listed.
+Magus Level| Spell
+:-:|:-:
+3rd| *guiding bolt, jump*
+5th| *augury, moonbeam*
+9th| *clairvoyance, minute meteors*
+13th| *divination, sickening radiance*
+17th| *dawn, wall of light*
+
+#### Starlit Armory
+Starting at 3rd level when you select this archetype, you infuse your Arcane Armory with the radiant power of the
+stars. Your Arcane Armory gains the benefits listed below.
+
+You can use these features a combined number of times equal to your Intelligence modifier (minimum of once), and you regain all uses when you finish a long rest. When you have no uses you can expend a spell slot to use them again:
+
+**Armor & Shields.** When you are hit by an attack and are wearing a set of Armory armor or Armory shield, you can use
+a reaction to force the attacker to make a Constitution saving throw against your Magus Spell save DC. 
+
+This saving throw is made with disadvantage if the attacker is within 5 feet. On a failure, it is Blinded for 1 minute. 
+
+It repeats its saving throw at the end of each of its turns, ending the effect on a success.
+
+**Rital Magic.** Using an Armory weapon as your spellcasting focus, you can cast one Divination spell you know as a Ritual.
+
+**Weapon.** As a bonus action, you can infuse a single Armory
+weapon you are holding with starlight. For 1 minute, you can
+add your Intelligence modifier to damage rolls, it deals radiant damage in place of its normal damage type, and Spellstrike spells cast through it deal radiant damage.
+
+
+#### Celestial Guidance
+Also at 3rd level, the heavenly bodies guide your steps. You gain proficiency in
+either cartographer's or navigator's tools. 
+
+Also, whenever you make an ability check with either set of tools you add double your proficiency bonus to your roll.
+
+You also learn the *guidance* Cantrip, but it doesn't count against your total number of Cantrips Known.
+
+Finally, you cannot become lost, even by magical means, so long as you can see the stars of the night sky.
+
+
+\column
+
+#### Radiant Flash
+At 7th level, you gain a new use for your Starlit Armory. Whenever you use Ethereal Jaunt, you can expend a use of Starlit Armory to
+force creatures of your choice within 10 feet of the place you disappear from (or you reappear in) to make a Constitution
+saving throw against your Magus Spell save DC. 
+
+On a failed save, they suffer its Armory and Shields effect.
+
+You also regain all expended uses of your Starlit Armory whenever you finish a short or long rest.
+
+#### Luminous Flight
+Starting 15th level, starlight lifts you off your feet toward the stars. As a bonus action while you are wearing a set of Armory armor, you can expend a use of Starlit Armory to gain a flying speed equal to your walking speed which lasts for 1 minute.
+
+#### Starlit Champion
+At 20th level, the radiant magic of the stars infuses your body and soul
+along with your Arcane Armory. You gain the benefits here:
+- Your Arcane Armory weapons permanently gain all the benefits of your Starlit Armory Weapon feature. They also gain the Thrown (20/60) property and whenever you make an attack with them they return to your hand instantly.
+- You regain one expended use of Starlit Armory at the start of each of your turns so long as you are not unconscious.
+- You gain resistance to radiant damage and immunity to the Blinded condition.
+
+{{pageNumber,auto}}
+\page
+### Order of the Aurora
+Legends tell of an ancient Order of Magi that dwell in the icy northern region of the material plane. Known as Rimeguards, members of this Order draw their abilities from the mystical aurora, and are known for their defensive ice and light magic.
+
+
+#### Aurora Spells 
+You gain spells at the magus levels listed.
+Magus Level| Spell
+:-:|:-:
+3rd| *armor of agathys, shield of faith*
+5th| *aura of frost, moonbeam*
+9th| *sleet storm, slow*
+13th| *death ward, watery sphere*
+17th| *cone of cold, wall of light*
+
+#### Aurora Knight
+At 3rd level, you have been infused with the signature frigid magic of your Order. You gain proficiency with heavy armor, and while you are wearing heavy armor you are resistant to cold damage
+
+#### Rimeguard
+Also at 3rd level, you exude an aura of wintry protective magic. When an allied creature within 15 feet of you takes damage, you gain 1 Frost.
+
+When you hit a creature with a melee weapon attack, you can expend Frost (up to your Intelligence modifier) to deal an additional 1d4 cold damage and reduce its movement speed by 5 feet until the start of your next turn.
+
+You can have a maximum amount of Frost equal to your Intelligence modifier at one time, and you lose any Frost that you have not expended each time you finish a long rest.
+
+#### Glacial Defense
+At 7th level, you can conjure mystical wards of frost and light to defend yourself and allies. As an action, you can touch a creature and
+expend 1 Frost to grant it temporary hit points equal to 1d4 + your Intelligence modifier (minimum of 1).
+
+When a creature with these temporary hit points is within your Rimeguard and takes damage, you can use a reaction to spend 1 Frost and force the attacker to make a Constitution saving throw. On a failed save it is either blinded or its speed
+is reduced to 0 (your choice) until the start of your next turn.
+
+Finally, you can roll a d6, instead of a d4, for the additional cold damage dealt by your Rimeguard feature.
+
+#### Spellsunder of the Aurora
+At 15th level, your mastery of light and frost extends the influence of your Aegis. You can use your Aegis reaction whenever a creature that you can see within the range of your Rimeguard feature takes damage from a spell or another magical effect.
+
+In addition, the range of your Rimeguard becomes 30 feet.
+
+
+\column
+
+#### Paragon of Frost
+Starting 20th level, you have become an unquestioned master of the mystical magics of the frozen north. You gain the following benefits:
+- When you spend Frost as part of an attack you roll a d8 in place of the normal d6 for any cold damage you do.
+- If you reduce a creature's speed to 0 with Rimeguard or Glacial Defense it is also restrained while its speed is 0.
+- A creature with temporary hit points from Glacial Defense is resistant to bludgeoning, piercing, and slashing damage.
+
+{{pageNumber,auto}}
+\page
+### Order of Blades
+Masters of their signature conjuration magic, Magi who hail from the Order of Blades are a sight to behold in battle. They use the magic of their Order to conjure weapons from their Arcane Armory and propel them at their enemies.
+
+#### Blade Spells
+You gain spells at the magus levels listed.
+Magus Level| Spells
+:-:|:-:
+3rd| compelled duel, hail of thorns
+5th| cloud of daggers, heat metal
+9th| conjure barrage, haste
+13th| death ward, freedom of movement
+17th| conjure volley, steel wind strike
+#### Empowered Armory
+At 3rd level, the signature magic of your Order empowers the weapons in your Arcane Armory. The total number of objects that you can have in your Arcane Armory at one time increases by two, but these additional objects must be melee weapons.
+
+Moreover, any melee weapons in your Arcane Armory also
+gain the following benefits while the enchantment lasts:
+
+- The weapons gain the Thrown (20/60) property.
+- Whenever you make an attack, you can instantly conjure one melee weapon from your Arcane Armory and make a melee or a thrown weapon attack with it. After the attack, the weapon instantly returns to your hand or person.
+- While you hold one of these weapons in hand, you know the sword burst and can cast it as an action.
+- You can use Spellstrike with thrown weapons attacks. However, any spells that have an area of effect are contained to only affect your target.
+
+
+#### Sharpen the Blade
+At 3rd level, you hone your weapons to supernatural levels of sharpness. Melee weapons that are part of your Arcane Armory score a critical hit on a roll of 19-20 on the d20.
+
+At 15th level, this critical hit range increases again and the weapons score a critical hit on a roll of 18-20 on the d20.
+#### Enchanted Strike
+At 7th level, you can drain the magic of a weapon to empower its attack. When you hit with an Arcane Armory weapon attack, you can instantly end the Arcane Armory enchantment on that weapon to deal additional damage equal to your level.
+
+When you do so, the weapon lands on the ground and you
+cannot enchant it again until you finish a long rest.
+
+\column
+
+#### Ranged Transposition
+At 15th level, as an action, you can conjure a melee weapon from your Arcane Armory and throw it at a point you can see within its thrown range. When the weapon comes to a stop, you instantly teleport to an unoccupied space within 5 feet of it.
+
+Once you use this feature you must finish a short or long
+rest before you can use it again. If you have no uses left, you can spend a spell slot of 1st-level or higher to use it again.
+
+#### Storm of Blades
+At 20th level, you are a master of your Orders signature magic and stand as a one man army on the battlefield. As an action, you can force a number of creatures equal to the number of melee weapons in your Arcane Armory to make a Dexterity saving throw against your Spell save DC. They take 6d10 magical slashing damage on a failure, and half that on a success.
+
+Once you use this feature you must finish a short or long
+rest before you can use it again. If you have no uses left, you can spend a spell slot of 3rd-level or higher to use it again.
+{{pageNumber,auto}}
+\page
+### Order of Blade Dancers
+The Magi known as Blade Dancers dedicate their lives to an ancient technique known as the Blade Dance. This esoteric trance allows a Magi to empty its mind of all emotion and distractions so that they become one with spell and sword.
+
+#### Blade Dancer Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | *compelled duel, zephyr strike*
+|5th | *blur, magic weapon*
+|9th | *elemental weapon, haste*
+|13th | *fire shield, freedom of movement*
+|17th | *steel wind strike, vorpal blade*
+
+
+
+#### Blade Dance
+At 3rd level, your Order's style of combat is an art. You gain proficiency in Performance, and you can use your Strength or Dexterity, in place of Charisma, when making a Performance check.
+
+So long as you are not wearing heavy armor or wielding a heavy weapon, you can use your bonus action to enter the trance known as the Blade Dance. This trance lasts for 1 minute, and while it is active, you gain the benefits below:
+
+- Your walking speed increases by 10 feet.
+- You gain a +1 bonus to your Armor Class.
+- When you roll damage for an attack or spell, you can roll the damage dice twice and use the higher result. Once you do, you cannot do so again until the start of your next turn.
+- You add your Intelligence modifier (minimum of +1) to all Strength (Athletics) and Dexterity (Acrobatics) checks.
+
+Your Blade Dance ends if you are incapacitated, if you don heavy armor or a heavy weapon, or if you use a bonus action to end it. Once you enter a Blade Dance you must complete a short or long rest before you can do so again. When you have no uses of this feature remaining, you can expend a spell slot of 1st-level or higher to enter the Blade Dance again.
+
+
+#### Fluid Steps
+At 7th level, your Order's emphasis on fluidity and martial skill has honed your reflexes. You gain proficiency in Dexterity saving throws, and you add your proficiency bonus to initiative rolls.
+
+Also, your Blade Dance Armor Class bonus becomes +2.
+
+\column
+
+#### Improved Blade Dance
+At 15th level, you have become an expert of the Blade Dance, and while you are in this trance you gain the additional benefits below:
+- Whenever you are forced to make a Dexterity saving throw to take half damage, you take no damage on a successful save, and only have damage on a failed save.
+- Whenever you use Spellsunder, you add your Intelligence modifier (minimum of +1) to the attack roll you make.
+- Your Blade Dance Armor Class bonus becomes +3.
+
+
+#### Master of Blades
+At 20th level, you have reached the apex of your Order and been granted the title of Master of Blades. You are always considered to be under the effects of your Blade Dance so long as you are not wearing heavy armor or wielding a heavy weapon.
+
+Also, when you take the Attack action while in your Blade Dance, you make one additional attack as part of that action.
+{{pageNumber,auto}}
+\page
+### Order of Chromatic Knights
+
+Channeling the power of the prime elements: Air, Earth, Fire, and Water, Magi of the Order of Chromatic Knights wield the raw power of the natural world. 
+
+These Magi are often found training in places of raw elemental power: deserts, mountain peaks, deep underground caverns, and atop active volcanoes.
+
+
+#### Chromatic Affinity
+At 3rd level, the secret magics of your Order allow you to wield the four prime elements: Air, Earth, Fire, and Water, though not all at once. At the end of each long rest, you perform a ritual that attunes you to one of the four elements above, which grants you the following benefits until your next long rest:
+
+**Air.** Your damage affinity is thunder. Also, when you take the Dash action opportunity attacks made against you have disadvantage against you until the end of your current turn.
+
+**Earth.** Your damage affinity is bludgeoning. Also, if you are forced to make a Strength ability check or saving throw you add your Intelligence modifier (minimum of +1) to your roll.
+
+**Fire.** Your damage affinity is fire. Also, when you make a saving throw to resist being charmed or frightened you add your Intelligence modifier (minimum of +1) to your roll.
+
+**Water.** Your damage affinity is cold. You also gain a swim speed equal to your walking speed and can hold your breath underwater for up to 1 hour. If you already have a swimming speed, you can Dash as s bonus action while swimming.
+
+#### Prismatic Spellcasting
+Also at 3rd level, your elemental affinity allows you to change the very nature of the spells you cast. When you cast a Magus spell that deals acid, cold, fire, lightning, poison, or thunder damage, you can choose for it to deal Chromatic Affinity damage instead.
+
+This effect can be applied to spells cast with Spellstrike.
+
+
+
+#### Chromatic Spells
+Magus Level|Air Spells|Earth Spells|Fire Spells|Water Spells
+:-:|:-:|:-:|:-:|:-:|
+3rd|	thunderwave| earth tremor|burning hands| fog cloud|
+5th|	shatter|spike growth|scorching ray|misty step|
+9th| lightning bolt| erupting earth| fireball| tidal wave
+13th| storm sphere| stone shape| wall of fire| watery sphere
+17th| control winds| wall of stone| immolation| cone of cold
+\column
+#### Elemental Aegis
+At 7th level, you draw on the elemental power of your magic to enhance your defenses. Whenever you cast a Magus spell of 1st-level or higher that deals your Chromatic Affinity damage, you can choose to gain temporary hit points equal to your Intelligence modifier (minimum of 1) + the level of the spell slot expended.
+
+When a creature within 15 feet deals damage to you while you have these temporary hit points, you can use a reaction to
+deal Chromatic Affinity damage to that creature equal to the damage it dealt to your temporary hit points.
+#### Chromatic Mastery
+At 15th level, you have gained such a deep affinity for the elements that you
+draw on their full power. While you are attuned to an element
+you gain the corresponding benefit listed below:
+
+**Air.** You gain a flying speed equal to your walking speed,
+and opportunity attacks against you have disadvantage.
+
+**Earth.** Whenever you take damage you can reduce it by
+your Intelligence modifier (minimum of 1). Force, necrotic,
+radiant, and psychic damage ignore this feature.
+
+**Fire.** You gain immunity to the charmed and frightened
+conditions, and as a bonus action on each turn, you can cast
+burning hands at 1st-level, without expending a spell slot.
+
+**Water.** Whenever you take damage, you can use a reaction
+to teleport to an unoccupied space you can see within 30 feet.
+#### Ascended Chromatic Knight
+At 20th level, you are a true master of the prime elements, able to channel all four through your magic. You are attuned to all four prime
+elements at once, gaining all the associated benefits. 
+
+If a feature references your Chromatic Affinity damage type, you choose which of the four damage types to use.
+
+
+
+
+{{pageNumber,auto}}
+\page
+### Order of Cold Iron
+Often called Iron Knights, Magi of the Order of Cold Iron use
+an ancient style of magick said to ward off dark fey. Focusing
+their arcane powers into a massive weapon, they transmute it
+into a Cold Iron Armament with supernatural properties, and
+wield it as a conduit for the ancient magic of their Order
+
+#### Cold Iron Spells
+Magus Level|	Spells
+:-:|:-:
+3rd|	detect evil & good, shield of faith
+5th|	aura of frost , moonbeam
+9th|	magic circle, protection from energy
+13th|	banishment, stoneskin
+17th|	circle of power, dispel evil & good
+#### Iron Armament
+At 3rd level, over the course of 1-hour, which can be during a short or long rest, you can touch a melee Arcane Armory weapon with the heavy property and perform an ancient ritual transmuting it into an Iron Armament, granting it the following benefits:
+- When you attack an extraplanar creature with your Iron Armament you ignore its damage resistances, and treat its damage immunities as resistances.
+- Whenever you use your Iron Armament for a Spellstrike attack you can cause residual magic to burst forth from the weapon. Creatures within 5 feet of the target of your Spellstrike must succeed on a Dexterity saving throw against your Spell save DC or take 1d6 damage per level of the spell slot expended (0 for Cantrips). The damage is the same dealt by the spell, or force if it deals no damage. 
+
+This weapon remains your Iron Armament until it is no longer part of your Arcane Armory or you use this ritual to transmute another weapon into an Iron Armament.
+
+#### Ancient Ward
+At 7th level, the magic of your Order infuses your armor. When you are wearing a suit of Arcane Armory armor you have advantage on any Intelligence, Wisdom, or Charisma saving throw an extraplanar creature forces you to make.
+
+#### Elder Whirlwind
+Also at 7th level, your skill with your Order's magicks has grown. As an action while you are wielding your Iron Armament you can spin your weapon around you. All creatures within reach of your Iron Armament must succeed on a Dexterity saving throw against your Spell save DC or take damage as if they had been hit by a single attack with your Iron Armament.
+
+When you use this action, you can expend a spell slot to increase the damage all targets will take on a failed saving throw. The damage is equal to 1d8 per level of the spell slot, and is a type of damage dealt by one Magus spell you know.
+
+\column
+
+#### Prismatic Wave
+At 15th level, your power flows from your Iron Armament. Whenever you hit a creature with an Iron Armament attack you can forgo the bonus damage of Prismatic Strikes to instead deal 1d8 Prismatic Strike damage to up to two other targets within range of the Iron Armament attack you just made.
+
+
+#### Elder Iron Knight
+At 20th level, you have risen to the pinnacle of your elder order and are the
+bane of extraplanar foes. You gain the benefits listed below:
+
+- The base weapon damage of your Iron Armament weapon is doubled (ie: 1d6 becomes 4d6 or 1d12 becomes 2d12).
+- The damage of an Iron Armament Spellstrike burst is now 2d6 per level of the spell slot expended (1d6 for Cantrips).
+- Your Ancient Ward causes extraplanar creatures to have disadvantage on the first attack roll against you each turn.
+- The damage of your Elder Whirlwind action increases to 2d8 per level of the spell slot you expend to empower it.
+
+
+{{pageNumber,auto}}
+\page
+### Order of Conduits
+Strange and esoteric, even for Magi, the Order of Conduits is a sect of warriors who combine the arcane techniques of the Magi with martial arts. By mastering their physical body, they learn to infuse themselves with arcane power, channeling the wondrous magic of the Magi directly through their physical form.
+onduit Spells
+
+#### Conduits Spells
+Magus Level|	Spells
+:-:|:-:
+3rd|	expeditious retreat, thunderous smite
+5th|	blur, branding smite
+9th|	blinding smite, haste
+13th|	dimension door, staggering smite
+17th|	banishing smite, skill empowerment
+
+#### Arcane Ascetic
+At 3rd level, you have honed your physical form, denying yourself worldly pleasures and infusing yourself with arcane power. So long as you are not wearing armor or wielding a shield or a heavy weapon, your Armor Class is equal to 10 + your Intelligence modifier + your Dexterity modifier.
+
+You also learn the Brawler Fighting Style. If you already know this Fighting Style, you instead learn another Fighting Style of your choice from those available to the Magus class.
+
+#### Arcane Conduit
+At 3rd level, you have learned the secrets of your Order and can channel arcane power through your fists. Your unarmed strikes count as Arcane Armory weapons for the purposes of Magus class features. They also fulfill the material components of spells that require a weapon worth at least 1 gp.
+
+Also, you can choose for your unarmed strikes to deal the damage type of a Magus spell you know.
+
+#### Ethereal Arts
+At 7th level, you incorporate ethereal magics into your signature style of martial arts. When you hit a creature with an unarmed strike, you can knock your target back 5 feet in a line (so long as it is equal to you in size or smaller), or you instantly teleport to an unoccupied space you can see within 5 feet of your target.
+
+Also, your unarmed strikes now deal 1d8 damage on hit.
+
+#### Enchanted Physique
+At 15th level, the magic of your Order has completely suffused your body, enhancing your physical abilities. You gain resistance to all bludgeoning, piercing, and slashing damage.
+
+Moreover, when you start your turn and are concentrating on a spell that you cast on yourself (such as haste), you gain temporary hit points equal to twice the level of that spell.
+
+\column
+
+#### Ascended Conduit
+At 20th level, as a bonus action, you can overcharge your body with arcane power, unlocking the true power of your Order. When you do so, you gain the benefits listed below for the next minute:
+
+- When you take the attack action and make only unarmed strikes, you can make two additional unarmed strikes as part of that attack action (for a total of four attacks).
+- Whenever you cast a Magus spell you gain temporary hit points equal to twice the level of the spell slot expended.
+- Whenever you teleport with a Magus feature or spell, you can touch a creature equal to you in size (or smaller) and teleport it with you. This includes grappled creatures.
+
+Once you overcharge your body with this feature, you must finish a long rest before you can use it again. If you have no uses left you can expend a 5th-level spell slot to use it again.
+{{pageNumber,auto}}
+\page
+### Order of the Dawn
+Members of the Order of the Dawn combine advanced arcane study with magical power drawn from the sun. Unlike warriors who passively receive divine radiance, these Magi treat sunlight as a force that can be calculated, stored, enlarged, and weaponized.
+As their power reaches its zenith, their bodies grow until they tower over the battlefield as incarnations of noon.
+
+#### Dawn Spells
+
+You gain spells at the Magus levels listed.
+
+These spells count as Magus spells for you, but they don’t count against your total number of Magus Spells Known.
+
+Magus Level|	Spells
+:-:|:-:
+3rd|	burning hands, enlarge/reduce
+5th|	misty step, scorching ray
+9th|	daylight, fireball
+13th|	dimension door, fire shield
+17th|	dawn, flame strike
+
+#### Master of the Sun
+
+Starting at 3rd level, you can awaken the solar magic within your body.
+
+As an action, you enter your Dawn State for 1 minute. The state ends early if you have the Incapacitated condition or dismiss it without requiring an Action.
+
+When your Dawn State begins, your Solar Die is a d4. At the start of each of your turns, your Solar Die increases by one size. It remains a d12 for the rest of the duration.
+
+While your Dawn State is active, you can add your Intelligence modifier to damage rolls made with an Arcane Armory weapon.
+
+Additionally, once on each of your turns when you hit with an Arcane Armory weapon or deal damage with a Magus spell, you deal additional fire or radiant damage equal to one roll of your Solar Die.
+
+You can enter your Dawn State a number of times equal to your Proficiency Bonus.
+
+You regain all expended uses when you finish a Long Rest.
+
+#### Solar’s Successor
+
+Also at 3rd level, you can store a specialized solar weapon within your Arcane Armory.
+
+Whenever you summon this weapon, it can take the form of a longsword, battleaxe, greataxe, or greatsword.
+
+You can change its form each time you summon it.
+
+While your Dawn State is active:
+
+- The weapon deals radiant damage instead of its normal damage type.
+- You can use it as a spellcasting focus for your Magus spells.
+- The weapon immediately returns to your hand if it is thrown or dropped.
+
+\column
+
+#### Radiant Sun
+
+Starting at 7th level, you can condense your solar power into a miniature sun.
+
+While your Dawn State is active, when you take the Attack action, you can replace one attack and expend a spell slot to create a Radiant Sun at a point you can see within 30 feet.
+
+Each creature of your choice in a 10-foot-radius Sphere centered on that point must make a Dexterity saving throw against your spell save DC.
+
+A creature takes radiant damage equal to two rolls of your Solar Die for each level of the expended spell slot on a failed save.
+
+On a successful save, it takes half as much damage.
+
+Flammable objects in the area that aren’t being worn or carried ignite.
+
+
+#### Absolute Cancel
+
+Starting at 15th level, you can erase magical effects instead of merely interrupting them.
+
+You always know *dispel magic*. It counts as a Magus spell for you and doesn’t count against your total number of Magus Spells Known.
+
+When you cast *dispel magic*, you can target every magical effect within a 10-foot-radius Sphere centered on a point within range instead of targeting a single creature, object, or magical effect.
+
+Make a separate Intelligence ability check for each spell of 4th level or higher in the area. You add your Proficiency Bonus to these checks.
+
+#### Zenith
+
+At 20th level, you can assume your complete solar form. As a Bonus Action, you enter Zenith for 1 minute.
+Your Dawn State becomes active for the duration without expending a use, and your Solar Die immediately becomes a d12. For the duration, you gain the following benefits:
+- You have Resistance to bludgeoning, piercing, slashing, fire, necrotic, and radiant damage.
+- You are immune to the Blinded and Frightened conditions.
+- Whenever you deal the additional damage from Master of the Sun, roll your Solar Die twice instead of once.
+- When you use Spellsunder, treat the spell slot you expend as one level higher when determining whether the triggering spell automatically fails.
+
+Once you use Zenith, you can’t use it again until you finish a Long Rest, unless you expend a 5th-level spell slot to use it again.
+
+{{pageNumber,auto}}
+\page
+### Order of the Earthshaker
+Magi of the Order of the Earthshaker are legendary warriors who treat the world itself as their weapon. Rather than focusing on delicate illusions or precise transpositions, they channel raw, vibrating arcane force into their strikes to shatter reality. These warriors are often seen as pillars of unyielding strength, capable of standing at the center of a battlefield and causing the very foundation of the earth to tremble with a single blow.
+
+#### Earthshaker Spells 
+You gain spells at the magus levels listed.
+Magus Level| Spells
+:-:|:-:
+3rd|	thunderwave, expeditious retreat 
+5th|	shatter, warding bond 
+9th|	erupting earth, haste 
+13th|	stone shape, resilient sphere 
+17th|	destructive wave, wall of stone 
+
+
+#### Tremor Strike
+Starting at 3rd level, you learn to condense kinetic arcane energy into spheres of vibration around your hands and weapons. Once per turn, when you hit a creature with a melee weapon attack, you can expend a spell slot to create a localized tremor. The target and every creature of your choice within 5 feet of it must succeed on a Strength saving throw against your Spell save DC or be knocked prone and take an additional 1d6 force damage per level of the spell slot expended.
+
+#### Unyielding Bastard
+Also at 3rd level, your physical presence is as daunting as a mountain. You gain proficiency with heavy armor. Additionally, your hit point maximum increases by 3, and it increases by 1 whenever you gain a level in this class.
+
+#### Shattering Aegis
+At 7th level, you can shatter the air to blunt incoming force. When you or a creature within 10 feet of you is hit by an attack, you can use your reaction to reduce the damage by an amount equal to your Magus level + Intelligence modifier. If this reduces the damage to 0, the attacker must succeed on a Strength saving throw or be pushed 10 feet away from the target of their attack
+
+
+#### Colossal Resonance
+At 15th level, your strikes carry the weight of the tectonic plates. When you use Spellstrike, you can choose to forgo the spell's normal effects to instead double the weapon's damage dice and force the target to make a Constitution saving throw. On a failure, the target is stunned until the end of your next turn as their internal organs vibrate from the impact.
+
+
+\column
+
+#### The World-Sunderer
+At 20th level, you become a living epicenter of destruction. As an action, you can strike the air or the ground to trigger a catastrophic event for 1 minute:
+- You gain a +2 bonus to your Armor Class and have advantage on Strength and Constitution saving throws.
+- Your melee weapon attacks deal an additional 2d8 force damage. If you roll a 20 on the attack roll, the shockwave travels through the target, forcing every creature in a 30-foot cone behind them to make a Dexterity saving throw or take $8d6$ force damage.
+- You are immune to the prone and restrained conditions.
+
+Once you use this feature you must finish a short or long rest before you can use it again. If you have no uses left, you can spend a spell slot of 5th-level or higher to use it again.
+{{pageNumber,auto}}
+\page
+### Order of Evolution
+
+A scholarly Order of Magi founded to study great monsters, the Order of Evolution trains its members to venture out into the world to gather knowledge. Using the signature magic of their Order, these Magi are able to capture wondrous abilities of monsters to study for later use.
+
+#### Evolution Spells 
+You gain spells at the magus levels listed.
+Magus Level| Spells
+:-:|:-:
+3rd| absorb elements , detect evil & good
+5th| alter self, dragon's breath
+9th| elemental weapon, haste
+13th| charm monster, resilient sphere
+17th| commune with nature, contact other plane
+
+
+
+#### Evolved Armory
+At 3rd level, you have learned to magically copy the abilities of monsters for later study and use. If a non-humanoid creature damages you or forces you to make a saving throw against a special ability, attack, or another feature, you can use your reaction to store the knowledge of that ability, attack, or feature in your Arcane Armory for later use. 
+
+This ability can't be used to copy or store spells or the effects of spellcasting. Stored abilities, attacks, and features use your Spell save DC.
+
+If your Arcane Armory is full when you use this reaction,
+you can end the enchantment on one object, or forget one
+stored ability, attack, or feature as part of this reaction.
+
+As an action, you can unleash a stored ability, attack, or
+feature from your Arcane Armory, using it as the original
+creature would have, but originating from you. Once used,
+that ability, attack, or feature is instantly expended.
+
+#### Piercing Sight
+Also at  3rd level, you have honed your sight to study the monsters you seek to
+understand. As a bonus action, you can focus your sight on a
+single non-humanoid creature you can see within 60 feet.
+When you do so, you instantly learn one of the following
+pieces of information of your choice:
+
+- One of its vulnerabilities, resistances, or immunities.
+- One of its saving throw or skill proficiencies.
+- One ability, action, bonus action, or reaction listed in its stat block, most often, revealing its signature ability.
+
+You can use this feature a number of times equal to your
+Intelligence modifier (a minimum of once), and you regain all
+expended uses when you finish a long rest.
+
+
+\column
+
+#### Repeated Study
+At 7th level, you have honed your magicks to preserve the abilities you
+gather for further study. When you use an action to unleash
+an ability, attack, or feature from your Arcane Armory, you
+can use your reaction to reclaim it and add it back to your
+Arcane Armory as if you had not expended it.
+
+The first time you use this reaction on an ability, attack,
+or feature, you must expend a 1st-level spell slot, and each
+subsequent time you use this reaction on a specific ability,
+attack, or feature, the level of the spell slot you must spend
+increases by 1. If you do not use this reaction, the ability,
+attack, or feature is expended from your Armory.
+
+Finally, the maximum number of slots in your Arcane
+Armory increases by 5, but these can only be used to store
+abilities, attacks, or features from non-humanoid creatures.
+
+
+#### Wondrous Spellsunder
+At 15th level, you have fused your signature magic with that of your Spellsunder.
+
+When you use your Evolved Armory reaction on an ability,
+attack, or feature, you can use your Spellsunder as part of the same reaction. When you do so, you have advantage on attack roll.
+
+#### Master of Evolution
+At 20th level, you stand as a top scholar in your Order and are a master of monstrous knowledge. You gain the benefits listed below:
+
+- When you roll initiative you can use your Piercing Sight feature without expending a use of Spellsight.
+
+- When you use your Piercing Sight feature you learn three pieces of information of your choice instead of one.
+
+- You can use Repeated Study without expending a spell slot once per each unique ability, attack, or feature that you store within your Arcane Armory
+
+{{pageNumber,auto}}
+\page
+### Order of Gateways
+Legends tell of an Order of Magi who bargained with a Devil
+of the lower planes for knowledge of forbidden magicks that
+could teleport them across the multiverse instantly. Tracing
+your lineage back to this legendary Magus, you are a member
+of the Order of Gateways, a secretive society of Magi who can
+incorporate powerful teleportation magic into their combat.
+
+#### Gateway Spells
+You gain spells at the magus levels listed.
+Magus Level| Spells
+:-:|:-:
+3rd| ethereal anchor, jump
+5th| misty step, vortex warp
+9th| spectral passage, thunder step
+13th| banishment, dimension door
+17th| far step, teleportation circle
+
+
+#### Gateway Assault
+At 3rd level, your Order has taught you the secret art of Gateways, which you incorporate into your style of combat. Whenever you take the Attack action on your turn, you can replace one or more of your attacks with a Gateway Assault.
+
+When you do so, you force one creature you can see within 30 feet to make a Charisma saving throw against your Spell save DC. On a failed save, one of the following happens:
+
+- It teleports to an unoccupied space within 5 feet of you. That space must be on the ground or on a floor.
+- You teleport to an unoccupied space within 5 feet of it.
+
+Immediately after this teleport happens, you can make one weapon attack. If the creature succeeds on this saving throw, this feature fails and you cannot make an attack. The target can choose to fail this Charisma saving throw. 
+
+You can use this feature a number of times equal to twice your Intelligence modifier (a minimum of once), and you regain all expended uses when you complete a short or long rest. If you have no uses, you can expend a spell slot to use this feature again.
+
+#### Masterful Step
+At 7th level, your mastery over gateways grants you an increased affinity for the misty step spell. Misty step becomes a 1st-level spell for you, and when you cast it with a spell slot of 2nd-level or higher, its range increases by 30 feet for each slot above 1st.
+
+\column
+
+#### Material Anchor
+Also at 7th level, your knowledge of the arts of transposition make you nearly impossible to move against your will. You can't be teleported against your will by magical spells or abilities unless you are incapacitated or wish to be teleported by them.
+
+Additionally, as a bonus action, you can switch places with a creature you can see within 30 feet, each instantly teleporting to the other’s space. Unwilling creatures must succeed on a Charisma saving throw or be forced to switch places.
+
+
+
+#### Greater Gateways
+At 15th level, your abilities with Gateway magic have greatly increased. You can use Gateway Assault once on each of your turns without expending a use of the feature or a spell slot.
+
+Moreover, as an action on your turn, you can expend a spell slot of 1st-level or higher to target a 5-foot cube for each level of the spell slot expended. These cubes must be adjacent. All objects and creatures contained within that cube are instantly teleported to an unoccupied space you can see within 30 feet. That space must be on the ground or on a floor.
+
+Unwilling creatures can make a Charisma save to resist.
+
+
+#### Keeper of the Ways
+At 20th level, you have mastered the magicks of your Order and can step
+through the multiverse at will. You gain the benefits below:
+- The range of your Gateway Assault increases to 120 feet.
+- You can cast misty step at 1st-level as a bonus action on each turn without expending a spell slot.
+- The area you can target with a Greater Gateway doubles.
+- You learn the scatter and teleport spells, and you can cast each once per long rest without expending a spell slot.
+
+{{pageNumber,auto}}
+\page
+### Order of Hexblades
+Often arising around powerful sentient weapons, the Magi
+known as Hexblades augment their considerable skill in
+combat with sinister curses.
+
+#### Hex Warrior
+At 3rd level, you learn the chill touch cantrip. It doesn't count against your Cantrips Known, and you can Spellstrike with chill touch whenever you make an Arcane Armory weapon attack.
+
+
+
+#### Hexblade Spells
+
+Magus Level|	Spells
+:-:|:-:
+3rd|	hex, wrathful smite
+5th|	blindness/deafness, blur
+9th|	bestow curse, spirit shroud (necrotic)
+13th|	phantasmal killer, shadow of moil
+17th|	antilife shell, destructive wave (necrotic)
+
+#### Malevolent Hex
+At 3rd level, you use the sinister magic of your Order to place fell curses on your foes. When you cast Hex, you gain the following additional benefits against hostile creatures under the effects of hex:
+- Your weapon and spell attack rolls against the creature score a critical hit on a roll of 19 or 20 on the d20.
+- Once per turn when you deal necrotic damage to it, you can use a free hand to siphon its life-essence and gain temporary hit points equal to half the necrotic damage dealt. This has no effect on Constructs or Undead.
+
+When you cast hex, your concentration cannot be broken unless you willingly end it. Finally, once between each short or long rest, you can cast hex at 1st-level, without expending a spell slot.
+
+
+
+#### Accursed Armory
+At 7th level, you can store the life-essence of your foes in your
+Arcane Armory. When you drain life-essence from a
+creature with your Malevolent Hex, you can store that
+life-essence, equal to the temporary hit points that you
+would have gained, within your Arcane Armory in place
+of gaining those temporary hit points yourself.
+
+Your Arcane Armory can hold an amount of life-essence equal to ten times your Intelligence modifier (minimum of
+10 life-essence), which is used to fuel the features below:
+
+**Dire Ward.** When the creature under the effects of your
+hex spell forces you to make a saving throw, you can draw
+10 life-essence from your Arcane Armory, expending it to gain advantage on your saving throw. You must choose to
+use this feature before you roll the d20.
+
+**Sinister Spellcasting.** Whenever you cast a Hexblade
+Spell, you can expend life-essence from your Armory in
+place of expending spell slot. When you do, you expend
+10 life-essence per level of the slot used to cast the spell.
+
+#### Sentient Bond
+Starting 15th level, during the course of a long rest, you can perform a sinister 1-hour ritual to infuse one melee weapon within your Arcane Armory with 10 life-essence, granting it limited sentience until the end of your next long rest. For the duration, that weapon gains the benefits listed below:
+
+**Sentience.** The weapon gains an Intelligence, Wisdom, and Charisma score of 10. It also gains an alignment and personality which reflect the Magus who created it.
+
+**Telepathy.** The weapon can speak and understand one language of your choice. It can telepathically speak with its wielder, and its wielder can respond telepathically in kind.
+
+**Mental Bond.** While you hold the weapon in your hand, it lends you its mental abilities. You can concentrate on hex and another spell of your choice (other than hex). If you do so, your concentration on hex still cannot be broken.
+
+
+
+#### Awakened Hexblade
+At 20th level, you have reached the apex of your Order and are able to enchant your own Hexblade. 
+
+Once you have used Sentient Bond to infuse a melee Arcane Armory weapon with a total of 100 life-essence (which can be done over the course of multiple rituals), the effects of the ritual become permanent, awakening that weapon as one of the Hexblades of myth.
+
+Once you create your Hexblade, that weapon becomes a permanent part of your Arcane Armory for as long as you live, and you cannot perform the Sentient Bond ritual on another weapon. The Hexblade's Intelligence, Wisdom, and Charisma scores all increase to 16, and the Hexblade can telepathically communicate with and hear creatures within 120 feet of it.
+
+Your Hexblade also grants you the following benefits:
+
+- Attack rolls with the Hexblade against any creature under the effects of your hex spell are made with advantage.
+- Your attacks with the Hexblade treat a target's damage immunities as resistances and ignore damage resistance.
+- When you Spellstrike with the Hexblade, you can cause the damage of the weapon and spell attack to be necrotic.
+- You have advantage on saving throws against spells.
+
+{{note
+##### Sentient Weapon Personalities
+While most Hexblades are evil in their alignment and personality, this is not always the case. Being fueled by life-essence taken from living creatures will always manifest in a Hexblade's personality.
+
+When deciding on your Hexblade's personality, talk with your DM about your Magus' journey and how would manifests in the sentience you create.
+}}
+{{pageNumber,auto}}
+\page
+### Order of Hexshots
+Tracing their origins to an ancient order of witch-hunters, the
+Order of Hexshots is a secretive cabal of Magi who make use
+of powerful firearms and deadly curses. Enchanting firearms
+with occult magic, they use their powers to stand against the
+darkness, destroying evil creatures one bullet at a time.
+
+#### Hexshot Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | bane, witch bolt
+5th| phantasmal force, ray of enfeeblement
+9th| bestow curse, phantom steed
+13th| blight, shadow of moil
+17th| contagion, swift quiver
+
+#### Cursed Ammunition
+At 3rd level, you have been taught to imbue firearms with the forbidden
+power of your dark Order. You gain the following benefits:
+- You learn to enchant your firearms, holsters, and pieces of firearm ammunition as part of your Arcane Armory.
+- You can use Spellstrike with firearms that are part of your Arcane Armory. However, any spells that have an area of effect are contained to only affect your target.
+- Whenever you use Spellstrike to cast a Cantrip through a firearm, you can choose for it to deal necrotic damage.
+
+#### Arcane Gunslinger
+Also at 3rd level, your Order of Magi has unlocked the secret of black powder
+and its applications. You gain proficiency with firearms and
+tinker's tools. when you make a tinker's tools check related
+to firearms, you treat a roll of 7 or lower on the d20 as an 8.
+
+
+
+
+
+#### Hexshot
+
+At 7th level, you wreathe your ammunition with the occult power of your Order. Whenever you deal necrotic damage to a creature with
+a firearm attack, you can inflict one of the curses below. 
+
+Once you inflict a curse upon a creature, you cannot inflict it with another curse until the start of your next turn. These effects can be removed when lesser restoration or another spell of similar (or greater) power is cast on the creature.
+
+**Curse of Confusion.** The first time the creature makes an attack roll or ability check before the start of your next turn it must subtract your Intelligence modifier from its roll.
+
+**Curse of Slowing.** The creature's speed is reduced by a number of feet equal to five times your Intelligence modifier (minimum of 5 feet) until the start of your next turn.
+
+**Curse of Wounding.** The creature cannot regain hit points or gain temporary hit points until the start of your next turn.
+#### Quickdraw
+Also at 7th level, you have learned that the first shot can determine who wins and who is dead. You add your proficiency bonus to initiative rolls so long as you are not incapacitated or surprised.
+
+#### Greater Curses
+At 15th level, y ou have mastered and modified your signature Hexshots.
+
+Whenever you attack with an Arcane Armory firearm you can
+choose for it to deal necrotic damage and apply a Hexshot.
+
+You also gain the following Hexshot curse option:
+
+**Curse of Crippling.** The creature suffers the effects of the
+bestow curse as if it had failed its Wisdom saving throw. 
+
+This effect lasts until the beginning of your next turn, and it does not require your concentration.
+
+#### Otherworldly Hexshot
+At 20th level, you have risen to the top of your Order and stand as an
+unparalleled gunslinger. You gain the benefits below:
+- You cannot be surprised so long as you are conscious.
+- When you inflict one of your Hexshot curses on a creature you can use a bonus action to also apply the effects of that curse to targets of your choice within 5 feet of the target.
+- When you use your action to cast a spell, you can use your bonus action on that turn to make a single firearm attack or cast a Cantrip using a firearm as a spellcasting focus.
+
+{{pageNumber,auto}}
+\page
+
+
+### Order of the Occultism
+A secretive Order of infiltrators and spies, these Magi use their clandestine abilities to end conflicts before they begin. Known as Shades, these warriors specialize in illusion magic and thrive under cover of shadow.
+
+#### Eclipse Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | *disguise self, sleep*
+|5th | *pass without trace, shadow blade*
+|9th | *hypnotic pattern, nondetection*
+|13th | *divination, greater invisibility*
+|17th | *mislead, modify memory*
+
+#### Shroud of Darkness
+At 3rd level, as an action, you can envelop yourself in a Shroud of illusion magic, which lasts for 1 hour. While this Shroud is active, you can use a bonus action to turn invisible if you are in an area of dim light or darkness. This invisibility lasts for the duration of your Shroud, but it ends early if you attack, touch, or force a creature to make an ability check or saving throw.
+
+Once you conjure your Shroud you must complete a short or long rest before you can use your Shroud again. When you have no uses remaining, you can spend a spell slot of 1st-level or higher to conjure your Shroud of Darkness again.
+
+#### Eyes of Night
+At 3rd level, you have trained to fight in the dark. You gain darkvision to a range of 60 feet. If you have darkvision from another feature, the range of your darkvision increases by 30 feet.
+
+
+
+#### From Shadows
+At 7th level, you are adept at bringing down foes when they are unaware. When you hit a creature that is surprised with a Spellstrike attack, it automatically fails its saving throw against the spell.
+
+Moreover, if you use Ethereal Jaunt while you are in dim light or darkness, the distance you can teleport is doubled.
+
+#### Improved Shroud
+At 7th level, your magic conceals you from creatures of shadow. If your Shroud of Darkness is active while you are in darkness, you are invisible to anything that relys on darkvision to see you.
+
+\column
+
+#### Cloud the Mind
+At 15th level, you can penetrate the minds of your foes with your potent illusion magic. As an action, you can force one creature you can see within 30 feet to make an Intelligence saving throw against your Magus Spell save DC. On a failed save, it can't see, hear, smell, or sense you in any way for 1 minute. On a success, it is immune to this effect for 24 hours. This effect immediately ends if you attack, touch, or force the creature
+to make an ability check or saving throw.
+
+You can use this feature a number of times equal to your Intelligence modifier (minimum of once), and you regain all uses when you finish a long rest. When you have no uses left, you can expend a spell slot to use this feature again.
+
+#### Hour of the Eclipse
+At 20th level, yu have ascended to the apex of your Order and can become one with the darkness itself. You can conjure your Shroud of Darkness at will, and while your Shroud is active you gain the benefits of both the invisibility and pass without trace spells, without concentration.
+
+Finally, you can use a bonus action on each of your turns to teleport up to 60 feet to a space you can see that is in an area of dim light or darkness.
+{{pageNumber,auto}}
+\page
+### Order of Runecarvers
+Arguably the older order of Magi, Runecarvers learn to wield
+the ancient magic of Runes. Legends say that the first Magi of
+this Order studied at the feet of great giants, learning all they
+could. Others tell of Magi who stole the secrets of Runes from
+ancient dragons. Still others speak of a fell bargain struck by
+a dying Magus and an Archfey.
+
+Though its origin may be lost, the Order of Runecarvers
+have preserved, taught, and wielded the magic of Runes for
+generations, using them to augment their skill in battle
+
+
+#### Runic Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | *illusory script, protection from evil & good*
+|5th | *arcane lock, enhance ability*
+|9th | *glyph of warding, magic circle*
+|13th | *death ward, freedom of movement*
+|17th | *dispel evil & good, planar binding*
+#### Rune Carver
+
+At 3rd level, you have been taught the ancient art of runes. You learn to
+speak, read, and write one of the following languages of your
+choice: Draconic, Druidic, Dwarven, Giant, or Sylvan. This is
+the language that your Runes are carved in.
+
+You also gain proficiency with calligrapher's supplies or
+mason's tools, which become your Runecarver tools. When
+you make an ability check that uses your Runecarver tools
+proficiency you can treat a d20 roll of 7 or lower as an 8.
+
+#### Warrior Runes
+
+Also at 3rd level, y ou have mastered the use of ancient Runes for use in battle:
+
+**Runes Known.** You know two Runes of your choice from
+the list at the end of this Order. Some Runes have a level
+prerequisite, which you can learn when you meet that level.
+You learn one additional Rune of your choice when you
+reach 6th, 14th, and 20th level in this class.
+
+When you gain a level in this class, you can replace one
+of the Runes you know with another Rune of your choice.
+
+**Inscribing Runes.** Over the course of 1 minute, you can touch your Runecarver tools to a weapon, shield, or suit of armor and expend a spell slot of 1st-level or higher to imbue that object with one Rune you know. Each Rune you know can only be imbue into one object at a time.
+
+That object, and its bearer, gain the benefits of the Rune until you finish a long rest, at which point the Rune dispels.
+
+As an action, you can touch the object and dispel the Rune early, regaining the spell slot you expended to imbue it.
+
+
+\column
+
+#### Runic Consumption
+
+At 7th level, creatures can draw the magic from your Runes in times of
+need. A creature bearing an object imbued with one of your
+Runes can consume it to gain the corresponding benefit
+detailed below. The Rune is then instantly dispelled.
+
+**Armor.** When the creature takes damage from an attack,
+it can use its reaction to reduce the incoming damage by an
+amount equal to 1d8 + your Intelligence modifier.
+
+**Object.** As an action, the creature gains temporary hit
+points equal to 1d8 + your Intelligence modifier.
+
+**Shield.** When the creature is hit by an attack it can use its
+reaction to add your Intelligence modifier to its Armor Class
+against the triggering attack.
+
+**Weapon.** When the creature hits a target with the weapon
+it can deal an additional 2d8 force damage to the target.
+
+#### Runic Ward
+
+At 15th level, your Runes offer a measure of protection to those that bear
+them. When a creature bearing an object imbued with one of
+your Runes is forced to make a saving throw, it can use its
+reaction to draw on the ambient power of the Rune and add
+your Intelligence modifier to the result of its saving throw.
+
+#### Master Battlescribe
+
+You are a true terror of Runic power and steel on the field of
+battle. As a bonus action, you can teleport to an unoccupied
+space within 5 feet of an object that is imbued with one of
+your Runes and immediately make a weapon attack.
+{{pageNumber,auto}}
+\page
+
+
+## Runes
+Listed below are the Runes available to Magi of the Order of
+Runecarvers. If a Rune has a prerequisite, you can learn it
+when you meet any prerequisites it may have.
+
+#### Rune of Air
+This Rune magically lightens the object, reducing it to one
+tenth of its original weight. Weapons gain the Light property,
+Heavy weapons lose the Heavy property, and Heavy Armor no
+longer imposes disadvantage on Dexterity (Stealth) checks.
+#### Rune of Defense
+The bearer of this Rune gains a +1 bonus to its Armor Class
+or to one saving throw (chosen when you imbue this Rune). A
+creature can only benefit from one of these Runes at a time.
+#### Rune of Disguise
+This Rune allows its bearer to use an action to change its
+appearance as if it used the disguise self spell.
+#### Rune of Sharpness
+The bearer of this Rune gains a +1 bonus to the damage rolls
+it makes with melee weapon attacks. A creature can only
+benefit from one of these Runes at a time.
+#### Rune of Sight
+This Rune enhances sight. The bearer gains proficiency in
+Perception, and whenever it makes a Wisdom (Perception)
+check it can treat a roll of 7 or lower on the d20 as an 8.
+#### Rune of Strength
+This Rune enhances strength with magic. The bearer of this
+Rune gains a bonus to any Strength check it makes equal to
+your Intelligence modifier.
+#### Rune of the Elements
+*Prerequisite: 7th level Magus*::
+The bearer of this Rune gains resistance to one of the
+following damage types: acid, cold, fire, poison, lightning, or
+thunder (chosen when you imbue this Rune).
+#### Rune of Fortitude
+*Prerequisite: 7th level Magus*::
+This Rune grants increased resilience. As an action, the
+bearer of this Rune can gain temporary hit points equal to
+your Intellignece modifier.
+#### Rune of Life
+*Prerequisite: 7th level Magus*::
+This Rune causes the object to grow legs and gain a 20 foot
+walking speed. As a bonus action, you can order the object to
+move up to its speed and attack a target within 5 feet. You use
+your Spell Attack modifier, and on hit, it deals bludgeoning or
+slashing damage equal to 1d6 + your Intellignece modifier.
+#### Rune of Minor Magicks
+*Prerequisite: 7th level Magus*::
+This Rune allows its bearer to learn and use one cantrip
+(chosen when you imbue this Rune) from the Wizard spell
+list. It uses your Intelligence as its spellcasting modifier.
+#### Rune of Adamant
+*Prerequisite: 14th level Magus*::
+Once per turn, the bearer of this Rune can use its reaction
+to reduce damage it would take by 1d8.
+#### Rune of Flight
+*Prerequisite: 14th level Magus*::
+The bearer of this Rune gains a flying speed equal to its
+walking speed, and can hover.
+{{pageNumber,auto}}
+\page
+###  Order of Scales
+Where most magi are trained to fight alone, those who join the Order of Scales are bound to a Draconic Companion to fight alongside. These magi use ancient magic to infuse their Companion with draconic might beyond their years. 
+
+#### Scales Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | *absorb elements, command*
+|5th | *dragon's breath , warding bond*
+|9th | *elemental weapon, fear*
+|13th | *dominate beast, elemental bane*
+|17th | *awaken, dominate person*
+#### Wyrmsoul
+At 3rd level, the bond has infused your soul with draconic power.
+You learn to speak, read, and write Draconic.
+
+Also, if you cast a Magus spell that deals acid, cold, fire, lightning, or poison damage, you can cause it to deal the damage type of your Companion's Essence instead of its damage type
+
+#### Draconic Companion
+At 3rd level, your soul has been bound to that of a Draconic Companion. You choose its Essence from the following options: acid, cold, fire, lightning, or poison. Its Essence influences the color of its scales, and once it is chosen it cannot be changed.
+
+Your Companion uses the Draconic Companion stat block on this page, which uses your proficiency bonus (PB) and Magus Spell save DC throughout. It cannot bear a rider.
+
+Your Draconic Companion is friendly to you and your allies and it obeys your commands. In combat, it acts on your turn. It can move and use its reaction on its own, but it only takes the Dodge action on its turn unless you use a bonus action to order it to take an action from its stat block or another action. Also, whenever you take the attack action, you can forgo one of your attacks to command your Companion to attack. If you are incapacitated, your Companion can act on its own, and it will defend both itself and you to the best of its abilities.
+
+When your Companion is reduced to 0 hit points it makes death saving throws like a player character would. When it dies, you can perform a special 1-hour ritual, which can be during a short or long rest, that restores it to life with 1 hit point. As a part of this ritual, you can spend your Companion's hit dice so that it regains additional hit points equal to the hit dice rolled when it is returned to life.
+
+{{monster,frame
+## Draconic Companion
+*Small Dragon, Neutral*
+___
+**Armor Class** :: 14 + PB (natural armor)
+**Hit Points**  :: 5 + five times your Magus level
+**Speed**       :: 30 ft., fly 30 ft.
+___
+|  STR  |  DEX  |  CON  |  INT  |  WIS  |  CHA  |
+|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
+| 16(+3)|12 (+1)|15 (+2)| 8 (-1)|10 (0) |14 (+2)|
+___
+**Damage Immunities** :: Essence damage type
+**Senses**               :: darkvision 60 ft., passive Perception 10
+**Languages**            :: Draconic, understands any languages spoken by the Magus bound to it.
+___
+***Hit Dice.*** Your Companion has a total number of d8 Hit Dice equal to your Magus level. It also gains all the normal benefits of both short and long rests.
+:
+***Soul Bound.*** You add your PB to any ability check or saving throw that your Draconic Companion makes
+
+### Actions
+***Claw.*** *Melee Weapon Attack:* +3 + PB to hit, reach 5 ft., one target. *Hit:* 1d4 +3 + PB slashing damage + 1d4 Essence damage.
+}}
+
+
+
+
+
+#### Infusion of Might
+At 7th level, as your power increases, so does that of your Companion. Your Companion becomes Medium in size and can bear you as a rider so long as you are Medium or smaller. However, its flying speed is halved while you are riding it.
+
+Your Companion's claw attacks also count as magical, and you roll d6s in place of d4s for its Claw attack damage rolls.
+
+{{imageMaskCorner34,--offsetX:50%,--offsetY:-59%,--rotation:0
+  ![](https://www.gmbinder.com/images/13cOnqb.jpeg){height:60%,top:600px,left:200px}
+}}
+
+
+{{pageNumber,auto}}
+\page
+#### Draconic Majesty
+At 15th level, your Companion can channel its Essence into a blast of pure elemental power. As an action, it can exhale a 30-foot cone of elemental breath. Targets in that area must make a Dexterity saving throw against your Magus Spell save DC. Targets take 10d6 Essence damage on a failure, and half on a success.
+
+Your Companion can use its Elemental Breath a number of times equal to your Intelligence modifier (minimum of once), and it regains all expended uses when it finishes a long rest. If it has no uses left, you can expend a spell slot of 3rd-level or higher to command it to use its Elemental Breath again.
+
+#### Mythic Companion
+At 15th level, your bond with your Companion has unlocked its true power. As an action, your Companion can change its size, choosing to be Small, Medium, or Large. If it is Large in size, its flying speed is no longer halved while it bears you as its rider. Also, once per turn when you command your Companion to attack, it can make two attacks instead of one.
+
+
+
+
+
+#### Grand Dragon Rider
+At 20th level, empowered by your bond, your Draconic Companion has realized its true power. Your Companion uses the Exalted Companion stat block below in place of its previous statistics:
+{{monster,frame
+## Exalted Companion
+*Large Dragon, Lawful*
+___
+**Armor Class** :: 20 (natural armor)
+**Hit Points**  :: 125
+**Speed**       :: 40 ft., climb 40 ft., fly 60 ft.
+___
+|  STR  |  DEX  |  CON  |  INT  |  WIS  |  CHA  |
+|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
+|20 (+5)|12 (+1)|18 (+4)|14 (+2)|10 (+0)|18 (+4)|
+___
+**Damage Immunities** :: Essence type
+**Senses**            :: Blindsight 30ft, darkvision 60ft, pasive Perception 16
+**Languages**            ::  Draconic, understands any languages spoken by the Magus bound to it.
+___
+***Hit Dice.*** The Companion has a number of d10 Hit Dice equal to your Magus level. It also gains all the normal benefits of both short and long rests.
+:
+***Soul Bound.*** You add your PB to any ability check or saving throw that your Draconic Companion makes.
+### Actions
+***Claw.*** *Melee Weapon Attack:* +11 to hit, reach 5 ft., one target. *Hit:* 2d6 +5 magical slashing damage + 1d6 Essence damage. 
+:
+***Elemental Breath (Recharge 5-6).*** Your Companion exhales elemental energy in a 30-foot cone, forcing any creatures in that area to make a Dexterity saving throw. Creatures take 12d6 Essence damage on a failure, and half as much damage on a success.
+}}
+{{pageNumber,auto}}
+\page
+
+### Order of the Serpent Bearer
+Magi of the Order of the Serpent Bearer are the ultimate practitioners of restorative arcane arts, often acting as legendary healers who can mend even the most grievous wounds with a mere thought. While other Magi focus on destructive power, these warriors believe that true mastery over the "middle path" involves the absolute control over life and death. They are often found on the front lines, not as simple soldiers, but as divine-like figures whose presence alone can turn the tide of a war by reviving the fallen and putting foes into an eternal slumber.
+
+
+#### Serpent Bearer Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | *cure wounds, sleep*
+|5th | *lesser restoration, prayer of healing*
+|9th | *revivify, hypnotic pattern*
+|13th | *death ward, aura of life*
+|17th | *greater restoration, mass cure wounds*
+
+
+
+#### Miraculous Surgeon
+At 3rd level, you gain proficiency in the Medicine skill. 
+
+Additionally, you have learned to channel your Spellstrike to mend rather than mar. When you use your Spellstrike feature with a spell that restores hit points, you can make an attack roll against a willing creature. 
+
+On a hit, the target is healed by the spell's amount, and you add your Intelligence modifier to the healing provided.
+
+#### Hypnagogic Strike
+Starting at 3rd level, you can infuse your weapons with the sedative power of the Thirteenth House. Once per turn, when you hit a creature with an Arcane Armory weapon, you can force the target to make a Wisdom saving throw against your Spell save DC. 
+
+On a failure, the creature is Charmed until the end of your next turn. While charmed in this way, the creature is drowsy and its speed is halved.
+
+#### Law of Awakening
+At 7th level, your mastery over the body allows you to negate ailments. As a reaction when you or a creature you can see within 30 feet is subjected to the Blinded, Deafened, Paralyzed, or Poisoned condition, you can expend a spell slot to instantly end that condition on the target.
+
+Furthermore, when you use Ethereal Jaunt, you can choose to leave behind a trail of soothing mist. Any ally within 5 feet of the space you exited or entered regains hit points equal to your Intelligence modifier (minimum of 1).
+
+\column
+
+#### Resurrective Aegis
+Beginning at 15th level, your connection to the life force is so potent that you can defy death itself. When a creature within 60 feet of you (including yourself) is reduced to 0 hit points, you can use your reaction to instantly teleport to an unoccupied space within 5 feet of them and cast a healing spell of 1st level or higher without expending a spell slot.
+
+Once you use this feature, you cannot do so again until you finish a long rest, unless you expend a 5th-level spell slot to use it again.
+
+#### Ascended Ophiuchus
+At 20th level, you reach the apex of the Serpent Bearer’s power, becoming a beacon of restoration and absolute authority. As an action, you can emanate a 60-foot aura of "Divine Healing" for 1 minute:
+- Any hostile creature that starts its turn in the aura must succeed on a Wisdom saving throw or fall Unconscious for 1 minute or until it takes damage.
+- You and all allied creatures within the aura regain 10 hit points at the start of each of your turns
+- You can use Spellstrike as part of every attack you make, and you have advantage on attack rolls against any creature currently affected by a condition.
+
+Once you use this feature you must finish a short or long rest before you can use it again. If you have no uses left, you can spend a spell slot of 5th-level or higher to use it again.
+
+{{pageNumber,auto}}
+\page
+
+### Order of Spellslinger
+
+The youngest Order of Magi was created upon the discovery
+of black powder and deadly firearms. Dedicated to the arcane
+applications of these wondrous weapons, Spellslinger Magi
+combine their mechanical knowledge of firearms with potent
+battle magic and learn to cast spells through these weapons.
+
+
+ 
+#### Spellslinger Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+3rd| faerie fire, hail of thorns
+5th |acid arrow, ray of enfeeblement
+9th| conjure volley, lightning arrow
+13th| blight, freedom of movement
+17th| cone of cold, swift quiver
+
+#### Arcane Gunslinger
+Starting at 3rd level, your Order of Magi has hoarded the secret of black powder
+and its applications. You gain proficiency with firearms and
+tinker's tools. when you make a tinker's tools check related
+to firearms, you treat a roll of 7 or lower on the d20 as an 8.
+ #### Enchanted Ammunition
+Also at 3rd level, you have been taught to imbue your firearms with the arcane
+power of your Order. You gain the following benefits:
+You learn to enchant your firearms, holsters, and pieces
+of firearm ammunition as part of your Arcane Armory.
+You can use Spellstrike with firearms that are part of your
+Arcane Armory. However, any spells that have an area of
+effect are contained to only affect your target.
+
+#### Arcane Ricochet
+
+At 7th level, the arcane power imbued within your firearms allows you to
+curve your shots and increase your accuracy. When you make
+an attack with an Arcane Armory firearm and miss, you can
+use your reaction to repeat the attack against another target
+of your choice within 30 feet of the original target.
+
+This reaction works with both normal firearm attacks and
+cantrips that you cast using a firearm as a spellcasting focus.
+
+
+#### Instantaneous Enchantments
+Beginning at 15th level, y ou have mastered and modified your signature arcane spell
+shots. When you use your action to cast a cantrip, you can
+make a single weapon attack as a bonus action on that turn.
+
+Moreover, when you cast a cantrip using a firearm as the
+spellcasting focus you can make one of the changes below:
+
+**Draining Shot.** The cantrip deals necrotic damage on hit
+in place of its normal damage type, and you gain temporary
+hit points equal to half the necrotic damage dealt.
+
+**Empowered Shot.** You add your Dexterity or Intelligence
+modifier (your choice) modifier to the damage of the cantrip.
+
+**Explosive Shot.** On hit, any creatures within 5 feet of the
+target must succeed on a Dexterity saving throw or take 1d6
+damage of the type dealt by the cantrip.
+
+**Transmuted Shot.** The cantrip deals the damage type of
+a Magus spell you know in place of its normal damage type.
+#### Arcane Deadeye
+At 20th level, you have risen to the top of your Order and stand as an
+unparalleled gunslinger. You gain the benefits below:
+- When you attack with an Arcane Armory firearm, you can change its damage type to match a Magus spell you know.
+- You cannot be surprised so long as you are conscious.
+- You can use your Arcane Ricochet reaction when your attack hits, repeating an attack against another target.
+- When you use your action to cast a spell, you can use your bonus action on that turn to make a single firearm attack or cast a cantrip using a firearm as a spellcasting focus.
+
+{{pageNumber,auto}}
+\page
+### Order of Spellswords
+Exceptionally rare, even among Magi, members of the Order of Spellswords master both advanced swordplay and magic. They dedicate their life to the pursuit of excellence in combat and little else. Combining the secret magic of their Order and advanced martial techniques, there are few warriors that can match the enchanted blade of a Spellsword in direct combat.
+
+#### Martial Exploits
+At 3rd level, you have studied various martial exploits to augment your Order's magical abilities. You gain the following features:
+
+**Exploit Dice.** The Spellsword Exploits table shows how many Exploit Dice you have to use your Exploits. To use an Exploit, you expend an Exploit Die, and you regain all your expended Exploit Dice when you finish a short or long rest.
+
+**High Degree.** Your Magus level limits the technicality of Exploits you are able to learn and use. This limit is reflected in the High Degree column of the Spellsword Exploits table.
+
+**Exploits.** You learn two Martial Exploits of your choice from those available to the Alternate Fighter. You can only use one Exploit per ability check, attack, or saving throw.
+
+When you gain a Magus level, you can replace one Exploit you know with another Martial Exploit of your choice.
+
+**Saving Throws.** If an Exploit requires a creature to
+make a saving throw, its DC is calculated as follows:
+
+**Exploit save DC** = 8 + your proficiency bonus + your Strength or Dexterity modifier (your choice).
+{{classTable
+##### Spellsword Exploits
+| Class  | Exploits | Exploit | Exploit |   High  |
+| Level  | Known    | Die     |   Dice  |  Degree |
+|:------:|:--------:|:-------:|:-------:|:-------:|
+|  1st   |    2     |   d4    |    2    |   1st   |
+|  2nd   |    2     |   d4    |    2    |   1st   |
+|  3rd   |    2     |   d4    |    2    |   1st   |
+|  4th   |    2     |   d4    |    2    |   1st   |
+|  5th   |    3     |   d4    |    2    |   1st   |
+|  6th   |    3     |   d4    |    2    |   1st   |
+|  7th   |    4     |   d6    |    2    |   1st   |
+|  8th   |    4     |   d6    |    2    |   1st   |
+|  9th   |    4     |   d6    |    2    |   1st   |
+|  10th  |    4     |   d6    |    3    |   2nd   |
+|  11th  |    5     |   d6    |    3    |   2nd   |
+|  12th  |    5     |   d6    |    3    |   2nd   |
+|  13th  |    5     |   d6    |    3    |   2nd   |
+|  14th  |    5     |   d6    |    3    |   2nd   |
+|  15th  |    6     |   d6    |    4    |   2nd   |
+|  16th  |    6     |   d6    |    4    |   2nd   |
+|  17th  |    6     |   d6    |    4    |   2nd   |
+|  18th  |    6     |   d6    |    4    |   2nd   |
+|  19th  |    7     |   d8    |    4    |   3rd   |
+|  20th  |    7     |   d8    |    4    |   3rd   |
+}}
+
+
+
+\column
+
+#### Spellsword's Armory
+At 3rd level, you have learned to store knowledge of combat styles within your Arcane Armory. You learn one additional Fighting Style of your choice from those available to the Magus class, but your knowledge of that Fighting Style is stored within your Arcane Armory, much like a weapon or set of armor.
+
+When you use a bonus action to conjure objects from your Arcane Armory, you can draw knowledge of that Fighting Style into your mind, shunting knowledge of your current Fighting Style into your Arcane Armory.
+
+You learn an additional Magus Fighting Style of your choice, and store your knowledge of it in your Armory in the same way at 7th, 15th and finally at 20th level in this class.
+
+You can only have one Fighting Style from the Magus class active at a time. However, this limit has no effect on Fighting Styles you learn from other features, feats, or class levels.
+
+
+
+
+#### Mystic Precision
+At 7th level, the magic you channel through your weapon attacks
+supernaturally increases your accuracy. Whenever you
+make a Spellstrike attack, you can add the level of the
+spell slot you expend (0 for Cantrips) to all attack rolls
+you make with that weapon until the end of your turn.
+
+In addition, when you gain the Spellsunder feature
+at 9th level, you also gain a bonus to any weapon attack
+(minimum of 0) you make as part of Spellsunder equal
+    to the level of the spell slot expend (minimum of +1).
+{{pageNumber,auto}}
+\page
+#### Ethereal Warrior
+At 15th level, rather than develop new magics, Spellswords are masters of the signature magics of the Magi. Immediately before or after each weapon attack you make on your turn, you can use your Ethereal Jaunt feature to teleport to an unoccupied space you can see within 10 feet of you.
+
+In addition, your martial skill makes your Magi techniques more accurate. Whenever you make a weapon attack as part of your Spellsunder feature, you can expend an Exploit Die, roll it, and add the result to your Spellsunder attack roll. You must choose to do so before you make your attack roll.
+#### Arcane Blademaster
+At 20th level, as a bonus action, you can enter a trance that enhances your combat skills to legendary levels, granting you the benefits listed below for 1 minute:
+
+- You gain the knowledge and benefits of all the Fighting Styles you learned through your Spellsword's Armory.
+- You can use Spellstrike as part of every attack you make.
+- Once per turn, you can use a Martial Exploit you know without expending an Exploit Die, or cast a Magus spell of 2nd-level or lower without expending a spell slot.
+- The distance of your Ethereal Jaunt is doubled.
+
+This trance ends early if you use a bonus action to end it
+or you are incapacitated. Once you use this trance, you must finish a long rest before you can use it again. If you have no uses left you can expend a 5th-level spell slot to use it again.
+### Order of Sentinels
+Magi who join the Order of Sentinels almost always do so for noble reasons. Combing their talent for the arcane with their signature style of defensive combat to serve as guardians for mages, nobles, and other important figures.
+
+
+
+
+#### Sentinels Spells
+
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | *compelled duel, sanctuary*
+|5th | *aid, warding bond*
+|9th | *beacon of hope, protection from energy*
+|13th | *faithful hound, death ward*
+|17th | *antilife shell, circle of power*
+
+
+#### Armored Guardian
+At 3rd level, unlike most Magi you have trained to take a hit. When you join this Order, you gain proficiency with heavy armor, and your walking speed is not reduced by wearing heavy armor.
+\column
+#### Sentinel's Bond
+At 3rd level, you are taught the signature magic of your Order. At the end of a long rest, you can touch a willing creature, forging a mystical bond that designates it as your Ward until your next long rest.
+
+When your Ward is targeted by an attack or forced to make a saving throw and you are within 10 feet of it, you can use a reaction to instantly switch places and become the target of the triggering attack or effect. You must be able to see your Ward to use this reaction.
+
+At certain Magus levels, the range of this reaction increases: at 7th level (30 feet), at 15th level
+(60 feet), and finally at 20th level the range is limited only by your line of sight.
+
+#### Aegis of the Guardian
+At 7th level, you can temporarily infuse your Sentinel's Bond with arcane power to absorb damage. When you use your Sentinel's Bond reaction and you take damage, you can expend a spell slot as part of the same reaction to reduce that damage by 2d8 per level of the spell slot you expended.
+
+Moreover, whenever you start your turn within 10 feet of your Ward, you can grant one of you temporary hit points equal to your Intelligence modifier (minimum of 1).
+
+#### Bond Perfected
+At 15th level, the magic of your Bond has reached its apex. When you use your Sentinel's Bond reaction you are considered resistant to any damage you take from the triggering attack or effect.
+
+In addition, while you are within 10 feet of your Ward you are both immune to the charmed and frightened conditions. If either of you is charmed or frightened and is within 10 feet of the other, the effects of the condition are temporarily suppressed, so long as you remain within 10 feet.
+
+
+#### High Sentinel
+At 20th level, you have risen to the highest rank in the Order of Sentinel and stand as a stalwart arcane shield for any who are under your protection. At the end of each long rest, you can bond up to five willing creatures as your Wards with Sentinel's Bond. All other rules for your Sentinel's Bond still apply for you.
+
+Also, when you use your Sentinel's Bond reaction because your Ward was targeted by a spell, you can use Spellsunder as part of the same reaction. When you do so, you have advantage on your Spellsunder attack roll.
+
+If your Spellsunder fails, you can still use Mystic Aegis to reduce the damage.
+{{pageNumber,auto}}
+\page
+
+
+### Order of Spellbreakers
+Magi who join the Order of Spellbreakers are known for their ruthless dedication in achieving their goals. This fraternity of warriors and mage hunters use their arcane abilities to slay any who abuse magic potential. While most Spellbreakers are discerning as they pour out judgment upon their foes, some have sworn to destroy any creatures who wield the arcane.
+
+#### Spellbreaker Spells
+You gain spells at the magus levels listed.
+|Magus Level| Spells  |
+|:---------:|:------------| 
+|3rd | *bane, detect evil and good*
+|5th | *blindness/deafness, silence*
+|9th | *bestow curse, magic circle*
+|13th | *banishment, confusion*
+|17th | *dispel evil and good, planar binding*
+
+#### Baleful Mark
+At 3rd level, as a bonus action on your turn, you can place a Baleful Mark on a creature you
+can see. This Mark lasts until you use this feature on another creature, the target dies, or it is removed by an equally powerful spell.
+
+This Mark is only visible to you, and while it is active, you gain the benefits listed below:
+
+- You know the exact direction of your Mark, so long as you both remain on the same plane of existence.
+- You learn its spellcasting ability and the level of the highest level spell it can cast, if any. 
+- If your Mark attempts to cast a spell while it is within your reach, you can use your reaction to make an opportunity attack against it.
+- Whenever you damage your Mark, it has disadvantage on its subsequent saving throw to maintain concentration.
+
+#### Mantle of Defense
+At 7th level, you can steel yourself to better resist the magic of your hated foes. Whenever your Mark forces you to make a saving throw to resist a spell or another magical effect, you gain a bonus to your roll equal to your Intelligence modifier (minimum of +1).
+
+\column
+
+#### Crippling Mark
+At 7th level, when you force your Mark to make a saving throw as part of a Spellstrike attack, you can end your Baleful Mark as part of the attack to impose disadvantage on its saving throw.
+
+However, when you end your Baleful Mark in this way, you cannot Mark that creature again until you finish a long rest.
+
+
+
+#### Reflective Spellsunder
+At 15th level, you have become so adept at the manipulation of time that you can conjure versions of yourself from the future to aid you. As an action, you can expend a spell slot of 3rd-level or higher to conjure a version of yourself from the future.
+
+Your Future Self shares your initiative in combat and acts immediately after you. They act independently and will aid you to the best of their abilities. Your Future Self has a total number of hit points equal to your maximum hit points and they use your ability scores. They share features from your race, class, and other sources, including independent uses
+of Temporal Shift. However, you share your spell slots.
+
+You can ask your Future Self one question concerning the future, and they answer you using the guidelines provided in the commune spell. Their knowledge is limited to things that you may know in the future as determined by the DM.
+
+The time your Future Self remains depends on the spell slot you expended: 3rd-level (1 minute), 4th-level (1 hour), or 5th-level (8 hours). They return to their time at the end of the duration, or sooner if they are reduced to 0 hit points.
+
+There can only ever be one version of your Future Self in your current time at once. Conjuring a second Future Self causes any others to instantly return to their time.
+#### Master Spellbreaker
+At 20th level, you have risen through the ranks of your Order to become an unparalleled hunter of mages. You gain the benefits below:
+
+- When you roll initiative, so long as you are not surprised, you can mark a creature you can see with Baleful Mark.
+- Your Mark has disadvantage on its saving throws against any spells you cast on it through a Spellstrike attack.
+- When you hit your Mark with a Spellstrike attack, you can end your Baleful Mark to cause your attack, including the spell, to deal maximum damage. After you do so, you can't Mark that creature again until you finish a long rest.
+
+{{pageNumber,auto}}
+\page
+### Order of the Torch
+Your Order bears the light of sacred fire magic, passed down
+since the dawn of civilization. You focus this sacred fire magic
+through a consecrated polearm known as your Sacred Torch.
+Holding this Sacred Torch aloft, these Magi spread hope and
+use spiritual fire to drive back the darkness.
+Magus Level Feature
+#### Torch Bearer Spells
+Magus Level|	Spells
+:-:|:-:
+3rd|	burning hands, hellish rebuke
+5th|	flaming sphere, scorching ray
+9th|	fireball, minute meteors
+13th|	summon elemental (fire), wall of fire
+17th|	flame strike, immolation
+
+#### Sacred Torch
+At 3rd level, you can perform an esoteric ritual where you consecrate one
+weapon as a Sacred Torch. This ritual takes 1 hour, and it can
+be done during the course of a short or long rest. It must be a
+melee Arcane Armory weapon with the reach property. This
+Sacred Torch gains the benefits below. It remains a Sacred
+Torch until you perform this ritual on another weapon.
+
+**Flames.** You can choose for your attacks with this Sacred
+Torch to deal fire damage in place of its normal damage type.
+
+**Embers.** When you deal fire damage to a creature with
+your Sacred Torch it gains 1 Ember. It can have a maximum
+number of Embers equal to your Intelligence modifier.
+
+**Illumination.** Your Sacred Torch emits bright light out to a
+number of feet equal to 10 times the number of its Embers.
+
+**Scorch.** When you hit a target with a Sacred Torch attack,
+you can expend any number of Embers to deal an additional
+1d6 fire damage to the target per Ember expended. When you
+do so, you do not also gain an Ember from that attack.
+
+#### Illuminative Magic
+At 3rd level, you can channel the flaming power of your Sacred Torch into
+your spells. Whenever you cast a Torch Bearer spell, you can
+expend Embers in place of a spell slot. To do so, you expend
+two Embers for each level of the slot you would expend.
+
+While holding your Sacred Torch you are also resistant to
+fire damage, and have advantage on saving throws against
+spells that deal fire damage.
+
+#### Spiritual Fire
+At 7th level, your flames burn spirit and flesh. When you deal fire damage
+with a Magus spell or Magus feature you ignore resistance to
+fire damage and treat immunity to fire as resistance.
+
+#### Armor of Flame
+
+At 15th level, the power of your Sacred Torch wards you from harm. You
+are immune to the effects of any Torch Bearer spell you cast.
+Moreover, your Sacred Torch can now hold a maximum
+number of Embers equal to twice your Intelligence modifier,
+and when you finish a short or long rest your Sacred Torch
+gains Embers equal to your Intelligence modifier.
+
+#### Grand Torch Bearer
+At 20th level, you have mastered the magic of your Order and your Sacred
+Torch burns as a beacon of hope in the darkness. You gain
+the following benefits:
+- The reach of your Sacred Torch increases by 10 feet.
+- The light produced by your Sacred Torch is sunlight.
+- In place of an attack, you can whirl your Sacred Torch around your body, forcing creatures of your choice within 10 feet of you to make a Dexterity saving throw against your Magus Spell save DC. On a failed save, targets take fire damage equal to 2d10 + your Intelligence modifier
+{{pageNumber,auto}}
+\page
+### Order of Travelers
+Practitioners of what many consider a forbidden ninth school of magic, Magi of the Order of Travelers augment their skills with Chronomancy magic, the magic of time. As they grow in their understanding of these secret magic, Travelers become increasingly detached from their place in time, and turning to become strange wanderers who safeguard the flow of time.
+
+How will your Traveler Magus safeguard the flow of time?
+
+
+#### Traveler Spells
+Magus Level|	Spells
+:-:|:-:
+3rd|	expeditious retreat, featherfall
+5th|	hold person, misty step
+9th|	haste, slow
+13th|	banishment, dimension door
+17th|	hold monster, modify memory
+
+#### Temporal Shift
+At 3rd level, you can alter the passage of time to undo any mistakes and missteps you may make. Whenever you fail an ability check, miss an attack roll, or fail a saving throw, you can use your reaction to re-roll your d20. You must use this new result.
+
+You can use this feature a number of times equal to your Intelligence modifier (a minimum of once), and you regain all of your expended uses when you finish a long rest. If you have no uses of this feature remaining, you can expend a spell slot of 1st-level or higher to use this feature again.
+
+#### Visions of the Past
+At 3rd level, you have learned to see echoes of past events in the present. You gain proficiency in History, and whenever you make an Intelligence (History) check while in the location where the subject of your Intelligence (History) check took place, you can add double your proficiency bonus to your roll.
+
+#### Chronological Drift
+At 7th level, your use of time magic has caused your physical form to be detached from the normal flow of time. Your age cannot be changed by spells or magical effects, and for every 10 years that pass, your physical body only ages 1 year.
+
+At 15th level, you only age 1 year for every 100 years that pass, and at 20th level, your body stops aging completely.
+
+#### Greater Shift
+At 7th level, your knowledge of Chronomancy magic allows you to adjust the effects of time for the creatures around you. You can use Temporal Shift whenever a creature that you can see within 30 feet fails an ability check, misses an attack roll, or fails a saving throw. It must use the new result of its d20 roll.
+
+Also, at the beginning of each round of initiative in combat, so long as you are not incapacitated or surprised, you can use your reaction to roll initiative again, using the new result.
+
+
+#### Conjure Self
+At 15th level, you have become so adept at the manipulation of time that you can conjure versions of yourself from the future to aid you. As an action, you can expend a spell slot of 3rd-level or higher to conjure a version of yourself from the future.
+
+Your Future Self shares your initiative in combat and acts immediately after you. They act independently and will aid you to the best of their abilities. Your Future Self has a total number of hit points equal to your maximum hit points and they use your ability scores. They share features from your race, class, and other sources, including independent uses
+of Temporal Shift. However, you share your spell slots.
+
+You can ask your Future Self one question concerning the future, and they answer you using the guidelines provided in the commune spell. Their knowledge is limited to things that you may know in the future as determined by the DM.
+
+The time your Future Self remains depends on the spell slot you expended: 3rd-level (1 minute), 4th-level (1 hour), or 5th-level (8 hours). They return to their time at the end of the duration, or sooner if they are reduced to 0 hit points.
+
+You can only have one version of your Future Self in this time at once. Conjuring a second version causes the current Future Self present with you to instantly return to their time.
+
+#### Untethered Traveler
+At 20th level, your use of Chronomancy has caused you to become adrift in the flow of time, seeing and experiencing it radically different from those around you.
+
+As an action, you can cast a modified version of the time stop spell where you and your Future Self can both act, but you each only get one additional turn.
+
+Once you use this feature you must finish a long rest before you can cast this modified version of time stop again. 
+
+If you have no uses of this feature left, you can expend a 5th-level spell slot to cast this modified version of time stop again.
+
+{{note
+##### Chronomancy: The Magic of Time
+Introducing time travel to any story, especially one in a game where outcomes are determined by dice rolls, can be risky. Before playing a Traveler Magus, talk with your DM about the implications of these features, especially how they will run Conjure Self.
+}}
+{{pageNumber,auto}}
+\page
+### Order of Voyager
+Founded by travelers to the Astral Sea, Magi of the Order of
+Voyagers form a bond with an Astral Shard. As a bearer of an
+Astral Shard, you gain a portion of its alien power, and slowly
+merge with the Shard becoming a conduit of its astral power. 
+
+#### Voyager Spells
+Magus Level|	Spells
+:-:|:-:
+3rd| choas bolt , find familiar
+5th| magic weapon, rope trick
+9th| blink, protection from energy
+13th| arcane eye, dimension door
+17th| banishing smite , steel wind strike
+
+#### Astral Shard
+At 3rd level, you have forged a psionic bond with an Astral Shard, an alien
+being of the Astral Sea. You can cast the ritual version of find
+familiar without expending the normal material components.
+When you do so, the spell is changed in the following ways:
+
+**Familiar Type.** Your familiar's creature type is Aberration,
+and it is a crystalline version of a Beast normally summoned.
+
+**Astral Armory.** Your Arcane Armory objects reside within
+your Familiar while shunted. For each Armory object within it
+your Familiar gains a +1 bonus to saving throws.
+
+**Weapon Shift.** As a free action, the familiar transforms
+into a simple or martial weapon of your choice, and if you are
+within 120 feet, it teleports and appears in your empty hand.
+
+This weapon counts as magical, and it deals radiant damage
+on hit in place of the normal damage of that weapon.
+
+It can transform back into its Beast form as a bonus action.
+
+#### Astral Shield
+At 7th level, your Astral Shard can shield your allies from harm. When a
+creature within 15 feet of your Astral Shard is targeted by an
+attack, your familiar can use its reaction to interpose itself
+between the attacker and target, imposing disadvantage on
+the creature's attack roll.
+#### Empowered Familiar
+Also at 7th level, your bond empowers your Astral Shard familiar. The familiar
+has additional hit points equal to twice your Magus level.
+
+
+Also, when you use Ethereal Jaunt, you can instead switch
+places with your familiar so long as it is within 120 feet.
+
+\column
+
+#### Astral Knight
+At 15th level, you have begun to meld with your Astral Shard, and can take
+on a merged form for a brief time. As a bonus action, you can
+cause your familiar to teleport to and merge with you. While
+merged with your familiar you gain the following benefits:
+- Whenever you take damage you can reduce it by your Intelligence modifier (minimum of 1).
+- You gain a flying speed equal to your walking speed.
+- Any spells you cast normally or with Spellstrike can deal radiant damage in place of their normal damage type.
+
+You remain merged with your familiar for 1 minute. This
+ends early if you are Incapacitated or if you use your bonus
+action to end it. Once you use this feature you must finish a
+short or long rest before you can merge again.
+#### Grand Voyager
+At 20th level, the bond with your Astral Shard has reached its apex, and
+you operate as one creature. You gain the following benefits:
+- If your familiar is destroyed, it reforms at the start of your next turn in an unoccupied space within 5 feet of you.
+- You can use a bonus action to instantly switch places with your familiar so long as you are within 400 feet of it.
+- You can use Astral Knight at will, and are not limited to using it once per short or long rest.
+
+
