@@ -23,6 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ILocalDocumentRepository>(_ => new LocalDocumentRepository(rootPath));
         services.AddSingleton<IDocumentResourceStore>(_ => new SqliteDocumentResourceStore(rootPath));
         services.AddSingleton<ICharacterProfileStore>(_ => new JsonCharacterProfileStore(rootPath));
+        services.AddSingleton<IReadingHistoryStore>(_ => new JsonReadingHistoryStore(rootPath));
         services.AddSingleton<IExternalResourceExtractor, HomebrewResourceExtractor>();
         services.AddSingleton<IExternalResourceDownloader>(_ =>
         {

@@ -9,14 +9,20 @@ public partial class App : Application
     private readonly AppShell _shell;
     private readonly IDownloadManager _downloadManager;
     private readonly AppUpdateCoordinator _appUpdates;
+    private readonly ContentUpdateStatus _contentUpdates;
     private int _startupUpdateStarted;
 
-    public App(AppShell shell, IDownloadManager downloadManager, AppUpdateCoordinator appUpdates)
+    public App(
+        AppShell shell,
+        IDownloadManager downloadManager,
+        AppUpdateCoordinator appUpdates,
+        ContentUpdateStatus contentUpdates)
     {
         InitializeComponent();
         _shell = shell;
         _downloadManager = downloadManager;
         _appUpdates = appUpdates;
+        _contentUpdates = contentUpdates;
         UserAppTheme = AppTheme.Dark;
         _shell.Loaded += OnShellLoaded;
     }
@@ -34,20 +40,15 @@ public partial class App : Application
         }
 
         _shell.Loaded -= OnShellLoaded;
+        _contentUpdates.SetChecking();
         try
         {
             var result = await _downloadManager.UpdateInstalledDocumentsAsync();
-            var message = BuildUpdateMessage(result.UpdatedFileNames, result.FailedFileNames);
-            await MainThread.InvokeOnMainThreadAsync(() =>
-                _shell.DisplayAlertAsync("Actualización de archivos TXT", message, "Aceptar"));
+            _contentUpdates.SetResult(result);
         }
-        catch (Exception exception)
+        catch (Exception)
         {
-            await MainThread.InvokeOnMainThreadAsync(() =>
-                _shell.DisplayAlertAsync(
-                    "Actualización de archivos TXT",
-                    $"No se pudieron comprobar las actualizaciones: {exception.Message}",
-                    "Aceptar"));
+            _contentUpdates.SetUnavailable();
         }
 
         var appUpdate = await _appUpdates.CheckAsync(manual: false);
@@ -77,21 +78,4 @@ public partial class App : Application
         }
     }
 
-    private static string BuildUpdateMessage(
-        IReadOnlyList<string> updated,
-        IReadOnlyList<string> failed)
-    {
-        var sections = new List<string>
-        {
-            updated.Count == 0
-                ? "No se actualizó ningún archivo TXT descargado."
-                : $"Archivos actualizados:\n• {string.Join("\n• ", updated)}"
-        };
-        if (failed.Count > 0)
-        {
-            sections.Add($"No se pudieron actualizar:\n• {string.Join("\n• ", failed)}");
-        }
-
-        return string.Join("\n\n", sections);
-    }
 }

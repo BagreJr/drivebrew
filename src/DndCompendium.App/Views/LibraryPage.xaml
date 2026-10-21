@@ -9,13 +9,13 @@
     x:DataType="viewModels:LibraryViewModel"
     Title="Biblioteca">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
         <Border
             Grid.Row="0"
             Margin="16,6,16,4"
             Padding="10,4"
             Style="{StaticResource HeroCardStyle}">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                 <Label
                     Grid.Column="0"
                     FontAttributes="Bold"
@@ -25,8 +25,33 @@
                     Text="Tu biblioteca"
                     TextColor="{StaticResource PaperLight}"
                     VerticalTextAlignment="Center" />
-                <Button
+                <ActivityIndicator
                     Grid.Column="1"
+                    HeightRequest="22"
+                    IsRunning="{Binding IsContentStatusChecking}"
+                    IsVisible="{Binding IsContentStatusChecking}"
+                    VerticalOptions="Center"
+                    WidthRequest="22" />
+                <Border
+                    Grid.Column="1"
+                    Padding="7,3"
+                    IsVisible="{Binding IsContentCurrent}"
+                    Style="{StaticResource StatusPillStyle}"
+                    VerticalOptions="Center">
+                    <Label FontAttributes="Bold" FontSize="10" Text="{Binding ContentStatusText}" TextColor="{StaticResource Gold}" />
+                </Border>
+                <Border
+                    Grid.Column="1"
+                    Padding="7,3"
+                    BackgroundColor="{StaticResource ErrorSurface}"
+                    IsVisible="{Binding HasContentUpdateProblem}"
+                    Stroke="{StaticResource Error}"
+                    VerticalOptions="Center">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="10" /></Border.StrokeShape>
+                    <Label FontAttributes="Bold" FontSize="10" Text="{Binding ContentStatusText}" TextColor="{StaticResource Error}" />
+                </Border>
+                <Button
+                    Grid.Column="2"
                     Command="{Binding DownloadAllCommand}"
                     FontSize="11"
                     IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
@@ -38,15 +63,57 @@
             </Grid>
         </Border>
 
-        <SearchBar
+        <Grid
             Grid.Row="1"
+            Margin="16,2"
+            ColumnDefinitions="Auto,*"
+            ColumnSpacing="8"
+            IsVisible="{Binding HasRecentDocuments}">
+            <Label
+                FontAttributes="Bold"
+                FontSize="10"
+                Text="RECIENTES"
+                TextColor="{StaticResource Gold}"
+                VerticalTextAlignment="Center" />
+            <ScrollView Grid.Column="1" HorizontalScrollBarVisibility="Never" Orientation="Horizontal">
+                <HorizontalStackLayout
+                    BindableLayout.ItemsSource="{Binding RecentDocuments}"
+                    Spacing="6">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:RecentDocumentItemViewModel">
+                            <Border
+                                MaximumWidthRequest="150"
+                                Padding="9,4"
+                                BackgroundColor="#2A232C"
+                                Stroke="#625364">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="9" /></Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding BindingContext.ReadRecentCommand, Source={RelativeSource AncestorType={x:Type views:LibraryPage}}}"
+                                        CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Label
+                                    FontSize="10"
+                                    LineBreakMode="TailTruncation"
+                                    MaxLines="1"
+                                    Text="{Binding Title}"
+                                    TextColor="{StaticResource TextPrimary}" />
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </HorizontalStackLayout>
+            </ScrollView>
+        </Grid>
+
+        <SearchBar
+            Grid.Row="2"
             Margin="16,4"
             Placeholder="Buscar por título, categoría o descripción"
             SearchCommand="{Binding RefreshCommand}"
             Style="{StaticResource CompendiumSearchBarStyle}"
             Text="{Binding SearchQuery}" />
 
-        <Grid Grid.Row="2" Margin="20,4,20,8" ColumnDefinitions="*,Auto">
+        <Grid Grid.Row="3" Margin="20,4,20,8" ColumnDefinitions="*,Auto">
             <Label Style="{StaticResource SectionLabelStyle}" Text="{Binding ResultSummary}" />
             <ActivityIndicator
                 Grid.Column="1"
@@ -56,7 +123,7 @@
                 WidthRequest="22" />
         </Grid>
 
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="4">
             <RefreshView
                 Command="{Binding RefreshCommand}"
                 IsRefreshing="{Binding IsRefreshing}">

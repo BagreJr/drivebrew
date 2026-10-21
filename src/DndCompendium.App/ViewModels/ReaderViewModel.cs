@@ -14,15 +14,18 @@ public partial class ReaderViewModel : ObservableObject
     private const string FontScalePreference = "reader.fontScale";
     private readonly ILocalDocumentRepository _repository;
     private readonly IDocumentResourceManager _resourceManager;
+    private readonly IReadingHistoryStore _readingHistory;
     private CancellationTokenSource? _loadCancellation;
     private string? _documentId;
 
     public ReaderViewModel(
         ILocalDocumentRepository repository,
-        IDocumentResourceManager resourceManager)
+        IDocumentResourceManager resourceManager,
+        IReadingHistoryStore readingHistory)
     {
         _repository = repository;
         _resourceManager = resourceManager;
+        _readingHistory = readingHistory;
         mode = Preferences.Default.Get(ModePreference, "mobile");
         zoom = Math.Clamp(Preferences.Default.Get(ZoomPreference, 1d), 0.35, 2.5);
         fontScale = Math.Clamp(Preferences.Default.Get(FontScalePreference, 1d), 0.75, 1.8);
@@ -146,6 +149,14 @@ public partial class ReaderViewModel : ObservableObject
                 _ => $"Disponible parcialmente: faltan {manifest.RequiredCount - manifest.AvailableCount} recurso(s)"
             };
             SourceText = content.SourceText;
+            try
+            {
+                await _readingHistory.RecordOpenedAsync(documentId, content.Title, cancellationToken);
+            }
+            catch (Exception) when (!cancellationToken.IsCancellationRequested)
+            {
+                // Reading history is optional and must never prevent the document from opening.
+            }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

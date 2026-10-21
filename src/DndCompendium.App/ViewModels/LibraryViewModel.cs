@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DndCompendium.Core.Abstractions;
 using DndCompendium.Core.Models;
+using DndCompendium.App.Services;
 using Microsoft.Maui.ApplicationModel;
 
 namespace DndCompendium.App.ViewModels;
@@ -14,6 +15,8 @@ public partial class LibraryViewModel : ObservableObject
     private readonly IDocumentResourceManager _resourceManager;
     private readonly ISpellRepository _spellRepository;
     private readonly IExploitRepository _exploitRepository;
+    private readonly IReadingHistoryStore _readingHistory;
+    private readonly ContentUpdateStatus _contentUpdates;
     private readonly List<LibraryDocumentItemViewModel> _allDocuments = [];
     private bool _initialized;
 
@@ -22,19 +25,30 @@ public partial class LibraryViewModel : ObservableObject
         IDownloadManager downloadManager,
         IDocumentResourceManager resourceManager,
         ISpellRepository spellRepository,
-        IExploitRepository exploitRepository)
+        IExploitRepository exploitRepository,
+        IReadingHistoryStore readingHistory,
+        ContentUpdateStatus contentUpdates)
     {
         _repository = repository;
         _downloadManager = downloadManager;
         _resourceManager = resourceManager;
         _spellRepository = spellRepository;
         _exploitRepository = exploitRepository;
+        _readingHistory = readingHistory;
+        _contentUpdates = contentUpdates;
         _downloadManager.ProgressChanged += OnDownloadProgressChanged;
+        _contentUpdates.Changed += OnContentUpdateChanged;
     }
 
     public ObservableCollection<LibraryDocumentItemViewModel> Documents { get; } = [];
+    public ObservableCollection<RecentDocumentItemViewModel> RecentDocuments { get; } = [];
 
     public bool HasDocuments => Documents.Count > 0;
+    public bool HasRecentDocuments => RecentDocuments.Count > 0;
+    public bool IsContentStatusChecking => _contentUpdates.State == ContentUpdateState.Checking;
+    public bool IsContentCurrent => _contentUpdates.State == ContentUpdateState.Current;
+    public bool HasContentUpdateProblem => _contentUpdates.State == ContentUpdateState.Problem;
+    public string ContentStatusText => _contentUpdates.Label;
 
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
@@ -243,6 +257,14 @@ public partial class LibraryViewModel : ObservableObject
         await Shell.Current.GoToAsync($"{AppRoutes.Reader}?documentId={documentId}");
     }
 
+    [RelayCommand]
+    private static async Task ReadRecentAsync(RecentDocumentItemViewModel? document)
+    {
+        if (document is null) return;
+        var documentId = Uri.EscapeDataString(document.Id);
+        await Shell.Current.GoToAsync($"{AppRoutes.Reader}?documentId={documentId}");
+    }
+
     private async Task ReloadDocumentsAsync()
     {
         var documents = await _repository.GetDocumentsAsync();
@@ -260,6 +282,20 @@ public partial class LibraryViewModel : ObservableObject
             _allDocuments.Add(new LibraryDocumentItemViewModel(document, manifest));
         }
         ApplyFilter();
+        await ReloadRecentDocumentsAsync();
+    }
+
+    private async Task ReloadRecentDocumentsAsync()
+    {
+        var installedIds = _allDocuments.Where(document => document.CanRead)
+            .Select(document => document.Id).ToHashSet(StringComparer.Ordinal);
+        var recent = await _readingHistory.GetRecentAsync();
+        RecentDocuments.Clear();
+        foreach (var document in recent.Where(document => installedIds.Contains(document.DocumentId)))
+        {
+            RecentDocuments.Add(new RecentDocumentItemViewModel(document.DocumentId, document.Title));
+        }
+        OnPropertyChanged(nameof(HasRecentDocuments));
     }
 
     private void ApplyFilter()
@@ -290,4 +326,17 @@ public partial class LibraryViewModel : ObservableObject
             document?.Apply(job);
         });
     }
+
+    private void OnContentUpdateChanged(object? sender, EventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            OnPropertyChanged(nameof(IsContentStatusChecking));
+            OnPropertyChanged(nameof(IsContentCurrent));
+            OnPropertyChanged(nameof(HasContentUpdateProblem));
+            OnPropertyChanged(nameof(ContentStatusText));
+        });
+    }
 }
+
+public sealed record RecentDocumentItemViewModel(string Id, string Title);

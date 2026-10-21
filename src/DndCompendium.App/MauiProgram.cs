@@ -31,6 +31,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IAppUpdateScheduler, NoopAppUpdateScheduler>();
 #endif
 		builder.Services.AddSingleton<AppUpdateCoordinator>();
+		builder.Services.AddSingleton<ContentUpdateStatus>();
 
 		builder.Services.AddSingleton<AppShell>();
 		builder.Services.AddSingleton<LibraryViewModel>();
