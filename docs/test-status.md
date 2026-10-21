@@ -82,6 +82,7 @@ y los IDs de archivo se documentan en
 | Smart Search visual y búsqueda Spells/Restrained | Aprobado | Pendiente | 29 resultados reales en TECNO KL7; proceso activo y 0 excepciones fatales después del renderizado |
 | Estado compacto de contenido e historial de lectura 1.7 | Build y pruebas aprobados | Pendiente | 83 pruebas aprobadas; Release firmado y hash público verificado. El dispositivo se desconectó antes de la instalación USB |
 | Filtro Subclases y jerarquías Homebrewery 1.8 | Build, corpus y 89 pruebas aprobados | Pendiente | El filtro incluye subclases y sus features; 35 TXT reales validados. Release firmado y hash público verificado; no había dispositivo ADB conectado |
+| Filtros de Spells y búsqueda manual resaltada 1.9 | Build, catálogo y 98 pruebas aprobados | Pendiente | 814 spells clasificados por casteo y componentes; Release firmado y hash público verificado. No había dispositivo ADB conectado |
 | Compilar/firmar paquete | APK Debug aprobado | Pendiente | El código iOS y `ios-arm64` compilan; la IPA se detiene por ausencia de firma Apple/Xcode |
 
 La APK más reciente, con actualizador instalable, catálogo Drive, spells,
@@ -100,6 +101,9 @@ la prueba USB quedó pendiente porque el teléfono dejó de aparecer en ADB.
 El APK 1.8/código 9 se publicó con SHA-256
 `6E3B9824E86ED761EB39FEC5320B6802DAB1ECE26612CC86787CAD0DEEC0490F`;
 el manifiesto público, la versión, el package ID y el certificado fueron verificados.
+El APK 1.9/código 10 se publicó con SHA-256
+`EF84A58B3708A6C7C4EC6C0923BA0344D706A6AD5D2D7F3E986D5B038C09463E`;
+el catálogo real, el manifiesto público, la versión y la firma fueron verificados.
 
 ## Limitaciones del equipo
 
