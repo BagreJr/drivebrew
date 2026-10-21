@@ -40,6 +40,11 @@ jobs:
           java-version: '21'
 
       - uses: android-actions/setup-android@v3
+        with:
+          # The action's legacy default also requests the removed SDK package
+          # named "tools". Install only the supported base package here; the
+          # exact platform/build-tools are installed in the next step.
+          packages: platform-tools
 
       - name: Install Android and MAUI workloads
         shell: pwsh
