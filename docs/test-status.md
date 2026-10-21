@@ -80,6 +80,7 @@ y los IDs de archivo se documentan en
 | Actualizar 1.4/código 5 a 1.5/código 6 | Aprobado | No aplica | `adb install -r` aceptó la misma firma y package ID; `firstInstallTime` permaneció en 18/10/2026 y la app abrió sin excepción fatal |
 | Actualizar 1.5/código 6 a 1.6/código 7 | Aprobado | No aplica | La APK pública de GitHub se instaló con `adb install -r`; conservó `firstInstallTime`, datos y certificado |
 | Smart Search visual y búsqueda Spells/Restrained | Aprobado | Pendiente | 29 resultados reales en TECNO KL7; proceso activo y 0 excepciones fatales después del renderizado |
+| Estado compacto de contenido e historial de lectura 1.7 | Build y pruebas aprobados | Pendiente | 83 pruebas aprobadas; Release firmado y hash público verificado. El dispositivo se desconectó antes de la instalación USB |
 | Compilar/firmar paquete | APK Debug aprobado | Pendiente | El código iOS y `ios-arm64` compilan; la IPA se detiene por ausencia de firma Apple/Xcode |
 
 La APK más reciente, con actualizador instalable, catálogo Drive, spells,
@@ -92,6 +93,9 @@ ancho, 0 elementos posicionados y ancho de documento igual al viewport.
 El APK final 1.6/código 7 se compiló y publicó automáticamente en GitHub,
 se instaló por USB sobre 1.5/código 6 y tiene SHA-256
 `5C608493FC6E2C3A634B914B905C2121CED84D48372E34837940C06B43DDDC10`.
+El APK 1.7/código 8 se publicó con SHA-256
+`91197FE45B318C94EF12B4A15EAB5AA5E02F5A0AABFEFB86D6572E379E5C9063`;
+la prueba USB quedó pendiente porque el teléfono dejó de aparecer en ADB.
 
 ## Limitaciones del equipo
 
