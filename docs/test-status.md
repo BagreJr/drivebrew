@@ -78,7 +78,8 @@ y los IDs de archivo se documentan en
 | Filtros y detalle de Exploits | Aprobado | Pendiente | Clase, tipo, nivel, Z–A y ficha completa comprobados por ADB |
 | Instalar Smart Search 1.4/código 5 preservando datos | Aprobado | No aplica | Primera instalación conservada; 42 TXT y JSON siguen presentes |
 | Actualizar 1.4/código 5 a 1.5/código 6 | Aprobado | No aplica | `adb install -r` aceptó la misma firma y package ID; `firstInstallTime` permaneció en 18/10/2026 y la app abrió sin excepción fatal |
-| Smart Search visual y navegación desde resultado | Pendiente por bloqueo de pantalla | Pendiente | El teléfono conectado exige huella/patrón; navegación y ancla están cubiertas por código/pruebas |
+| Actualizar 1.5/código 6 a 1.6/código 7 | Aprobado | No aplica | La APK pública de GitHub se instaló con `adb install -r`; conservó `firstInstallTime`, datos y certificado |
+| Smart Search visual y búsqueda Spells/Restrained | Aprobado | Pendiente | 29 resultados reales en TECNO KL7; proceso activo y 0 excepciones fatales después del renderizado |
 | Compilar/firmar paquete | APK Debug aprobado | Pendiente | El código iOS y `ios-arm64` compilan; la IPA se detiene por ausencia de firma Apple/Xcode |
 
 La APK más reciente, con actualizador instalable, catálogo Drive, spells,
@@ -88,8 +89,9 @@ conservó la fecha de instalación original, abrió con los 42 documentos y no
 produjo ninguna excepción fatal. En Wizard completo (56 páginas),
 la inspección del DOM en Android obtuvo 0 superposiciones, 0 medios fuera del
 ancho, 0 elementos posicionados y ancho de documento igual al viewport.
-El APK final 1.5/código 6 se instaló por USB sobre 1.4/código 5 y tiene SHA-256
-`B32CF9DBFEC6D95467008378A71E9639C557EB5165A6683ED132EC0395D30DDE`.
+El APK final 1.6/código 7 se compiló y publicó automáticamente en GitHub,
+se instaló por USB sobre 1.5/código 6 y tiene SHA-256
+`5C608493FC6E2C3A634B914B905C2121CED84D48372E34837940C06B43DDDC10`.
 
 ## Limitaciones del equipo
 
