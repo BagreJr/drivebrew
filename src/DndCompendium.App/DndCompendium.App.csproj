@@ -1,7 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net10.0-android;net10.0-ios</TargetFrameworks>
+		<!-- Windows and GitHub's Windows runner build Android only. iOS is added
+		     automatically when the same project is opened on a Mac with Xcode. -->
+		<TargetFrameworks>net10.0-android</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">$(TargetFrameworks);net10.0-ios</TargetFrameworks>
 
 		<!-- Note for MacCatalyst:
 		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
@@ -36,8 +39,8 @@
 		<ApplicationId>com.march.dndcompendium</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.5</ApplicationDisplayVersion>
-		<ApplicationVersion>6</ApplicationVersion>
+		<ApplicationDisplayVersion>1.6</ApplicationDisplayVersion>
+		<ApplicationVersion>7</ApplicationVersion>
 		<!-- The workflow injects the repository-derived value as well. Keeping the
 		     official feed here also makes local signed builds update-aware. -->
 		<AppUpdateManifestUrl>https://github.com/BagreJr/drivebrew/releases/latest/download/app-update.json</AppUpdateManifestUrl>

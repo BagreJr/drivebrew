@@ -63,7 +63,8 @@
                                 <Label Grid.Column="1" FontSize="11" LineBreakMode="TailTruncation" Text="{Binding OriginText}" TextColor="{StaticResource Gold}" VerticalTextAlignment="Center" />
                             </Grid>
                             <Label Grid.Row="2" Grid.ColumnSpan="2" FontSize="10" Text="{Binding MetadataText}" TextColor="{StaticResource TextMuted}" />
-                            <Label Grid.Row="3" Grid.ColumnSpan="2" FontSize="12" FormattedText="{Binding HighlightedSnippet}" LineBreakMode="TailTruncation" MaxLines="3" TextColor="{StaticResource TextMuted}" />
+                            <!-- MAUI for Android can crash while truncating a FormattedString with styled spans. -->
+                            <Label Grid.Row="3" Grid.ColumnSpan="2" FontSize="12" Text="{Binding Snippet}" LineBreakMode="TailTruncation" MaxLines="3" TextColor="{StaticResource TextMuted}" />
                             <Grid Grid.Row="4" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto" Margin="0,3,0,0">
                                 <Label FontSize="10" Text="{Binding LocationText}" TextColor="{StaticResource TextMuted}" VerticalTextAlignment="Center" />
                                 <Button Grid.Column="1" Command="{Binding BindingContext.OpenCommand, Source={x:Reference SearchRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallAccentButtonStyle}" Text="Abrir" />

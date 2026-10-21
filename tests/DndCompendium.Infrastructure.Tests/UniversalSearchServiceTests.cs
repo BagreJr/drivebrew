@@ -141,6 +141,35 @@ public sealed class UniversalSearchServiceTests
     }
 
     [Fact]
+    public async Task Search_RestrainedWithSpellFilterReturnsSafeRealCatalogSnippets()
+    {
+        using var directory = new TemporaryDirectory();
+        Directory.CreateDirectory(Path.Combine(directory.Path, "spells"));
+        File.Copy(FindRepositoryFile("artifacts", "spells.json"), Path.Combine(directory.Path, "spells", "spells.json"));
+        var profiles = new JsonCharacterProfileStore(directory.Path);
+        using var spells = new GoogleDriveSpellRepository(directory.Path, new HttpClient(), profiles);
+        await using var documents = new LocalDocumentRepository(directory.Path);
+        using var search = new UniversalSearchService(directory.Path, documents, spells,
+            new MemoryExploitRepository([]), profiles);
+
+        await search.RefreshIndexAsync();
+        var results = await search.SearchAsync(new SearchRequest
+        {
+            Query = "Restrained",
+            Kind = SearchContentKind.Spell,
+            Limit = 120
+        });
+
+        Assert.NotEmpty(results);
+        Assert.All(results, result =>
+        {
+            Assert.Equal(SearchContentKind.Spell, result.Entry.Kind);
+            Assert.False(string.IsNullOrWhiteSpace(result.Snippet));
+            Assert.InRange(result.Snippet.Length, 1, 222);
+        });
+    }
+
+    [Fact]
     public async Task Search_AppliesCategoryClassAndLevelFiltersWithoutRemovingLegitimateDuplicates()
     {
         using var directory = new TemporaryDirectory();
