@@ -141,6 +141,11 @@ el manifiesto, el package ID y el certificado se verificaron. Se instaló sobre
 1.15 conservando la fecha de instalación original y todos los datos. Antes de
 publicar se comprobaron por USB la apertura de Preparados y Favoritos, el hueco
 visual entre tarjetas, el desplazamiento en bordes y la persistencia del orden.
+El APK 1.17/código 18 se publicó con SHA-256
+`2E0DB7A14BDE6310DA1489827966F989201FF704BC2B3A7A437CAD0A599B7BAE`;
+el workflow, las 103 pruebas, el manifiesto público, el package ID y el hash del
+asset de GitHub se verificaron. La prueba USB queda pendiente porque el teléfono
+no aparece conectado en ADB.
 
 ## Limitaciones del equipo
 
