@@ -111,6 +111,12 @@ El APK 1.10/código 11 se publicó con SHA-256
 se instaló sobre 1.9 en el TECNO KL7 conservando los datos. En el dispositivo
 se verificaron filtros, scroll estable, orden manual persistente y ausencia de
 excepciones fatales. La PWA pública versión 14 superó también su prueba E2E.
+El APK 1.12/código 13 se publicó con SHA-256
+`A5E355A650AB8182767274CCDF1B5CDEA1C257275F3554E35C541DFF5C7FD0EC`;
+se instaló en el TECNO KL7 conservando los datos y la fecha original de
+instalación. En el dispositivo se verificó el arrastre táctil directo con ⋮,
+su persistencia tras reiniciar y la gestión tanto de Preparados como de
+Resources. La PWA pública versión 15 superó su prueba E2E equivalente.
 
 ## Limitaciones del equipo
 

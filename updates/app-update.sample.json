@@ -3,9 +3,9 @@
   "versionName": "1.12",
   "packageId": "com.march.dndcompendium",
   "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.12/DndCompendium.apk",
-  "sha256": "GENERATED_BY_RELEASE_WORKFLOW",
+  "sha256": "a5e355a650ab8182767274ccdf1b5cdea1c257275f3554e35c541dff5c7fd0ec",
   "releaseNotes": "Orden táctil directo mediante tiradores de tres puntos para Spells, Exploits y Resources, persistente por personaje.",
-  "publishedAt": "2026-10-24T00:00:00Z",
+  "publishedAt": "2026-10-25T06:03:43.4144367Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false
