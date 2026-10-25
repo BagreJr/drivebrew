@@ -201,15 +201,29 @@ public abstract partial class SavedItemsViewModel : ObservableObject
     public async Task MoveToAsync(SavedItemViewModel? item, SavedItemViewModel? target)
     {
         if (!_preparedOnly || !CanReorder || item is null || target is null || ReferenceEquals(item, target)) return;
-        var visibleIndex = Items.IndexOf(item);
         var targetVisibleIndex = Items.IndexOf(target);
-        if (visibleIndex < 0 || targetVisibleIndex < 0) return;
+        if (!MoveToIndex(item, targetVisibleIndex)) return;
+        await PersistOrderAsync();
+    }
 
+    public bool MoveToIndex(SavedItemViewModel? item, int targetVisibleIndex)
+    {
+        if (!_preparedOnly || !CanReorder || item is null || Items.Count == 0) return false;
+        var visibleIndex = Items.IndexOf(item);
+        targetVisibleIndex = Math.Clamp(targetVisibleIndex, 0, Items.Count - 1);
+        if (visibleIndex < 0 || visibleIndex == targetVisibleIndex) return false;
+
+        var target = Items[targetVisibleIndex];
         _allItems.Remove(item);
         var targetIndex = _allItems.IndexOf(target);
         _allItems.Insert(visibleIndex < targetVisibleIndex ? targetIndex + 1 : targetIndex, item);
         Items.Move(visibleIndex, targetVisibleIndex);
+        return true;
+    }
 
+    public async Task PersistOrderAsync()
+    {
+        if (!_preparedOnly || !CanReorder) return;
         try
         {
             await _profileStore.SetPreparedOrderAsync(_allItems.Select(entry => entry.Reference).ToArray());
