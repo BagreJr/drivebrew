@@ -12,7 +12,7 @@
             <VerticalStackLayout Spacing="3">
                 <Label FontAttributes="Bold" FontSize="18" Text="Personajes" TextColor="{StaticResource PaperLight}" />
                 <Label FontSize="11" Text="{Binding ActiveSummary}" TextColor="{StaticResource Gold}" />
-                <Label FontSize="11" Text="Cada perfil guarda sus propios Spells y Exploits favoritos y preparados." TextColor="{StaticResource TextMuted}" />
+                <Label FontSize="11" Text="Cada perfil guarda sus Spells, Exploits, Resources y una hoja de personaje PDF independiente." TextColor="{StaticResource TextMuted}" />
             </VerticalStackLayout>
         </Border>
 
@@ -30,14 +30,18 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="viewModels:CharacterProfileItemViewModel">
                     <Border Margin="2,0,2,9" Padding="13" Style="{StaticResource CardStyle}">
-                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="8">
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="8">
                             <Label FontAttributes="Bold" FontSize="16" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
                             <Label Grid.Column="1" FontAttributes="Bold" FontSize="10" Text="{Binding StatusText}" TextColor="{StaticResource Gold}" />
-                            <HorizontalStackLayout Grid.Row="1" Grid.ColumnSpan="2" HorizontalOptions="End" Spacing="6">
-                                <Button Command="{Binding BindingContext.SelectCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" IsEnabled="{Binding IsNotActive}" Style="{StaticResource SmallAccentButtonStyle}" Text="Usar" />
-                                <Button Clicked="OnRenameClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Renombrar" />
-                                <Button Clicked="OnDeleteClicked" CommandParameter="{Binding .}" IsEnabled="{Binding CanDelete}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Eliminar" />
-                            </HorizontalStackLayout>
+                            <Label Grid.Row="1" Grid.ColumnSpan="2" FontSize="11" Text="{Binding SheetStatusText}" TextColor="{StaticResource TextMuted}" />
+                            <FlexLayout Grid.Row="2" Grid.ColumnSpan="2" AlignItems="Center" Direction="Row" JustifyContent="End" Wrap="Wrap">
+                                <Button Margin="3" Command="{Binding BindingContext.SelectCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" IsEnabled="{Binding IsNotActive}" Style="{StaticResource SmallAccentButtonStyle}" Text="Usar" />
+                                <Button Margin="3" Command="{Binding BindingContext.OpenSheetCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallAccentButtonStyle}" Text="Completar PDF" />
+                                <Button Margin="3" Command="{Binding BindingContext.ShareSheetCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Guardar copia" />
+                                <Button Margin="3" Clicked="OnImportSheetClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Importar PDF" />
+                                <Button Margin="3" Clicked="OnRenameClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Renombrar" />
+                                <Button Margin="3" Clicked="OnDeleteClicked" CommandParameter="{Binding .}" IsEnabled="{Binding CanDelete}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Eliminar" />
+                            </FlexLayout>
                         </Grid>
                     </Border>
                 </DataTemplate>

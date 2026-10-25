@@ -8,6 +8,13 @@
 			android:grantUriPermissions="true">
 			<meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/update_file_paths" />
 		</provider>
+		<provider
+			android:name="androidx.core.content.FileProvider"
+			android:authorities="${applicationId}.charactersheetprovider"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/character_sheet_file_paths" />
+		</provider>
 	</application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />

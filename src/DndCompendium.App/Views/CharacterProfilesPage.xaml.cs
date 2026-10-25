@@ -36,12 +36,30 @@ public partial class CharacterProfilesPage : ContentView
         if (sender is not Button { CommandParameter: CharacterProfileItemViewModel character }) return;
         var confirmed = await Shell.Current.DisplayAlertAsync(
             "Eliminar personaje",
-            $"¿Eliminar a {character.Name} y todos sus favoritos y preparados?",
+            $"¿Eliminar a {character.Name}, su hoja PDF, favoritos, preparados y Resources?",
             "Eliminar",
             "Cancelar");
         if (confirmed)
         {
             await _viewModel.DeleteAsync(character);
+        }
+    }
+
+    private async void OnImportSheetClicked(object? sender, EventArgs e)
+    {
+        if (sender is not Button { CommandParameter: CharacterProfileItemViewModel character }) return;
+        var confirmed = await Shell.Current.DisplayAlertAsync(
+            "Reemplazar hoja PDF",
+            $"La hoja guardada de {character.Name} será reemplazada por el PDF que elijas.",
+            "Elegir PDF",
+            "Cancelar");
+        if (!confirmed) return;
+        if (await _viewModel.ImportSheetAsync(character))
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Hoja guardada",
+                $"La hoja PDF de {character.Name} quedó guardada dentro de la aplicación.",
+                "Aceptar");
         }
     }
 }

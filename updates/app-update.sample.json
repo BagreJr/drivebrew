@@ -1,11 +1,11 @@
 {
-  "versionCode": 18,
-  "versionName": "1.17",
+  "versionCode": 19,
+  "versionName": "1.18",
   "packageId": "com.march.dndcompendium",
-  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.17/DndCompendium.apk",
-  "sha256": "2e0db7a14bde6310da1489827966f989201ff704bc2b3a7a437cad0a599b7bae",
-  "releaseNotes": "Resources incorpora búsqueda, filtros por tipo, recuperación y estado, además de orden manual persistente y ordenamientos alfabéticos o por cantidad.",
-  "publishedAt": "2026-10-25T13:17:08.2605652Z",
+  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.18/DndCompendium.apk",
+  "sha256": "REEMPLAZADO_AUTOMATICAMENTE_AL_PUBLICAR",
+  "releaseNotes": "Cada personaje recibe una hoja PDF rellenable independiente. Puede abrirse, guardarse como copia, compartirse e importarse nuevamente. El menú se ordena como Personaje, Resources, Preparados, Favoritos, Reglas, Descargas y Configuración.",
+  "publishedAt": "2026-10-25T00:00:00Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false

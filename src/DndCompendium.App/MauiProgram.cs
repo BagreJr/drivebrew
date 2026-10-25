@@ -26,12 +26,15 @@ public static class MauiProgram
 #if ANDROID
 		builder.Services.AddSingleton<IAppPackageInstaller, AndroidAppPackageInstaller>();
 		builder.Services.AddSingleton<IAppUpdateScheduler, AndroidAppUpdateScheduler>();
+		builder.Services.AddSingleton<ICharacterSheetEditor, AndroidCharacterSheetEditor>();
 #else
 		builder.Services.AddSingleton<IAppPackageInstaller, UnsupportedAppPackageInstaller>();
 		builder.Services.AddSingleton<IAppUpdateScheduler, NoopAppUpdateScheduler>();
+		builder.Services.AddSingleton<ICharacterSheetEditor, DefaultCharacterSheetEditor>();
 #endif
 		builder.Services.AddSingleton<AppUpdateCoordinator>();
 		builder.Services.AddSingleton<ContentUpdateStatus>();
+		builder.Services.AddSingleton<ICharacterSheetService, CharacterSheetService>();
 
 		builder.Services.AddSingleton<AppShell>();
 		builder.Services.AddSingleton<LibraryViewModel>();

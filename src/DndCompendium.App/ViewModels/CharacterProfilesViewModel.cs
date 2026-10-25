@@ -1,12 +1,15 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DndCompendium.App.Services;
 using DndCompendium.Core.Abstractions;
 using DndCompendium.Core.Models;
 
 namespace DndCompendium.App.ViewModels;
 
-public partial class CharacterProfilesViewModel(ICharacterProfileStore store) : ObservableObject
+public partial class CharacterProfilesViewModel(
+    ICharacterProfileStore store,
+    ICharacterSheetService characterSheets) : ObservableObject
 {
     public ObservableCollection<CharacterProfileItemViewModel> Characters { get; } = [];
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
@@ -60,7 +63,8 @@ public partial class CharacterProfilesViewModel(ICharacterProfileStore store) : 
         try
         {
             ErrorMessage = null;
-            await store.CreateAsync(NewCharacterName);
+            var created = await store.CreateAsync(NewCharacterName);
+            await characterSheets.EnsureCreatedAsync(created);
             NewCharacterName = string.Empty;
             await ReloadAsync();
         }
@@ -106,11 +110,56 @@ public partial class CharacterProfilesViewModel(ICharacterProfileStore store) : 
         {
             ErrorMessage = null;
             await store.DeleteAsync(character.Id);
+            await characterSheets.DeleteAsync(character.Id);
             await ReloadAsync();
         }
         catch (Exception exception)
         {
             ErrorMessage = exception.Message;
+        }
+    }
+
+    [RelayCommand(AllowConcurrentExecutions = false)]
+    private async Task OpenSheetAsync(CharacterProfileItemViewModel? character)
+    {
+        if (character is null) return;
+        try
+        {
+            ErrorMessage = null;
+            await characterSheets.OpenAsync(character.Profile);
+        }
+        catch (Exception exception)
+        {
+            ErrorMessage = $"No se pudo abrir la hoja: {exception.Message}";
+        }
+    }
+
+    [RelayCommand(AllowConcurrentExecutions = false)]
+    private async Task ShareSheetAsync(CharacterProfileItemViewModel? character)
+    {
+        if (character is null) return;
+        try
+        {
+            ErrorMessage = null;
+            await characterSheets.ShareAsync(character.Profile);
+        }
+        catch (Exception exception)
+        {
+            ErrorMessage = $"No se pudo guardar la copia: {exception.Message}";
+        }
+    }
+
+    public async Task<bool> ImportSheetAsync(CharacterProfileItemViewModel character)
+    {
+        try
+        {
+            ErrorMessage = null;
+            return await characterSheets.PickAndImportAsync(character.Profile);
+        }
+        catch (Exception exception)
+        {
+            ErrorMessage = $"No se pudo importar la hoja: {exception.Message}";
+            return false;
         }
     }
 
@@ -122,6 +171,7 @@ public partial class CharacterProfilesViewModel(ICharacterProfileStore store) : 
         Characters.Clear();
         foreach (var character in characters)
         {
+            await characterSheets.EnsureCreatedAsync(character);
             Characters.Add(new CharacterProfileItemViewModel(
                 character,
                 character.Id == active.Id,
@@ -135,10 +185,12 @@ public sealed class CharacterProfileItemViewModel(
     bool isActive,
     bool canDelete)
 {
+    public CharacterProfile Profile { get; } = profile;
     public string Id { get; } = profile.Id;
     public string Name { get; } = profile.Name;
     public bool IsActive { get; } = isActive;
     public bool IsNotActive => !IsActive;
     public bool CanDelete { get; } = canDelete;
     public string StatusText => IsActive ? "ACTIVO" : string.Empty;
+    public string SheetStatusText => "Hoja PDF rellenable · 3 páginas · guardada en la app";
 }

@@ -20,6 +20,8 @@ sin Google Drive y sin una sesión de Google activa.
 - Metadatos e índice local en SQLite.
 - Biblioteca, descargas, Spells, Preparados, Exploits, Favoritos y lector local
   con MVVM y Shell.
+- Perfiles de personaje con hoja oficial PDF rellenable independiente de tres
+  páginas, guardada localmente y disponible para abrir, exportar e importar.
 - `HybridWebView` compartido con `marked-hbfm` oficial y los temas Homebrewery
   V3 `Blank`/`5ePHB` empaquetados, sin CDN ni acceso de red durante la lectura.
 - Metadata, CSS del documento, bloques HBFM, páginas, columnas, tablas,
