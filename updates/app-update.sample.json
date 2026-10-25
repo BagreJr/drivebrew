@@ -1,11 +1,11 @@
 {
-  "versionCode": 15,
-  "versionName": "1.14",
+  "versionCode": 16,
+  "versionName": "1.15",
   "packageId": "com.march.dndcompendium",
-  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.14/DndCompendium.apk",
-  "sha256": "2a2b308e170633f77394ddee1d41d236f95bc0055569a48d46f0e58fff275696",
-  "releaseNotes": "El tirador de tres puntos ahora permite mantener presionado y arrastrar libremente Spells, Exploits y Resources; el orden se guarda una sola vez al soltar.",
-  "publishedAt": "2026-10-25T06:41:01.8627417Z",
+  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.15/DndCompendium.apk",
+  "sha256": "4a1f33a8255811de1c7de5a61989d25861d7fd873c7316fcf5f6f98238755ce9",
+  "releaseNotes": "Los preparados ahora usan reordenamiento nativo: las demás tarjetas se apartan en tiempo real y la lista sigue desplazándose al sostener el elemento junto a un borde.",
+  "publishedAt": "2026-10-25T07:02:36.3937980Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false

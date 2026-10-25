@@ -129,6 +129,10 @@ El APK 1.14/código 15 se publicó con SHA-256
 `2A2B308E170633F77394DDEE1D41D236F95BC0055569A48D46F0E58FFF275696`;
 el manifiesto, la versión, el package ID y el certificado se verificaron. La
 prueba táctil USB quedó pendiente porque el teléfono no apareció conectado en ADB.
+El APK 1.15/código 16 se publicó con SHA-256
+`4A1F33A8255811DE1C7DE5A61989D25861D7FD873C7316FCF5F6F98238755CE9`;
+el manifiesto, la versión, el package ID y el certificado se verificaron. La
+prueba táctil del reordenamiento nativo sigue pendiente hasta reconectar el teléfono.
 
 ## Limitaciones del equipo
 
