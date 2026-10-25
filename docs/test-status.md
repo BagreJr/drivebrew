@@ -105,6 +105,11 @@ el manifiesto público, la versión, el package ID y el certificado fueron verif
 El APK 1.9/código 10 se publicó con SHA-256
 `EF84A58B3708A6C7C4EC6C0923BA0344D706A6AD5D2D7F3E986D5B038C09463E`;
 el catálogo real, el manifiesto público, la versión y la firma fueron verificados.
+El APK 1.10/código 11 se publicó con SHA-256
+`5491D731446BBD466AA15AB643EA10D71C1F1C0F0F24420ED930963E75831955`;
+se instaló sobre 1.9 en el TECNO KL7 conservando los datos. En el dispositivo
+se verificaron filtros, scroll estable, orden manual persistente y ausencia de
+excepciones fatales. La PWA pública versión 14 superó también su prueba E2E.
 
 ## Limitaciones del equipo
 

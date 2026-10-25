@@ -3,9 +3,9 @@
   "versionName": "1.10",
   "packageId": "com.march.dndcompendium",
   "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.10/DndCompendium.apk",
-  "sha256": "REPLACE_WITH_64_CHARACTER_SHA256",
-  "releaseNotes": "Describe the stable changes in this release.",
-  "publishedAt": "2026-01-01T00:00:00Z",
+  "sha256": "5491D731446BBD466AA15AB643EA10D71C1F1C0F0F24420ED930963E75831955",
+  "releaseNotes": "Filtros y orden manual persistente en Preparados; se conserva la posición al marcar Preparados o Favoritos.",
+  "publishedAt": "2026-10-25T00:30:00.9859925Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false
