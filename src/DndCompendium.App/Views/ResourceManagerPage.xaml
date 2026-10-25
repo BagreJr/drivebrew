@@ -36,11 +36,11 @@
                         <Border Padding="12" Style="{StaticResource CardStyle}">
                             <VerticalStackLayout Spacing="6">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <Label FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}">
-                                        <Label.GestureRecognizers>
+                                    <Button BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded">
+                                        <Button.GestureRecognizers>
                                             <PanGestureRecognizer PanUpdated="OnResourcePanUpdated" />
-                                        </Label.GestureRecognizers>
-                                    </Label>
+                                        </Button.GestureRecognizers>
+                                    </Button>
                                     <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center" />
                                     <Button Grid.Column="2" Clicked="OnEditClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallGhostButtonStyle}" Text="Editar" />
                                 </Grid>
@@ -65,11 +65,11 @@
                         <Border Padding="12" Style="{StaticResource CardStyle}">
                             <VerticalStackLayout Spacing="6">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <Label FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}">
-                                        <Label.GestureRecognizers>
+                                    <Button BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded">
+                                        <Button.GestureRecognizers>
                                             <PanGestureRecognizer PanUpdated="OnResourcePanUpdated" />
-                                        </Label.GestureRecognizers>
-                                    </Label>
+                                        </Button.GestureRecognizers>
+                                    </Button>
                                     <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center" />
                                     <Button Grid.Column="2" Clicked="OnEditClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallGhostButtonStyle}" Text="Editar" />
                                 </Grid>
@@ -93,11 +93,11 @@
                     <DataTemplate x:DataType="viewModels:ResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
                             <Grid ColumnDefinitions="Auto,54,*,54" RowDefinitions="Auto,Auto,Auto" RowSpacing="5">
-                                <Label Grid.RowSpan="3" FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" VerticalOptions="Center">
-                                    <Label.GestureRecognizers>
+                                <Button Grid.RowSpan="3" BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded" VerticalOptions="Center">
+                                    <Button.GestureRecognizers>
                                         <PanGestureRecognizer PanUpdated="OnResourcePanUpdated" />
-                                    </Label.GestureRecognizers>
-                                </Label>
+                                    </Button.GestureRecognizers>
+                                </Button>
                                 <Button Grid.Column="1" Command="{Binding BindingContext.AdjustCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding Spend}" FontSize="22" Style="{StaticResource SmallSecondaryButtonStyle}" Text="−" />
                                 <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="0">
                                     <Label FontAttributes="Bold" HorizontalTextAlignment="Center" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
@@ -118,11 +118,11 @@
                     <DataTemplate x:DataType="viewModels:PreparedResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
                             <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
-                                <Label Grid.RowSpan="3" FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" VerticalOptions="Center">
-                                    <Label.GestureRecognizers>
+                                <Button Grid.RowSpan="3" BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded" VerticalOptions="Center">
+                                    <Button.GestureRecognizers>
                                         <PanGestureRecognizer PanUpdated="OnPreparedResourcePanUpdated" />
-                                    </Label.GestureRecognizers>
-                                </Label>
+                                    </Button.GestureRecognizers>
+                                </Button>
                                 <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
                                 <Label Grid.Column="2" FontAttributes="Bold" FontSize="10" Text="{Binding KindText}" TextColor="{StaticResource Gold}" />
                                 <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Style="{StaticResource MutedLabelStyle}" Text="{Binding DetailText}" />

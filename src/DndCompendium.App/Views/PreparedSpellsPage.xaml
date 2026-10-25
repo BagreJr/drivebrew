@@ -69,20 +69,25 @@
                     <DataTemplate x:DataType="viewModels:SavedItemViewModel">
                         <Border Margin="2,0,2,9" Padding="13" Style="{StaticResource CardStyle}">
                             <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
-                                <Border
+                                <Button
                                     Grid.RowSpan="3"
                                     Margin="0,0,10,0"
                                     Padding="7,12"
                                     BackgroundColor="Transparent"
+                                    BorderWidth="0"
+                                    FontAttributes="Bold"
+                                    FontSize="28"
                                     IsVisible="{Binding BindingContext.CanReorder, Source={x:Reference PreparedRoot}}"
+                                    Loaded="OnPreparedHandleLoaded"
                                     SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden"
-                                    StrokeThickness="0"
+                                    Text="⋮"
+                                    TextColor="{StaticResource Gold}"
+                                    Unloaded="OnPreparedHandleUnloaded"
                                     VerticalOptions="Center">
-                                    <Border.GestureRecognizers>
+                                    <Button.GestureRecognizers>
                                         <PanGestureRecognizer PanUpdated="OnPreparedPanUpdated" />
-                                    </Border.GestureRecognizers>
-                                    <Label FontAttributes="Bold" FontSize="28" Text="⋮" TextColor="{StaticResource Gold}" />
-                                </Border>
+                                    </Button.GestureRecognizers>
+                                </Button>
                                 <Label Grid.Column="1" FontAttributes="Bold" FontSize="16" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
                                 <Label Grid.Column="2" FontAttributes="Bold" FontSize="10" Text="{Binding Kind}" TextColor="{StaticResource Gold}" />
                                 <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" FontSize="12" Text="{Binding LevelText}" />

@@ -22,6 +22,14 @@ public partial class ResourceManagerPage : ContentView
     private int _preparedOriginIndex = -1;
     private int _preparedTargetIndex = -1;
     private bool _preparedMovePending;
+#if ANDROID
+    private readonly Dictionary<Android.Views.View, EventHandler<Android.Views.View.TouchEventArgs>> _androidTouchHandlers = [];
+    private object? _androidPannedItem;
+    private int _androidOriginIndex = -1;
+    private int _androidTargetIndex = -1;
+    private float _androidStartY;
+    private bool _androidMovePending;
+#endif
 
     public ResourceManagerPage(ResourceManagerViewModel viewModel)
     {
@@ -30,6 +38,96 @@ public partial class ResourceManagerPage : ContentView
     }
 
     public Task LoadAsync() => _viewModel.LoadCommand.ExecuteAsync(null);
+
+    private void OnResourceHandleLoaded(object? sender, EventArgs e)
+    {
+#if ANDROID
+        if (sender is not Button { Handler.PlatformView: Android.Views.View native } handle
+            || _androidTouchHandlers.ContainsKey(native)) return;
+        EventHandler<Android.Views.View.TouchEventArgs> handler = (_, args) =>
+            HandleAndroidTouch(handle, native, args);
+        _androidTouchHandlers[native] = handler;
+        native.Touch += handler;
+#endif
+    }
+
+    private void OnResourceHandleUnloaded(object? sender, EventArgs e)
+    {
+#if ANDROID
+        if (sender is not Button { Handler.PlatformView: Android.Views.View native }
+            || !_androidTouchHandlers.Remove(native, out var handler)) return;
+        native.Touch -= handler;
+#endif
+    }
+
+#if ANDROID
+    private void HandleAndroidTouch(
+        Button handle,
+        Android.Views.View native,
+        Android.Views.View.TouchEventArgs args)
+    {
+        var motion = args.Event;
+        if (motion is null) return;
+        switch (motion.ActionMasked)
+        {
+            case Android.Views.MotionEventActions.Down:
+                native.Parent?.RequestDisallowInterceptTouchEvent(true);
+                _androidPannedItem = handle.BindingContext;
+                _androidOriginIndex = _androidPannedItem switch
+                {
+                    ResourceItemViewModel resource => ResourceCollectionFor(resource).IndexOf(resource),
+                    PreparedResourceItemViewModel prepared => _viewModel.PreparedItems.IndexOf(prepared),
+                    _ => -1
+                };
+                _androidTargetIndex = _androidOriginIndex;
+                _androidStartY = motion.RawY;
+                args.Handled = true;
+                break;
+            case Android.Views.MotionEventActions.Move:
+                native.Parent?.RequestDisallowInterceptTouchEvent(true);
+                if (_androidPannedItem is not null && _androidOriginIndex >= 0 && !_androidMovePending)
+                {
+                    var density = DeviceDisplay.MainDisplayInfo.Density;
+                    var delta = (motion.RawY - _androidStartY) / density;
+                    var count = _androidPannedItem is ResourceItemViewModel resource
+                        ? ResourceCollectionFor(resource).Count
+                        : _viewModel.PreparedItems.Count;
+                    var targetIndex = Math.Clamp(
+                        _androidOriginIndex + (int)Math.Round(delta / ReorderStep, MidpointRounding.AwayFromZero),
+                        0,
+                        count - 1);
+                    if (targetIndex != _androidTargetIndex)
+                    {
+                        _androidTargetIndex = targetIndex;
+                        _androidMovePending = true;
+                        _ = MoveAndroidItemAsync(_androidPannedItem, targetIndex);
+                    }
+                }
+                args.Handled = true;
+                break;
+            case Android.Views.MotionEventActions.Up:
+            case Android.Views.MotionEventActions.Cancel:
+                native.Parent?.RequestDisallowInterceptTouchEvent(false);
+                _androidPannedItem = null;
+                _androidOriginIndex = -1;
+                _androidTargetIndex = -1;
+                args.Handled = true;
+                break;
+        }
+    }
+
+    private async Task MoveAndroidItemAsync(object item, int targetIndex)
+    {
+        try
+        {
+            if (item is ResourceItemViewModel resource)
+                await _viewModel.MoveResourceAsync(resource, ResourceCollectionFor(resource)[targetIndex]);
+            else if (item is PreparedResourceItemViewModel prepared)
+                await _viewModel.MovePreparedAsync(prepared, _viewModel.PreparedItems[targetIndex]);
+        }
+        finally { _androidMovePending = false; }
+    }
+#endif
 
     private async void OnResourcePanUpdated(object? sender, PanUpdatedEventArgs e)
     {
