@@ -174,6 +174,10 @@ El editor táctil 1.21 se verificó visualmente a 430 × 900, con entrada amplia
 valores rápidos y cálculos automáticos en los campos reales de la hoja. Las 109
 pruebas .NET, la prueba específica de reglas JavaScript y el build Android
 finalizaron correctamente.
+El APK 1.21/código 22 se publicó con SHA-256
+`96B5D6E26846A51CB4B1E6722114AC4B8E197541F4B8FAE855C74D6C703226C8`;
+el manifiesto público y los tres recursos del editor (`HTML`, reglas y estilos)
+incluidos en el paquete publicado se verificaron.
 
 ## Limitaciones del equipo
 

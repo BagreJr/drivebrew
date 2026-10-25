@@ -3,9 +3,9 @@
   "versionName": "1.21",
   "packageId": "com.march.dndcompendium",
   "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.21/DndCompendium.apk",
-  "sha256": "REEMPLAZADO_AUTOMATICAMENTE_AL_PUBLICAR",
+  "sha256": "96b5d6e26846a51cb4b1e6722114ac4b8e197541f4b8fae855c74d6c703226c8",
   "releaseNotes": "Escribir en la Character Sheet ahora es más cómodo: al tocar un casillero aparece un editor táctil grande con nombre, ayuda, controles y valores rápidos. Calcula modificadores, competencia, salvaciones, habilidades, iniciativa, percepción pasiva y spellcasting, sin reemplazar ajustes manuales.",
-  "publishedAt": "2026-10-25T00:00:00Z",
+  "publishedAt": "2026-10-25T19:20:57.1847821Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false
