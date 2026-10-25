@@ -1,11 +1,11 @@
 {
-  "versionCode": 14,
-  "versionName": "1.13",
+  "versionCode": 15,
+  "versionName": "1.14",
   "packageId": "com.march.dndcompendium",
-  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.13/DndCompendium.apk",
-  "sha256": "fec920eaa5d3d8aa459a97bbb6751fcf69d4c333b5108a50bba1c38f755dd2ee",
-  "releaseNotes": "Agrega íconos visibles sobre Biblioteca, Buscar, Spells y Exploits, y muestra un botón de más opciones con tres puntos grandes.",
-  "publishedAt": "2026-10-25T06:18:12.5497365Z",
+  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.14/DndCompendium.apk",
+  "sha256": "2a2b308e170633f77394ddee1d41d236f95bc0055569a48d46f0e58fff275696",
+  "releaseNotes": "El tirador de tres puntos ahora permite mantener presionado y arrastrar libremente Spells, Exploits y Resources; el orden se guarda una sola vez al soltar.",
+  "publishedAt": "2026-10-25T06:41:01.8627417Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false

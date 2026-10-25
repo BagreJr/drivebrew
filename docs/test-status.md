@@ -124,6 +124,10 @@ El APK 1.13/código 14 se publicó con SHA-256
 se instaló en el TECNO KL7 conservando los 42 documentos y la fecha original
 de instalación. Se verificaron visualmente los cinco íconos de la navegación
 inferior y el acceso táctil a Biblioteca, Buscar, Spells, Exploits y más opciones.
+El APK 1.14/código 15 se publicó con SHA-256
+`2A2B308E170633F77394DDEE1D41D236F95BC0055569A48D46F0E58FFF275696`;
+el manifiesto, la versión, el package ID y el certificado se verificaron. La
+prueba táctil USB quedó pendiente porque el teléfono no apareció conectado en ADB.
 
 ## Limitaciones del equipo
 
