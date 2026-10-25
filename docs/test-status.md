@@ -147,6 +147,12 @@ El APK 1.17/código 18 se publicó con SHA-256
 el workflow, las 103 pruebas, el manifiesto público, el package ID y el hash del
 asset de GitHub se verificaron. La prueba USB queda pendiente porque el teléfono
 no aparece conectado en ADB.
+El APK 1.18/código 19 se publicó con SHA-256
+`916558CF9DD7B752125D61BD09D339266432ABACE29322CB86DB61DEEF1B1165`;
+el workflow, las 103 pruebas, el manifiesto público, el package ID, la firma y
+el hash del asset de GitHub se verificaron. La hoja empaquetada conserva sus 3
+páginas, 334 campos AcroForm y 336 widgets. La prueba USB queda pendiente porque
+el teléfono no aparece conectado en ADB.
 
 ## Limitaciones del equipo
 
