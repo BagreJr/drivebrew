@@ -14,21 +14,29 @@ public partial class ResourceManagerPage : ContentView
         "Hit Dice", "Recurso personalizado"
     ];
     private readonly ResourceManagerViewModel _viewModel;
+#if !ANDROID
     private ResourceItemViewModel? _pannedResource;
+    private VisualElement? _pannedResourceVisual;
     private int _resourceOriginIndex = -1;
     private int _resourceTargetIndex = -1;
-    private bool _resourceMovePending;
+    private double _resourcePanStep = ReorderStep;
     private PreparedResourceItemViewModel? _pannedPrepared;
+    private VisualElement? _pannedPreparedVisual;
     private int _preparedOriginIndex = -1;
     private int _preparedTargetIndex = -1;
-    private bool _preparedMovePending;
+    private double _preparedPanStep = ReorderStep;
+#endif
 #if ANDROID
+    private const long LongPressDurationMilliseconds = 260;
     private readonly Dictionary<Android.Views.View, EventHandler<Android.Views.View.TouchEventArgs>> _androidTouchHandlers = [];
     private object? _androidPannedItem;
+    private Android.Views.View? _androidDraggedView;
+    private Android.Views.View? _androidScrollHost;
     private int _androidOriginIndex = -1;
     private int _androidTargetIndex = -1;
     private float _androidStartY;
-    private bool _androidMovePending;
+    private float _androidScrolledPixels;
+    private bool _androidDragActive;
 #endif
 
     public ResourceManagerPage(ResourceManagerViewModel viewModel)
@@ -81,36 +89,62 @@ public partial class ResourceManagerPage : ContentView
                 };
                 _androidTargetIndex = _androidOriginIndex;
                 _androidStartY = motion.RawY;
+                _androidScrolledPixels = 0;
+                _androidDragActive = false;
+                _androidDraggedView = FindDraggedVisual(handle)?.Handler?.PlatformView as Android.Views.View;
+                _androidScrollHost = FindAndroidScrollHost(native);
                 args.Handled = true;
                 break;
             case Android.Views.MotionEventActions.Move:
                 native.Parent?.RequestDisallowInterceptTouchEvent(true);
-                if (_androidPannedItem is not null && _androidOriginIndex >= 0 && !_androidMovePending)
+                if (_androidPannedItem is not null && _androidOriginIndex >= 0)
                 {
                     var density = DeviceDisplay.MainDisplayInfo.Density;
-                    var delta = (motion.RawY - _androidStartY) / density;
+                    if (!_androidDragActive && motion.EventTime - motion.DownTime >= LongPressDurationMilliseconds)
+                    {
+                        _androidDragActive = true;
+                        native.PerformHapticFeedback(Android.Views.FeedbackConstants.LongPress);
+                        if (_androidDraggedView is not null)
+                        {
+                            _androidDraggedView.Alpha = 0.94f;
+                            _androidDraggedView.ScaleX = 1.02f;
+                            _androidDraggedView.ScaleY = 1.02f;
+                            _androidDraggedView.TranslationZ = (float)(12 * density);
+                        }
+                    }
+                    if (!_androidDragActive)
+                    {
+                        args.Handled = true;
+                        break;
+                    }
+
+                    _androidScrolledPixels += AutoScrollAndroid(_androidScrollHost, motion.RawY, density);
+                    var deltaPixels = motion.RawY - _androidStartY + _androidScrolledPixels;
+                    if (_androidDraggedView is not null) _androidDraggedView.TranslationY = deltaPixels;
                     var count = _androidPannedItem is ResourceItemViewModel resource
                         ? ResourceCollectionFor(resource).Count
                         : _viewModel.PreparedItems.Count;
+                    var stepPixels = Math.Max(_androidDraggedView?.Height ?? 0, 48 * density);
                     var targetIndex = Math.Clamp(
-                        _androidOriginIndex + (int)Math.Round(delta / ReorderStep, MidpointRounding.AwayFromZero),
+                        _androidOriginIndex + (int)Math.Round(deltaPixels / stepPixels, MidpointRounding.AwayFromZero),
                         0,
                         count - 1);
-                    if (targetIndex != _androidTargetIndex)
-                    {
-                        _androidTargetIndex = targetIndex;
-                        _androidMovePending = true;
-                        _ = MoveAndroidItemAsync(_androidPannedItem, targetIndex);
-                    }
+                    _androidTargetIndex = targetIndex;
                 }
                 args.Handled = true;
                 break;
             case Android.Views.MotionEventActions.Up:
             case Android.Views.MotionEventActions.Cancel:
                 native.Parent?.RequestDisallowInterceptTouchEvent(false);
-                _androidPannedItem = null;
-                _androidOriginIndex = -1;
-                _androidTargetIndex = -1;
+                var movedItem = _androidPannedItem;
+                var movedTo = _androidTargetIndex;
+                var shouldMove = motion.ActionMasked == Android.Views.MotionEventActions.Up
+                    && _androidDragActive
+                    && movedItem is not null
+                    && movedTo >= 0
+                    && movedTo != _androidOriginIndex;
+                ResetAndroidDrag();
+                if (shouldMove) _ = MoveAndroidItemAsync(movedItem!, movedTo);
                 args.Handled = true;
                 break;
         }
@@ -118,78 +152,189 @@ public partial class ResourceManagerPage : ContentView
 
     private async Task MoveAndroidItemAsync(object item, int targetIndex)
     {
-        try
+        if (item is ResourceItemViewModel resource)
+            await _viewModel.MoveResourceAsync(resource, ResourceCollectionFor(resource)[targetIndex]);
+        else if (item is PreparedResourceItemViewModel prepared)
+            await _viewModel.MovePreparedAsync(prepared, _viewModel.PreparedItems[targetIndex]);
+    }
+
+    private void ResetAndroidDrag()
+    {
+        if (_androidDraggedView is not null)
         {
-            if (item is ResourceItemViewModel resource)
-                await _viewModel.MoveResourceAsync(resource, ResourceCollectionFor(resource)[targetIndex]);
-            else if (item is PreparedResourceItemViewModel prepared)
-                await _viewModel.MovePreparedAsync(prepared, _viewModel.PreparedItems[targetIndex]);
+            _androidDraggedView.TranslationY = 0;
+            _androidDraggedView.TranslationZ = 0;
+            _androidDraggedView.ScaleX = 1;
+            _androidDraggedView.ScaleY = 1;
+            _androidDraggedView.Alpha = 1;
         }
-        finally { _androidMovePending = false; }
+        _androidPannedItem = null;
+        _androidDraggedView = null;
+        _androidScrollHost = null;
+        _androidOriginIndex = -1;
+        _androidTargetIndex = -1;
+        _androidScrolledPixels = 0;
+        _androidDragActive = false;
     }
 #endif
 
     private async void OnResourcePanUpdated(object? sender, PanUpdatedEventArgs e)
     {
+#if ANDROID
+        return;
+#else
         if (e.StatusType == GestureStatus.Started)
         {
             _pannedResource = (sender as PanGestureRecognizer)?.BindingContext as ResourceItemViewModel;
             var collection = ResourceCollectionFor(_pannedResource);
             _resourceOriginIndex = _pannedResource is null ? -1 : collection.IndexOf(_pannedResource);
             _resourceTargetIndex = _resourceOriginIndex;
+            _pannedResourceVisual = FindDraggedVisual((sender as PanGestureRecognizer)?.Parent);
+            _resourcePanStep = BeginPanVisual(_pannedResourceVisual);
             return;
         }
-        if (e.StatusType == GestureStatus.Running && _pannedResource is not null && _resourceOriginIndex >= 0 && !_resourceMovePending)
+        if (e.StatusType == GestureStatus.Running && _pannedResource is not null && _resourceOriginIndex >= 0)
         {
+            if (_pannedResourceVisual is not null) _pannedResourceVisual.TranslationY = e.TotalY;
             var collection = ResourceCollectionFor(_pannedResource);
-            var targetIndex = Math.Clamp(
-                _resourceOriginIndex + (int)Math.Round(e.TotalY / ReorderStep, MidpointRounding.AwayFromZero),
+            _resourceTargetIndex = Math.Clamp(
+                _resourceOriginIndex + (int)Math.Round(e.TotalY / _resourcePanStep, MidpointRounding.AwayFromZero),
                 0,
                 collection.Count - 1);
-            if (targetIndex == _resourceTargetIndex) return;
-            _resourceTargetIndex = targetIndex;
-            _resourceMovePending = true;
-            try { await _viewModel.MoveResourceAsync(_pannedResource, collection[targetIndex]); }
-            finally { _resourceMovePending = false; }
             return;
         }
-        if (e.StatusType is GestureStatus.Completed or GestureStatus.Canceled)
+        if (e.StatusType == GestureStatus.Completed)
         {
+            var movedItem = _pannedResource;
+            var movedTo = _resourceTargetIndex;
+            var origin = _resourceOriginIndex;
+            ResetPanVisual(ref _pannedResourceVisual);
+            if (movedItem is not null && movedTo >= 0 && movedTo != origin)
+                await _viewModel.MoveResourceAsync(movedItem, ResourceCollectionFor(movedItem)[movedTo]);
+            _pannedResource = null;
+            _resourceOriginIndex = -1;
+            _resourceTargetIndex = -1;
+            return;
+        }
+        if (e.StatusType == GestureStatus.Canceled)
+        {
+            ResetPanVisual(ref _pannedResourceVisual);
             _pannedResource = null;
             _resourceOriginIndex = -1;
             _resourceTargetIndex = -1;
         }
+#endif
     }
 
     private async void OnPreparedResourcePanUpdated(object? sender, PanUpdatedEventArgs e)
     {
+#if ANDROID
+        return;
+#else
         if (e.StatusType == GestureStatus.Started)
         {
             _pannedPrepared = (sender as PanGestureRecognizer)?.BindingContext as PreparedResourceItemViewModel;
             _preparedOriginIndex = _pannedPrepared is null ? -1 : _viewModel.PreparedItems.IndexOf(_pannedPrepared);
             _preparedTargetIndex = _preparedOriginIndex;
+            _pannedPreparedVisual = FindDraggedVisual((sender as PanGestureRecognizer)?.Parent);
+            _preparedPanStep = BeginPanVisual(_pannedPreparedVisual);
             return;
         }
-        if (e.StatusType == GestureStatus.Running && _pannedPrepared is not null && _preparedOriginIndex >= 0 && !_preparedMovePending)
+        if (e.StatusType == GestureStatus.Running && _pannedPrepared is not null && _preparedOriginIndex >= 0)
         {
-            var targetIndex = Math.Clamp(
-                _preparedOriginIndex + (int)Math.Round(e.TotalY / ReorderStep, MidpointRounding.AwayFromZero),
+            if (_pannedPreparedVisual is not null) _pannedPreparedVisual.TranslationY = e.TotalY;
+            _preparedTargetIndex = Math.Clamp(
+                _preparedOriginIndex + (int)Math.Round(e.TotalY / _preparedPanStep, MidpointRounding.AwayFromZero),
                 0,
                 _viewModel.PreparedItems.Count - 1);
-            if (targetIndex == _preparedTargetIndex) return;
-            _preparedTargetIndex = targetIndex;
-            _preparedMovePending = true;
-            try { await _viewModel.MovePreparedAsync(_pannedPrepared, _viewModel.PreparedItems[targetIndex]); }
-            finally { _preparedMovePending = false; }
             return;
         }
-        if (e.StatusType is GestureStatus.Completed or GestureStatus.Canceled)
+        if (e.StatusType == GestureStatus.Completed)
         {
+            var movedItem = _pannedPrepared;
+            var movedTo = _preparedTargetIndex;
+            var origin = _preparedOriginIndex;
+            ResetPanVisual(ref _pannedPreparedVisual);
+            if (movedItem is not null && movedTo >= 0 && movedTo != origin)
+                await _viewModel.MovePreparedAsync(movedItem, _viewModel.PreparedItems[movedTo]);
+            _pannedPrepared = null;
+            _preparedOriginIndex = -1;
+            _preparedTargetIndex = -1;
+            return;
+        }
+        if (e.StatusType == GestureStatus.Canceled)
+        {
+            ResetPanVisual(ref _pannedPreparedVisual);
             _pannedPrepared = null;
             _preparedOriginIndex = -1;
             _preparedTargetIndex = -1;
         }
+#endif
     }
+
+    private static double BeginPanVisual(VisualElement? visual)
+    {
+        if (visual is null) return ReorderStep;
+        visual.ZIndex = 1000;
+        visual.Scale = 1.02;
+        visual.Opacity = 0.94;
+        return Math.Max(visual.Height, ReorderStep);
+    }
+
+    private static void ResetPanVisual(ref VisualElement? visual)
+    {
+        if (visual is not null)
+        {
+            visual.TranslationY = 0;
+            visual.Scale = 1;
+            visual.Opacity = 1;
+            visual.ZIndex = 0;
+        }
+        visual = null;
+    }
+
+    private static VisualElement? FindDraggedVisual(Element? element)
+    {
+        for (var current = element; current is not null; current = current.Parent)
+            if (current is Border border) return border;
+        return element as VisualElement;
+    }
+
+#if ANDROID
+    private static Android.Views.View? FindAndroidScrollHost(Android.Views.View view)
+    {
+        for (var current = view.Parent; current is not null; current = current.Parent)
+            if (current is AndroidX.RecyclerView.Widget.RecyclerView
+                or AndroidX.Core.Widget.NestedScrollView)
+                return current as Android.Views.View;
+        return null;
+    }
+
+    private static float AutoScrollAndroid(Android.Views.View? host, float rawY, double density)
+    {
+        if (host is null) return 0;
+        var bounds = new Android.Graphics.Rect();
+        if (!host.GetGlobalVisibleRect(bounds)) return 0;
+        var edge = (float)Math.Min(84 * density, bounds.Height() * 0.24);
+        var amount = (int)Math.Max(8, 14 * density);
+        var scroll = rawY < bounds.Top + edge ? -amount : rawY > bounds.Bottom - edge ? amount : 0;
+        if (scroll == 0) return 0;
+        var before = host switch
+        {
+            AndroidX.RecyclerView.Widget.RecyclerView recycler => recycler.ComputeVerticalScrollOffset(),
+            AndroidX.Core.Widget.NestedScrollView nested => nested.ScrollY,
+            _ => host.ScrollY
+        };
+        host.ScrollBy(0, scroll);
+        var after = host switch
+        {
+            AndroidX.RecyclerView.Widget.RecyclerView recycler => recycler.ComputeVerticalScrollOffset(),
+            AndroidX.Core.Widget.NestedScrollView nested => nested.ScrollY,
+            _ => host.ScrollY
+        };
+        return after - before;
+    }
+#endif
 
     private IList<ResourceItemViewModel> ResourceCollectionFor(ResourceItemViewModel? item) => item?.Kind switch
     {
