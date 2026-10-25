@@ -12,6 +12,7 @@ public partial class MorePage : ContentPage, IQueryAttributable
     private readonly PreparedSpellsPage _prepared;
     private readonly SettingsPage _settings;
     private Func<Task> _loadSelected;
+    private View? _selectedContent;
 
     public MorePage(
         CharacterProfilesPage characters,
@@ -63,6 +64,7 @@ public partial class MorePage : ContentPage, IQueryAttributable
 
     private async Task SelectSectionAsync(View content, Func<Task> load, Button selected)
     {
+        if (ReferenceEquals(_selectedContent, content)) return;
         SelectSection(content, load, selected);
         await load();
     }
@@ -70,6 +72,7 @@ public partial class MorePage : ContentPage, IQueryAttributable
     private void SelectSection(View content, Func<Task> load, Button selected)
     {
         SectionHost.Content = content;
+        _selectedContent = content;
         _loadSelected = load;
         foreach (var button in new[] { CharactersTab, ResourcesTab, RulesTab, PreparedTab, FavoritesTab, DownloadsTab, SettingsTab })
         {

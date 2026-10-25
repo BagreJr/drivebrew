@@ -16,3 +16,7 @@ public enum SavedStateKind
     Favorite,
     Prepared
 }
+
+public sealed record SavedItemReference(
+    SavedContentKind ContentKind,
+    string ItemId);

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DndCompendium.Core.Abstractions;
+using DndCompendium.Core.Models;
 
 namespace DndCompendium.App.ViewModels;
 
@@ -11,6 +12,7 @@ public abstract partial class SavedItemsViewModel : ObservableObject
     private readonly IExploitRepository _exploitRepository;
     private readonly ICharacterProfileStore _profileStore;
     private readonly bool _preparedOnly;
+    private readonly List<SavedItemViewModel> _allItems = [];
 
     protected SavedItemsViewModel(
         ISpellRepository spellRepository,
@@ -26,12 +28,23 @@ public abstract partial class SavedItemsViewModel : ObservableObject
         pageSubtitle = preparedOnly
             ? "Tus spells y exploits preparados, disponibles offline."
             : "Tus spells y exploits favoritos, disponibles offline.";
+        selectedSort = preparedOnly ? "Manual" : "A–Z";
     }
 
     public ObservableCollection<SavedItemViewModel> Items { get; } = [];
     public string PageTitle { get; }
+    public IReadOnlyList<string> ContentOptions { get; } = ["Todos", "Spells", "Exploits"];
+    public IReadOnlyList<string> LevelOptions { get; } =
+        ["Todos", "Truco (0)", "Nivel 1", "Nivel 2", "Nivel 3", "Nivel 4", "Nivel 5", "Nivel 6", "Nivel 7", "Nivel 8", "Nivel 9"];
+    public IReadOnlyList<string> CastingTimeOptions { get; } = ["Todos", "Action", "Bonus Action", "Reaction", "Otro"];
+    public IReadOnlyList<string> ComponentOptions { get; } = ["Todos", "Verbal (V)", "Somático (S)", "Material (M)"];
+    public IReadOnlyList<string> SortOptions { get; } = ["Manual", "A–Z", "Z–A", "Nivel menor a mayor", "Nivel mayor a menor"];
+    public bool ShowPreparedFilters => _preparedOnly;
+    public bool CanReorder => _preparedOnly && SelectedSort == "Manual";
+
     [ObservableProperty]
     private string pageSubtitle;
+
     public string ResultSummary => Items.Count == 1 ? "1 elemento" : $"{Items.Count} elementos";
     public string EmptyText => _preparedOnly
         ? "Prepará un spell o exploit y aparecerá acá."
@@ -49,6 +62,43 @@ public abstract partial class SavedItemsViewModel : ObservableObject
 
     [ObservableProperty]
     private bool isRefreshing;
+
+    [ObservableProperty]
+    private string searchQuery = string.Empty;
+
+    [ObservableProperty]
+    private string selectedContent = "Todos";
+
+    [ObservableProperty]
+    private string selectedLevel = "Todos";
+
+    [ObservableProperty]
+    private IReadOnlyList<string> classOptions = ["Todas"];
+
+    [ObservableProperty]
+    private string selectedClass = "Todas";
+
+    [ObservableProperty]
+    private string selectedCastingTime = "Todos";
+
+    [ObservableProperty]
+    private string selectedComponent = "Todos";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanReorder))]
+    private string selectedSort;
+
+    partial void OnSearchQueryChanged(string value) => ApplyFilter();
+    partial void OnSelectedContentChanged(string value) => ApplyFilter();
+    partial void OnSelectedLevelChanged(string value) => ApplyFilter();
+    partial void OnSelectedClassChanged(string value) => ApplyFilter();
+    partial void OnSelectedCastingTimeChanged(string value) => ApplyFilter();
+    partial void OnSelectedComponentChanged(string value) => ApplyFilter();
+    partial void OnSelectedSortChanged(string value)
+    {
+        ApplyFilter();
+        OnPropertyChanged(nameof(CanReorder));
+    }
 
     [RelayCommand(AllowConcurrentExecutions = false)]
     private async Task LoadAsync()
@@ -71,30 +121,36 @@ public abstract partial class SavedItemsViewModel : ObservableObject
                 ? await _exploitRepository.GetPreparedIdsAsync()
                 : await _exploitRepository.GetFavoriteIdsAsync();
 
-            var entries = spells
+            var loaded = spells
                 .Where(spell => spellIds.Contains(spell.Id))
-                .Select(spell => new SavedItemViewModel(
-                    spell.Id,
-                    "SPELL",
-                    spell.Name,
-                    spell.Level == 0 ? "Truco" : $"Nivel {spell.Level}",
-                    SpellDisplay.School(spell.School),
-                    true))
+                .Select(SavedItemViewModel.FromSpell)
                 .Concat(exploits
                     .Where(exploit => exploitIds.Contains(exploit.Id))
-                    .Select(exploit => new SavedItemViewModel(
-                        exploit.Id,
-                        "EXPLOIT",
-                        exploit.Name,
-                        $"Nivel {exploit.Level}",
-                        exploit.Type,
-                        false)))
-                .OrderBy(item => item.Kind, StringComparer.Ordinal)
-                .ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase)
+                    .Select(SavedItemViewModel.FromExploit))
                 .ToArray();
 
-            Items.Clear();
-            foreach (var entry in entries) Items.Add(entry);
+            _allItems.Clear();
+            if (_preparedOnly)
+            {
+                var byKey = loaded.ToDictionary(item => item.ReferenceKey, StringComparer.Ordinal);
+                foreach (var reference in await _profileStore.GetPreparedOrderAsync())
+                {
+                    var key = SavedItemViewModel.ReferenceKeyFor(reference.ContentKind, reference.ItemId);
+                    if (byKey.Remove(key, out var item)) _allItems.Add(item);
+                }
+                _allItems.AddRange(byKey.Values.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase));
+            }
+            else
+            {
+                _allItems.AddRange(loaded.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase));
+            }
+
+            ClassOptions = ["Todas", .. _allItems
+                .SelectMany(item => item.Classes)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Order(StringComparer.OrdinalIgnoreCase)];
+            if (!ClassOptions.Contains(SelectedClass, StringComparer.OrdinalIgnoreCase)) SelectedClass = "Todas";
+            ApplyFilter();
         }
         catch (Exception exception)
         {
@@ -132,12 +188,44 @@ public abstract partial class SavedItemsViewModel : ObservableObject
                 else await _exploitRepository.SetFavoriteAsync(item.Id, false);
             }
 
+            _allItems.Remove(item);
             Items.Remove(item);
+            UpdateMoveAvailability();
             NotifyListState();
         }
         catch (Exception exception)
         {
             ErrorMessage = $"No se pudo quitar el elemento: {exception.Message}";
+        }
+    }
+
+    [RelayCommand(AllowConcurrentExecutions = false)]
+    private Task MoveUpAsync(SavedItemViewModel? item) => MoveAsync(item, -1);
+
+    [RelayCommand(AllowConcurrentExecutions = false)]
+    private Task MoveDownAsync(SavedItemViewModel? item) => MoveAsync(item, 1);
+
+    private async Task MoveAsync(SavedItemViewModel? item, int direction)
+    {
+        if (!_preparedOnly || !CanReorder || item is null) return;
+        var visibleIndex = Items.IndexOf(item);
+        var targetVisibleIndex = visibleIndex + direction;
+        if (visibleIndex < 0 || targetVisibleIndex < 0 || targetVisibleIndex >= Items.Count) return;
+
+        var neighbor = Items[targetVisibleIndex];
+        _allItems.Remove(item);
+        var neighborIndex = _allItems.IndexOf(neighbor);
+        _allItems.Insert(direction < 0 ? neighborIndex : neighborIndex + 1, item);
+        Items.Move(visibleIndex, targetVisibleIndex);
+        UpdateMoveAvailability();
+
+        try
+        {
+            await _profileStore.SetPreparedOrderAsync(_allItems.Select(entry => entry.Reference).ToArray());
+        }
+        catch (Exception exception)
+        {
+            ErrorMessage = $"No se pudo guardar el orden: {exception.Message}";
         }
     }
 
@@ -150,6 +238,65 @@ public abstract partial class SavedItemsViewModel : ObservableObject
         return Shell.Current.GoToAsync($"{route}?{parameter}={Uri.EscapeDataString(item.Id)}");
     }
 
+    private void ApplyFilter()
+    {
+        IEnumerable<SavedItemViewModel> filtered = _allItems;
+        var query = SearchQuery.Trim();
+        if (query.Length > 0)
+        {
+            filtered = filtered.Where(item => item.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                || item.DetailText.Contains(query, StringComparison.CurrentCultureIgnoreCase));
+        }
+        if (SelectedContent == "Spells") filtered = filtered.Where(item => item.IsSpell);
+        if (SelectedContent == "Exploits") filtered = filtered.Where(item => !item.IsSpell);
+
+        var level = SelectedLevel switch
+        {
+            "Truco (0)" => 0,
+            var value when value.StartsWith("Nivel ", StringComparison.Ordinal)
+                && int.TryParse(value.AsSpan(6), out var parsed) => parsed,
+            _ => -1
+        };
+        if (level >= 0) filtered = filtered.Where(item => item.Level == level);
+        if (SelectedClass != "Todas")
+            filtered = filtered.Where(item => item.Classes.Contains(SelectedClass, StringComparer.OrdinalIgnoreCase));
+        if (SelectedCastingTime != "Todos")
+            filtered = filtered.Where(item => item.IsSpell && item.CastingTimeCategory == SelectedCastingTime);
+        if (SelectedComponent != "Todos")
+        {
+            filtered = SelectedComponent switch
+            {
+                "Verbal (V)" => filtered.Where(item => item.IsSpell && item.HasVerbalComponent),
+                "Somático (S)" => filtered.Where(item => item.IsSpell && item.HasSomaticComponent),
+                "Material (M)" => filtered.Where(item => item.IsSpell && item.HasMaterialComponent),
+                _ => filtered
+            };
+        }
+
+        filtered = SelectedSort switch
+        {
+            "A–Z" => filtered.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            "Z–A" => filtered.OrderByDescending(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            "Nivel menor a mayor" => filtered.OrderBy(item => item.Level).ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            "Nivel mayor a menor" => filtered.OrderByDescending(item => item.Level).ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            _ => filtered
+        };
+
+        Items.Clear();
+        foreach (var item in filtered) Items.Add(item);
+        UpdateMoveAvailability();
+        NotifyListState();
+    }
+
+    private void UpdateMoveAvailability()
+    {
+        for (var index = 0; index < Items.Count; index++)
+        {
+            Items[index].CanMoveUp = CanReorder && index > 0;
+            Items[index].CanMoveDown = CanReorder && index < Items.Count - 1;
+        }
+    }
+
     private void NotifyListState()
     {
         OnPropertyChanged(nameof(ResultSummary));
@@ -157,13 +304,85 @@ public abstract partial class SavedItemsViewModel : ObservableObject
     }
 }
 
-public sealed record SavedItemViewModel(
-    string Id,
-    string Kind,
-    string Name,
-    string LevelText,
-    string DetailText,
-    bool IsSpell);
+public partial class SavedItemViewModel : ObservableObject
+{
+    private SavedItemViewModel(
+        string id,
+        string kind,
+        string name,
+        int level,
+        string levelText,
+        string detailText,
+        bool isSpell,
+        IReadOnlyList<string> classes,
+        string castingTimeCategory = "",
+        bool hasVerbalComponent = false,
+        bool hasSomaticComponent = false,
+        bool hasMaterialComponent = false)
+    {
+        Id = id;
+        Kind = kind;
+        Name = name;
+        Level = level;
+        LevelText = levelText;
+        DetailText = detailText;
+        IsSpell = isSpell;
+        Classes = classes;
+        CastingTimeCategory = castingTimeCategory;
+        HasVerbalComponent = hasVerbalComponent;
+        HasSomaticComponent = hasSomaticComponent;
+        HasMaterialComponent = hasMaterialComponent;
+    }
+
+    public string Id { get; }
+    public string Kind { get; }
+    public string Name { get; }
+    public int Level { get; }
+    public string LevelText { get; }
+    public string DetailText { get; }
+    public bool IsSpell { get; }
+    public IReadOnlyList<string> Classes { get; }
+    public string CastingTimeCategory { get; }
+    public bool HasVerbalComponent { get; }
+    public bool HasSomaticComponent { get; }
+    public bool HasMaterialComponent { get; }
+    public SavedContentKind ContentKind => IsSpell ? SavedContentKind.Spell : SavedContentKind.Exploit;
+    public SavedItemReference Reference => new(ContentKind, Id);
+    public string ReferenceKey => ReferenceKeyFor(ContentKind, Id);
+
+    [ObservableProperty]
+    private bool canMoveUp;
+
+    [ObservableProperty]
+    private bool canMoveDown;
+
+    public static SavedItemViewModel FromSpell(Spell spell) => new(
+        spell.Id,
+        "SPELL",
+        spell.Name,
+        spell.Level,
+        spell.Level == 0 ? "Truco" : $"Nivel {spell.Level}",
+        SpellDisplay.School(spell.School),
+        true,
+        spell.Classes,
+        SpellDisplay.CastingTimeCategory(spell.CastingTime),
+        spell.HasVerbalComponent,
+        spell.HasSomaticComponent,
+        spell.HasMaterialComponent);
+
+    public static SavedItemViewModel FromExploit(ExploitEntry exploit) => new(
+        exploit.Id,
+        "EXPLOIT",
+        exploit.Name,
+        exploit.Level,
+        $"Nivel {exploit.Level}",
+        exploit.Type,
+        false,
+        exploit.Classes);
+
+    public static string ReferenceKeyFor(SavedContentKind contentKind, string id)
+        => $"{contentKind}:{id}";
+}
 
 public sealed class PreparedSpellsViewModel(
     ISpellRepository spellRepository,

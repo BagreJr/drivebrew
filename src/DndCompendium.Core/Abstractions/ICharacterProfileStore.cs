@@ -30,6 +30,13 @@ public interface ICharacterProfileStore
         bool isSaved,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<SavedItemReference>> GetPreparedOrderAsync(
+        CancellationToken cancellationToken = default);
+
+    Task SetPreparedOrderAsync(
+        IReadOnlyList<SavedItemReference> items,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<CharacterResource>> GetResourcesAsync(CancellationToken cancellationToken = default);
 
     Task<CharacterResource> UpsertResourceAsync(

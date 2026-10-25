@@ -50,6 +50,64 @@ public sealed class JsonCharacterProfileStoreTests
     }
 
     [Fact]
+    public async Task PreparedOrderPersistsAndRemainsIsolatedPerCharacter()
+    {
+        using var directory = new TemporaryDirectory();
+        var store = new JsonCharacterProfileStore(directory.Path);
+        var first = await store.GetActiveAsync();
+        await store.SetSavedAsync(SavedContentKind.Spell, SavedStateKind.Prepared, "spell-a", true);
+        await store.SetSavedAsync(SavedContentKind.Exploit, SavedStateKind.Prepared, "exploit-b", true);
+        await store.SetPreparedOrderAsync([
+            new(SavedContentKind.Exploit, "exploit-b"),
+            new(SavedContentKind.Spell, "spell-a")
+        ]);
+
+        var reloaded = new JsonCharacterProfileStore(directory.Path);
+        Assert.Equal([
+            new SavedItemReference(SavedContentKind.Exploit, "exploit-b"),
+            new SavedItemReference(SavedContentKind.Spell, "spell-a")
+        ], await reloaded.GetPreparedOrderAsync());
+
+        await reloaded.SetSavedAsync(SavedContentKind.Exploit, SavedStateKind.Prepared, "exploit-b", false);
+        Assert.Equal(
+            new SavedItemReference(SavedContentKind.Spell, "spell-a"),
+            Assert.Single(await reloaded.GetPreparedOrderAsync()));
+
+        await reloaded.CreateAsync("Nyx");
+        Assert.Empty(await reloaded.GetPreparedOrderAsync());
+        await reloaded.SetActiveAsync(first.Id);
+        Assert.Equal("spell-a", Assert.Single(await reloaded.GetPreparedOrderAsync()).ItemId);
+    }
+
+    [Fact]
+    public async Task MigratesPreparedOrderFromVersionTwoProfiles()
+    {
+        using var directory = new TemporaryDirectory();
+        var profilesDirectory = Path.Combine(directory.Path, "profiles");
+        Directory.CreateDirectory(profilesDirectory);
+        const string state = """
+            {
+              "Version": 2,
+              "ActiveCharacterId": "hero",
+              "Characters": [{ "Id": "hero", "Name": "Nyx", "CreatedAt": "2026-10-20T00:00:00Z" }],
+              "Saved": [{
+                "CharacterId": "hero",
+                "PreparedSpellIds": ["spell-b"],
+                "PreparedExploitIds": ["exploit-a"]
+              }]
+            }
+            """;
+        await File.WriteAllTextAsync(Path.Combine(profilesDirectory, "characters.json"), state);
+
+        var store = new JsonCharacterProfileStore(directory.Path);
+        var order = await store.GetPreparedOrderAsync();
+
+        Assert.Equal(2, order.Count);
+        Assert.Contains(new SavedItemReference(SavedContentKind.Spell, "spell-b"), order);
+        Assert.Contains(new SavedItemReference(SavedContentKind.Exploit, "exploit-a"), order);
+    }
+
+    [Fact]
     public async Task PersistsResourcesAndKeepsThemIsolatedPerCharacter()
     {
         using var directory = new TemporaryDirectory();

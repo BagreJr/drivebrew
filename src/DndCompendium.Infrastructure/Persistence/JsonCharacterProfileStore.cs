@@ -7,7 +7,7 @@ namespace DndCompendium.Infrastructure.Persistence;
 
 public sealed class JsonCharacterProfileStore : ICharacterProfileStore
 {
-    private const int ProfileVersion = 2;
+    private const int ProfileVersion = 3;
     private const string DefaultCharacterName = "Mi personaje";
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -215,6 +215,75 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
                 ids.RemoveAll(id => string.Equals(id, itemId, StringComparison.Ordinal));
             }
             ids.Sort(StringComparer.Ordinal);
+            if (stateKind == SavedStateKind.Prepared)
+            {
+                var key = PreparedKey(contentKind, itemId);
+                if (isSaved)
+                {
+                    if (!saved.PreparedItemOrder.Contains(key, StringComparer.Ordinal))
+                    {
+                        saved.PreparedItemOrder.Add(key);
+                    }
+                }
+                else
+                {
+                    saved.PreparedItemOrder.RemoveAll(item => string.Equals(item, key, StringComparison.Ordinal));
+                }
+            }
+            await SaveStateAsync(state, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<IReadOnlyList<SavedItemReference>> GetPreparedOrderAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var state = await EnsureStateAsync(cancellationToken).ConfigureAwait(false);
+            return GetSavedData(state, state.ActiveCharacterId).PreparedItemOrder
+                .Select(ParsePreparedKey)
+                .Where(item => item is not null)
+                .Cast<SavedItemReference>()
+                .ToArray();
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task SetPreparedOrderAsync(
+        IReadOnlyList<SavedItemReference> items,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var state = await EnsureStateAsync(cancellationToken).ConfigureAwait(false);
+            var saved = GetSavedData(state, state.ActiveCharacterId);
+            var valid = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var id in saved.PreparedSpellIds) valid.Add(PreparedKey(SavedContentKind.Spell, id));
+            foreach (var id in saved.PreparedExploitIds) valid.Add(PreparedKey(SavedContentKind.Exploit, id));
+
+            saved.PreparedItemOrder = items
+                .Where(item => !string.IsNullOrWhiteSpace(item.ItemId))
+                .Select(item => PreparedKey(item.ContentKind, item.ItemId))
+                .Where(valid.Contains)
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+            foreach (var key in valid)
+            {
+                if (!saved.PreparedItemOrder.Contains(key, StringComparer.Ordinal))
+                {
+                    saved.PreparedItemOrder.Add(key);
+                }
+            }
             await SaveStateAsync(state, cancellationToken).ConfigureAwait(false);
         }
         finally
@@ -344,9 +413,8 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
         {
             try
             {
-                await using var input = File.OpenRead(_statePath);
-                var stored = await JsonSerializer.DeserializeAsync<ProfileState>(input, JsonOptions, cancellationToken)
-                    .ConfigureAwait(false);
+                var input = await File.ReadAllBytesAsync(_statePath, cancellationToken).ConfigureAwait(false);
+                var stored = JsonSerializer.Deserialize<ProfileState>(input, JsonOptions);
                 if (stored is not null && stored.Characters.Count > 0)
                 {
                     var requiresMigration = stored.Version < ProfileVersion;
@@ -431,6 +499,8 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
             saved.PreparedSpellIds ??= [];
             saved.FavoriteExploitIds ??= [];
             saved.PreparedExploitIds ??= [];
+            saved.PreparedItemOrder ??= [];
+            NormalizePreparedOrder(saved);
             var normalizedResources = new List<CharacterResource>();
             foreach (var resource in saved.Resources)
             {
@@ -463,6 +533,37 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
             (SavedContentKind.Exploit, SavedStateKind.Prepared) => saved.PreparedExploitIds,
             _ => throw new ArgumentOutOfRangeException()
         };
+
+    private static void NormalizePreparedOrder(CharacterSavedData saved)
+    {
+        var valid = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var id in saved.PreparedSpellIds.Where(id => !string.IsNullOrWhiteSpace(id)))
+            valid.Add(PreparedKey(SavedContentKind.Spell, id));
+        foreach (var id in saved.PreparedExploitIds.Where(id => !string.IsNullOrWhiteSpace(id)))
+            valid.Add(PreparedKey(SavedContentKind.Exploit, id));
+
+        saved.PreparedItemOrder = saved.PreparedItemOrder
+            .Where(valid.Contains)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        foreach (var key in valid.Order(StringComparer.Ordinal))
+        {
+            if (!saved.PreparedItemOrder.Contains(key, StringComparer.Ordinal))
+                saved.PreparedItemOrder.Add(key);
+        }
+    }
+
+    private static string PreparedKey(SavedContentKind contentKind, string itemId)
+        => $"{(contentKind == SavedContentKind.Spell ? "spell" : "exploit")}:{itemId}";
+
+    private static SavedItemReference? ParsePreparedKey(string key)
+    {
+        if (key.StartsWith("spell:", StringComparison.Ordinal))
+            return new(SavedContentKind.Spell, key[6..]);
+        if (key.StartsWith("exploit:", StringComparison.Ordinal))
+            return new(SavedContentKind.Exploit, key[8..]);
+        return null;
+    }
 
     private static CharacterData FindCharacter(ProfileState state, string characterId)
         => state.Characters.FirstOrDefault(character => character.Id == characterId)
@@ -526,6 +627,7 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
         public List<string> PreparedSpellIds { get; set; } = [];
         public List<string> FavoriteExploitIds { get; set; } = [];
         public List<string> PreparedExploitIds { get; set; } = [];
+        public List<string> PreparedItemOrder { get; set; } = [];
         public List<CharacterResource> Resources { get; set; } = [];
     }
 }

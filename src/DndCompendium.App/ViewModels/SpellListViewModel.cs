@@ -161,7 +161,7 @@ public abstract partial class SpellListViewModel : ObservableObject
             var next = !spell.IsPrepared;
             await _repository.SetPreparedAsync(spell.Id, next);
             spell.IsPrepared = next;
-            ApplyFilter();
+            if (_preparedOnly && !next) ApplyFilter();
         }
         catch (Exception exception)
         {
@@ -179,7 +179,7 @@ public abstract partial class SpellListViewModel : ObservableObject
             var next = !spell.IsFavorite;
             await _repository.SetFavoriteAsync(spell.Id, next);
             spell.IsFavorite = next;
-            ApplyFilter();
+            if (_favoriteOnly && !next) ApplyFilter();
         }
         catch (Exception exception)
         {
