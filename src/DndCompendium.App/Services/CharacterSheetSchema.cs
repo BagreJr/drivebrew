@@ -14,9 +14,64 @@ public sealed record CharacterSheetSectionDefinition(
     string HelpText,
     IReadOnlyList<CharacterSheetFieldDefinition> Fields);
 
+public sealed record CharacterSheetEditSectionDefinition(
+    string Id,
+    string Name,
+    string HelpText,
+    IReadOnlyList<CharacterSheetFieldDefinition> Fields);
+
 public static class CharacterSheetSchema
 {
     public static IReadOnlyList<CharacterSheetSectionDefinition> Sections { get; } = BuildSections();
+
+    public static IReadOnlyList<CharacterSheetEditSectionDefinition> EditSections { get; } = BuildEditSections();
+
+    private static IReadOnlyList<CharacterSheetEditSectionDefinition> BuildEditSections()
+    {
+        var all = Sections.SelectMany(section => section.Fields)
+            .Where(field => !string.IsNullOrWhiteSpace(field.FieldName))
+            .GroupBy(field => field.FieldName, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        var digital = new[]
+        {
+            Field("Digital.Subclass", "Subclase"),
+            Field("Digital.ClassFeatures", "Class Features", multiline: true),
+            Field("Digital.SubclassFeatures", "Subclass Features", multiline: true),
+            Field("Digital.RacialTraits", "Racial Traits", multiline: true),
+            Field("Digital.Feats", "Feats", multiline: true),
+            Field("Digital.Notes", "Notas", multiline: true)
+        };
+        foreach (var field in digital) all[field.FieldName] = field;
+
+        IReadOnlyList<CharacterSheetFieldDefinition> Pick(params string[] names)
+            => names.Where(all.ContainsKey).Select(name => all[name]).ToArray();
+        IReadOnlyList<CharacterSheetFieldDefinition> Section(string name)
+            => Sections.Single(section => section.Name == name).Fields;
+
+        return
+        [
+            new("overview", "Overview", "Identidad y estadísticas esenciales del personaje.", Pick(
+                "CharacterName", "Race ", "ClassLevel", "Digital.Subclass", "Background", "Alignment", "XP",
+                "STR", "DEX", "CON", "INT", "WIS", "CHA")),
+            new("abilities", "Abilities & Skills", "Características, salvaciones, habilidades y competencias.",
+                Pick("STR", "DEX", "CON", "INT", "WIS", "CHA", "ProfBonus")
+                    .Concat(Section("Salvaciones")).Concat(Section("Habilidades"))
+                    .Concat(Pick("ProficienciesLang")).ToArray()),
+            new("combat", "Combat", "Valores de combate y acciones rápidas para la partida.",
+                Section("Combate").Concat(Section("Ataques")).ToArray()),
+            new("features", "Features & Traits", "Features separadas por origen, feats y notas de reglas.", Pick(
+                "Digital.ClassFeatures", "Digital.SubclassFeatures", "Digital.RacialTraits", "Digital.Feats",
+                "Features and Traits", "Feat+Traits")),
+            new("spells", "Spells", "Spellcasting y lista completa de cantrips y spells.",
+                Sections.Where(section => section.Name == "Spellcasting" || section.Name.StartsWith("Spells", StringComparison.Ordinal)
+                    || section.Name == "Cantrips").SelectMany(section => section.Fields).ToArray()),
+            new("inventory", "Inventory", "Armas, equipo, monedas y tesoro.",
+                Section("Equipo").Concat(Pick("Treasure")).ToArray()),
+            new("details", "Character Details", "Apariencia, personalidad, historia, aliados y notas.", Pick(
+                "PlayerName", "Age", "Height", "Weight", "Eyes", "Skin", "Hair",
+                "PersonalityTraits ", "Ideals", "Bonds", "Flaws", "Backstory", "Allies", "FactionName", "Digital.Notes"))
+        ];
+    }
 
     private static IReadOnlyList<CharacterSheetSectionDefinition> BuildSections()
     {

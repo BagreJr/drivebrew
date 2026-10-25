@@ -70,6 +70,88 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
             case "save":
                 await _viewModel.SaveIfNeededAsync();
                 break;
+            case "modifierUpsert":
+                _viewModel.UpsertModifier(
+                    root.TryGetProperty("id", out var modifierId) ? modifierId.GetString() : null,
+                    root.TryGetProperty("sourceName", out var sourceName) ? sourceName.GetString() ?? string.Empty : string.Empty,
+                    root.TryGetProperty("target", out var target) ? target.GetString() ?? string.Empty : string.Empty,
+                    root.TryGetProperty("value", out var modifierValue) && modifierValue.TryGetDecimal(out var decimalValue) ? decimalValue : 0,
+                    root.TryGetProperty("bonusType", out var bonusType) ? bonusType.GetString() : null,
+                    root.TryGetProperty("condition", out var condition) ? condition.GetString() : null,
+                    root.TryGetProperty("duration", out var duration) ? duration.GetString() : null,
+                    !root.TryGetProperty("isActive", out var active) || active.GetBoolean());
+                break;
+            case "modifierDelete":
+                if (root.TryGetProperty("id", out var removedId)) _viewModel.RemoveModifier(removedId.GetString() ?? string.Empty);
+                break;
+            case "adjustResource":
+                if (root.TryGetProperty("id", out var resourceId)
+                    && root.TryGetProperty("delta", out var delta)
+                    && delta.TryGetInt32(out var resourceDelta))
+                    await _viewModel.AdjustResourceAsync(resourceId.GetString() ?? string.Empty, resourceDelta);
+                break;
+            case "setPreparedSpell":
+                if (root.TryGetProperty("id", out var spellId))
+                    await _viewModel.SetPreparedSpellAsync(
+                        spellId.GetString() ?? string.Empty,
+                        !root.TryGetProperty("prepared", out var prepared) || prepared.GetBoolean());
+                break;
+            case "setKnownSpell":
+                if (root.TryGetProperty("id", out var knownSpellId))
+                    _viewModel.SetKnownSpell(
+                        knownSpellId.GetString() ?? string.Empty,
+                        !root.TryGetProperty("known", out var known) || known.GetBoolean());
+                break;
+            case "spellSearch":
+                var spellQuery = StringProperty(root, "query");
+                int? spellLevel = root.TryGetProperty("level", out var levelElement)
+                    && levelElement.ValueKind == JsonValueKind.Number
+                    && levelElement.TryGetInt32(out var parsedLevel)
+                        ? parsedLevel
+                        : null;
+                SheetWebView.SendRawMessage(await _viewModel.SearchSpellsPayloadJsonAsync(spellQuery, spellLevel));
+                break;
+            case "openSpell":
+                if (root.TryGetProperty("id", out var openedSpellId))
+                    await Shell.Current.GoToAsync(
+                        $"{AppRoutes.SpellDetail}?spellId={Uri.EscapeDataString(openedSpellId.GetString() ?? string.Empty)}");
+                break;
+            case "openSpells":
+                await Shell.Current.GoToAsync("//tabs/spells");
+                break;
+            case "featureSearch":
+                var featureQuery = root.TryGetProperty("query", out var query) ? query.GetString() ?? string.Empty : string.Empty;
+                SheetWebView.SendRawMessage(await _viewModel.SearchFeaturesPayloadJsonAsync(featureQuery));
+                break;
+            case "identitySearch":
+                var identityQuery = root.TryGetProperty("query", out var identity) ? identity.GetString() ?? string.Empty : string.Empty;
+                SheetWebView.SendRawMessage(await _viewModel.SearchIdentityPayloadJsonAsync(identityQuery));
+                break;
+            case "featureAdd":
+                _viewModel.AddFeatureReference(
+                    StringProperty(root, "id"),
+                    StringProperty(root, "name"),
+                    StringProperty(root, "kind"),
+                    NullableStringProperty(root, "sourceKey"),
+                    NullableStringProperty(root, "documentId"),
+                    NullableStringProperty(root, "target"),
+                    NullableStringProperty(root, "level"));
+                break;
+            case "featureDelete":
+                _viewModel.RemoveFeatureReference(StringProperty(root, "id"));
+                break;
+            case "openFeature":
+                var documentId = NullableStringProperty(root, "documentId");
+                if (!string.IsNullOrWhiteSpace(documentId))
+                {
+                    var featureTarget = NullableStringProperty(root, "target");
+                    var targetQuery = string.IsNullOrWhiteSpace(featureTarget)
+                        ? string.Empty
+                        : $"&target={Uri.EscapeDataString(featureTarget)}";
+                    await Shell.Current.GoToAsync(
+                        $"{AppRoutes.Reader}?documentId={Uri.EscapeDataString(documentId)}{targetQuery}");
+                }
+                break;
             case "error":
                 _viewModel.ReportEditorError(
                     root.TryGetProperty("message", out var errorElement)
@@ -78,6 +160,14 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
                 break;
         }
     }
+
+    private static string StringProperty(JsonElement root, string name)
+        => root.TryGetProperty(name, out var property) ? property.GetString() ?? string.Empty : string.Empty;
+
+    private static string? NullableStringProperty(JsonElement root, string name)
+        => root.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.String
+            ? property.GetString()
+            : null;
 
     private void SendSheetPayload()
     {
@@ -103,5 +193,13 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
     {
         await _viewModel.SaveIfNeededAsync();
         base.OnDisappearing();
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        if (!_webViewReady || string.IsNullOrWhiteSpace(_characterId)) return;
+        await _viewModel.RefreshSessionDataAsync();
+        SendSheetPayload();
     }
 }

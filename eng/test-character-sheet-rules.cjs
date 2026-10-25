@@ -23,6 +23,30 @@ assert.equal(rules.calculate(new Map([['ClassLevel', 'Fighter 3 / Rogue 2']]), n
 assert.equal(rules.calculate(new Map([['ClassLevel', 'Paladin 9']]), new Set()).get('SpellcastingAbility 2'), 'CHA');
 assert.equal(rules.calculate(new Map([['ClassLevel', 'Cleric 17']]), new Set()).get('ProfBonus'), '+6');
 
+const structured = rules.calculate(values, checked, {
+  abilityBaseScores: new Map([['STR', 15], ['DEX', 14], ['CON', 13], ['INT', 16], ['WIS', 12], ['CHA', 8]]),
+  proficiencyRanks: new Map([['Perception ', 2], ['ST Strength', 1]]),
+  otherBonuses: new Map([['Perception ', 1], ['Initiative', 2], ['SpellSaveDC  2', 1]]),
+  modifiers: [{ target: 'STR', value: 1, sourceName: 'Feat', isActive: true }]
+});
+assert.equal(structured.get('STR'), '16', 'structured ability total');
+assert.equal(structured.get('STRmod'), '+3', 'modifier from structured total');
+assert.equal(structured.get('ST Strength'), '+6', 'proficient saving throw');
+assert.equal(structured.get('Perception '), '+8', 'expertise plus other bonus');
+assert.equal(structured.get('Passive'), '18', 'passive perception from structured result');
+assert.equal(structured.get('Initiative'), '+4', 'initiative other bonus');
+assert.equal(structured.get('SpellSaveDC  2'), '15', 'spell DC other bonus');
+
+const overridden = rules.calculate(values, checked, {
+  proficiencyRanks: { Athletics: 2 },
+  otherBonuses: { Athletics: -1 },
+  overrides: { Athletics: '+99' }
+});
+assert.equal(overridden.get('Athletics'), '+99', 'manual override wins without deleting inputs');
+assert.deepEqual(rules.explain('Athletics', values, checked, {
+  proficiencyRanks: { Athletics: 2 }, otherBonuses: { Athletics: -1 }
+}).map(part => part.label), ['Fuerza', 'Expertise', 'Otros']);
+
 const layout = globalThis.DRIVEBREW_SHEET_LAYOUT;
 assert.equal(layout.pages.length, 3);
 assert.equal(layout.fields.length, 332);

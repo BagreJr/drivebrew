@@ -178,6 +178,13 @@ El APK 1.21/código 22 se publicó con SHA-256
 `96B5D6E26846A51CB4B1E6722114AC4B8E197541F4B8FAE855C74D6C703226C8`;
 el manifiesto público y los tres recursos del editor (`HTML`, reglas y estilos)
 incluidos en el paquete publicado se verificaron.
+Character Sheet 2.0 versión 1.22 se verificó a 430 × 900 con edición por siete
+secciones, modos Editar/Jugar/PDF, textos expansibles que conservan foco y cursor,
+Expertise, bonos, overrides, modificadores reversibles, spells preparados y
+Resources compartidos con el perfil. Las 112 pruebas .NET y la prueba JavaScript
+pasaron; el build Android Debug terminó con 0 advertencias y 0 errores. La prueba
+visual no mostró desborde horizontal. La prueba USB queda pendiente si el teléfono
+no aparece conectado.
 
 ## Limitaciones del equipo
 

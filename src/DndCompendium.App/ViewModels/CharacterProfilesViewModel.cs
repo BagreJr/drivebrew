@@ -127,6 +127,7 @@ public partial class CharacterProfilesViewModel(
         try
         {
             ErrorMessage = null;
+            if (!character.IsActive) await store.SetActiveAsync(character.Id);
             await Shell.Current.GoToAsync(
                 $"{AppRoutes.CharacterSheet}?characterId={Uri.EscapeDataString(character.Id)}");
         }

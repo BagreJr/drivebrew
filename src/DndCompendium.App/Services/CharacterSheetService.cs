@@ -64,8 +64,9 @@ public sealed class CharacterSheetService(
             }
 
             var changed = EnsureCharacterName(data, character.Name);
-            if (!File.Exists(dataPath) || changed)
-                await WriteDataAtomicallyAsync(dataPath, data, cancellationToken).ConfigureAwait(false);
+            // Writing the normalized JSON also performs additive schema migration.
+            // The original values and PDF fields are never removed by this step.
+            await WriteDataAtomicallyAsync(dataPath, data, cancellationToken).ConfigureAwait(false);
             if (!File.Exists(pdfPath) || changed)
                 await GeneratePdfAtomicallyAsync(pdfPath, data, cancellationToken).ConfigureAwait(false);
         }
@@ -253,16 +254,74 @@ public sealed class CharacterSheetService(
     }
 
     private static CharacterSheetData NormalizeData(CharacterSheetData data)
-        => new()
+    {
+        var textFields = (data.TextFields ?? [])
+            .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrEmpty(pair.Value))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        var checkedFields = (data.CheckedFields ?? [])
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .ToHashSet(StringComparer.Ordinal);
+        var abilityBases = (data.AbilityBaseScores ?? [])
+            .Where(pair => IsAbility(pair.Key) && pair.Value is >= 1 and <= 30)
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        foreach (var ability in AbilityNames)
         {
-            TextFields = data.TextFields
-                .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrEmpty(pair.Value))
+            if (!abilityBases.ContainsKey(ability)
+                && textFields.TryGetValue(ability, out var value)
+                && int.TryParse(value, out var score)
+                && score is >= 1 and <= 30)
+                abilityBases[ability] = score;
+        }
+
+        var proficiencyRanks = (data.ProficiencyRanks ?? [])
+            .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && pair.Value is >= 0 and <= 2)
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        foreach (var field in CharacterSheetSchema.Sections.SelectMany(section => section.Fields))
+        {
+            if (!string.IsNullOrWhiteSpace(field.FieldName)
+                && !string.IsNullOrWhiteSpace(field.ToggleFieldName)
+                && checkedFields.Contains(field.ToggleFieldName)
+                && !proficiencyRanks.ContainsKey(field.FieldName))
+                proficiencyRanks[field.FieldName] = 1;
+        }
+
+        return new CharacterSheetData
+        {
+            SchemaVersion = CharacterSheetData.CurrentSchemaVersion,
+            RuleSet = data.RuleSet is "2024" or "Homebrew" ? data.RuleSet : "2014",
+            TextFields = textFields,
+            CheckedFields = checkedFields,
+            AbilityBaseScores = abilityBases,
+            ProficiencyRanks = proficiencyRanks,
+            OtherBonuses = (data.OtherBonuses ?? [])
+                .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal),
-            CheckedFields = data.CheckedFields
-                .Where(name => !string.IsNullOrWhiteSpace(name))
+            Overrides = (data.Overrides ?? [])
+                .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+                .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal),
+            Modifiers = (data.Modifiers ?? [])
+                .Where(item => !string.IsNullOrWhiteSpace(item.Id)
+                    && !string.IsNullOrWhiteSpace(item.SourceName)
+                    && !string.IsNullOrWhiteSpace(item.Target))
+                .GroupBy(item => item.Id, StringComparer.Ordinal)
+                .Select(group => group.First())
+                .ToList(),
+            Features = (data.Features ?? [])
+                .Where(item => !string.IsNullOrWhiteSpace(item.Id) && !string.IsNullOrWhiteSpace(item.Name))
+                .GroupBy(item => item.Id, StringComparer.Ordinal)
+                .Select(group => group.First())
+                .ToList(),
+            KnownSpellIds = (data.KnownSpellIds ?? [])
+                .Where(id => !string.IsNullOrWhiteSpace(id))
                 .ToHashSet(StringComparer.Ordinal),
             UpdatedAt = data.UpdatedAt
         };
+    }
+
+    private static readonly string[] AbilityNames = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
+
+    private static bool IsAbility(string value)
+        => AbilityNames.Contains(value, StringComparer.Ordinal);
 
     private static bool EnsureCharacterName(CharacterSheetData data, string name)
     {

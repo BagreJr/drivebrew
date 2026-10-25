@@ -64,34 +64,54 @@
     return matches.size === 1 ? Array.from(matches)[0] : null;
   }
 
-  function calculate(sourceValues, sourceChecked) {
-    const values = sourceValues instanceof Map ? sourceValues : new Map(Object.entries(sourceValues ?? {}));
+  function asMap(value) {
+    return value instanceof Map ? value : new Map(Object.entries(value ?? {}));
+  }
+
+  function modifierTotal(modifiers, target) {
+    return (Array.isArray(modifiers) ? modifiers : [])
+      .filter(item => item && item.isActive !== false && item.target === target)
+      .reduce((total, item) => total + (parseNumber(item.value) ?? 0), 0);
+  }
+
+  function calculate(sourceValues, sourceChecked, options = {}) {
+    const values = asMap(sourceValues);
     const checked = sourceChecked instanceof Set ? sourceChecked : new Set(sourceChecked ?? []);
+    const bases = asMap(options.abilityBaseScores);
+    const ranks = asMap(options.proficiencyRanks);
+    const bonuses = asMap(options.otherBonuses);
+    const overrides = asMap(options.overrides);
+    const modifiers = options.modifiers ?? [];
     const updates = new Map();
     const numberFor = name => parseNumber(updates.has(name) ? updates.get(name) : values.get(name));
+    const bonusFor = name => (parseNumber(bonuses.get(name)) ?? 0) + modifierTotal(modifiers, name);
     const modifierFor = ability => {
       const score = numberFor(ABILITIES[ability].score);
       return score === null ? null : Math.floor((score - 10) / 2);
     };
 
     for (const ability of Object.keys(ABILITIES)) {
+      const base = parseNumber(bases.get(ability));
+      if (base !== null) updates.set(ability, String(base + modifierTotal(modifiers, ability)));
       const modifier = modifierFor(ability);
       if (modifier !== null) updates.set(ABILITIES[ability].modifier, signed(modifier));
     }
 
     const level = levelFromClass(values.get('ClassLevel'));
-    if (level !== null) updates.set('ProfBonus', signed(2 + Math.floor((level - 1) / 4)));
+    if (level !== null) updates.set('ProfBonus', signed(2 + Math.floor((level - 1) / 4) + bonusFor('ProfBonus')));
     const proficiency = numberFor('ProfBonus') ?? 0;
 
     for (const [field, ability, checkbox] of [...SAVES, ...SKILLS]) {
       const modifier = modifierFor(ability);
-      if (modifier !== null) updates.set(field, signed(modifier + (checked.has(checkbox) ? proficiency : 0)));
+      const explicitRank = parseNumber(ranks.get(field));
+      const rank = explicitRank === null ? (checked.has(checkbox) ? 1 : 0) : Math.max(0, Math.min(2, explicitRank));
+      if (modifier !== null) updates.set(field, signed(modifier + (rank * proficiency) + bonusFor(field)));
     }
 
     const dexterity = modifierFor('DEX');
-    if (dexterity !== null) updates.set('Initiative', signed(dexterity));
+    if (dexterity !== null) updates.set('Initiative', signed(dexterity + bonusFor('Initiative')));
     const perception = numberFor('Perception ');
-    if (perception !== null) updates.set('Passive', String(10 + perception));
+    if (perception !== null) updates.set('Passive', String(10 + perception + bonusFor('Passive')));
 
     let spellAbility = resolveSpellAbility(values.get('SpellcastingAbility 2'));
     if (!spellAbility) {
@@ -104,14 +124,41 @@
     if (spellAbility) {
       const modifier = modifierFor(spellAbility);
       if (modifier !== null) {
-        updates.set('SpellSaveDC  2', String(8 + proficiency + modifier));
-        updates.set('SpellAtkBonus 2', signed(proficiency + modifier));
+        updates.set('SpellSaveDC  2', String(8 + proficiency + modifier + bonusFor('SpellSaveDC  2')));
+        updates.set('SpellAtkBonus 2', signed(proficiency + modifier + bonusFor('SpellAtkBonus 2')));
       }
     }
+
+    for (const [name, value] of overrides) if (String(value ?? '').trim()) updates.set(name, String(value));
     return updates;
   }
 
-  const api = Object.freeze({ ABILITIES, SAVES, SKILLS, parseNumber, signed, levelFromClass, calculate });
+  function explain(name, sourceValues, sourceChecked, options = {}) {
+    const values = asMap(sourceValues);
+    const ranks = asMap(options.proficiencyRanks);
+    const bonuses = asMap(options.otherBonuses);
+    const modifiers = options.modifiers ?? [];
+    const parts = [];
+    if (ABILITIES[name]) {
+      const base = parseNumber(asMap(options.abilityBaseScores).get(name) ?? values.get(name));
+      if (base !== null) parts.push({ label: 'Base', value: base });
+    }
+    const related = [...SAVES, ...SKILLS].find(item => item[0] === name);
+    if (related) {
+      const abilityModifier = parseNumber(calculate(values, sourceChecked, options).get(ABILITIES[related[1]].modifier));
+      if (abilityModifier !== null) parts.push({ label: ABILITIES[related[1]].label, value: abilityModifier });
+      const rank = parseNumber(ranks.get(name)) ?? 0;
+      const proficiency = parseNumber(calculate(values, sourceChecked, options).get('ProfBonus')) ?? 0;
+      if (rank > 0) parts.push({ label: rank === 2 ? 'Expertise' : 'Competencia', value: rank * proficiency });
+    }
+    const other = (parseNumber(bonuses.get(name)) ?? 0) + modifierTotal(modifiers, name);
+    if (other) parts.push({ label: 'Otros', value: other });
+    const override = asMap(options.overrides).get(name);
+    if (String(override ?? '').trim()) parts.push({ label: 'Override', value: String(override) });
+    return parts;
+  }
+
+  const api = Object.freeze({ ABILITIES, SAVES, SKILLS, parseNumber, signed, levelFromClass, calculate, explain });
   globalThis.DRIVEBREW_CHARACTER_RULES = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();

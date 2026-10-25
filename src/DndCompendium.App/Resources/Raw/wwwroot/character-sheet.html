@@ -14,18 +14,28 @@
 </head>
 <body>
   <header class="toolbar" aria-label="Controles de la hoja">
-    <nav class="pages" aria-label="Páginas">
+    <nav class="modeTabs" aria-label="Modo de la hoja">
+      <button class="modeButton active" data-mode="edit" type="button">Editar</button>
+      <button class="modeButton" data-mode="play" type="button">Jugar</button>
+      <button class="modeButton" data-mode="pdf" type="button">PDF</button>
+    </nav>
+    <nav class="pages pdfOnly" aria-label="Páginas" hidden>
       <button class="pageButton active" data-page="1" type="button">1</button>
       <button class="pageButton" data-page="2" type="button">2</button>
       <button class="pageButton" data-page="3" type="button">3</button>
     </nav>
-    <div class="zoom" aria-label="Zoom">
+    <div class="zoom pdfOnly" aria-label="Zoom" hidden>
       <button id="zoom-out" type="button" aria-label="Alejar">−</button>
       <button id="zoom-fit" type="button">Ajustar</button>
       <button id="zoom-in" type="button" aria-label="Acercar">+</button>
     </div>
   </header>
-  <main id="sheet-stage" class="stage" aria-live="polite">
+  <nav id="section-tabs" class="sectionTabs" aria-label="Secciones de edición"></nav>
+  <main id="edit-stage" class="adaptiveStage" aria-live="polite">
+    <p class="status">Preparando el editor…</p>
+  </main>
+  <main id="play-stage" class="adaptiveStage" aria-live="polite" hidden></main>
+  <main id="sheet-stage" class="stage" aria-live="polite" hidden>
     <p id="sheet-status" class="status">Preparando la hoja…</p>
   </main>
 

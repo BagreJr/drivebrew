@@ -7,6 +7,40 @@ namespace DndCompendium.Infrastructure.Tests;
 public sealed class PdfSharpCharacterSheetPdfServiceTests
 {
     [Fact]
+    public async Task DigitalFieldsAndReferences_AreExportedOnSupplementalPages()
+    {
+        var templatePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "character_sheet_template.pdf");
+        var data = new CharacterSheetData
+        {
+            TextFields = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["CharacterName"] = "Nyx",
+                ["Digital.Subclass"] = "Chronurgy",
+                ["Digital.ClassFeatures"] = "Arcane Recovery\nChronal Shift"
+            },
+            Features =
+            [
+                new CharacterFeatureReference
+                {
+                    Id = "feature:chronal-shift",
+                    Name = "Chronal Shift",
+                    Kind = "SubclassFeature",
+                    Level = "2"
+                }
+            ]
+        };
+        var service = new PdfSharpCharacterSheetPdfService();
+
+        await using var template = File.OpenRead(templatePath);
+        await using var output = new MemoryStream();
+        await service.WriteAsync(template, output, data);
+
+        output.Position = 0;
+        using var exported = PdfSharp.Pdf.IO.PdfReader.Open(output, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
+        Assert.True(exported.PageCount >= 4);
+    }
+
+    [Fact]
     public async Task WritesAndReadsTextMultilineAndCheckboxFields()
     {
         var templatePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "character_sheet_template.pdf");
