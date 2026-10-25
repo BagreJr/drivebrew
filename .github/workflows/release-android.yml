@@ -32,7 +32,9 @@ jobs:
 
       - uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.x
+          # Keep releases reproducible and avoid the moving 10.0.x channel
+          # briefly selecting SDK builds before their downloads are available.
+          dotnet-version: 10.0.303
 
       - uses: actions/setup-java@v5
         with:
