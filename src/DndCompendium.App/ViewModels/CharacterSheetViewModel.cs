@@ -11,6 +11,14 @@ public partial class CharacterSheetViewModel(
     ICharacterProfileStore profiles,
     ICharacterSheetService characterSheets) : ObservableObject
 {
+    private static readonly IReadOnlyDictionary<string, string> FieldLabels = BuildFieldLabels();
+    private static readonly IReadOnlyList<string> NumericFields = CharacterSheetSchema.Sections
+        .SelectMany(section => section.Fields)
+        .Where(field => field.IsNumeric && !string.IsNullOrWhiteSpace(field.FieldName))
+        .Select(field => field.FieldName)
+        .Distinct(StringComparer.Ordinal)
+        .ToArray();
+
     private CharacterProfile? _character;
     private CharacterSheetData _data = new();
 
@@ -68,7 +76,9 @@ public partial class CharacterSheetViewModel(
             {
                 characterName = CharacterName,
                 textFields = _data.TextFields,
-                checkedFields = _data.CheckedFields
+                checkedFields = _data.CheckedFields,
+                fieldLabels = FieldLabels,
+                numericFields = NumericFields
             }
         });
 
@@ -171,5 +181,22 @@ public partial class CharacterSheetViewModel(
         await characterSheets.SaveDataAsync(_character, _data);
         HasUnsavedChanges = false;
         StatusText = $"Guardado: {_data.UpdatedAt.ToLocalTime():g}";
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildFieldLabels()
+    {
+        var labels = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var field in CharacterSheetSchema.Sections.SelectMany(section => section.Fields))
+        {
+            if (!string.IsNullOrWhiteSpace(field.FieldName)) labels.TryAdd(field.FieldName, field.Label);
+            foreach (var mirror in field.MirrorFieldNames ?? []) labels.TryAdd(mirror, field.Label);
+            if (!string.IsNullOrWhiteSpace(field.ToggleFieldName))
+            {
+                labels.TryAdd(
+                    field.ToggleFieldName,
+                    string.IsNullOrWhiteSpace(field.ToggleLabel) ? $"{field.Label}: selección" : field.ToggleLabel);
+            }
+        }
+        return labels;
     }
 }

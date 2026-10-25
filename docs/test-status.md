@@ -170,6 +170,10 @@ El APK 1.20/código 21 se publicó con SHA-256
 `3177D8936C244C2E4650634A394B52A0929F32A1C27A0D777D2D8A993718EFC3`;
 se verificaron el manifiesto, la versión, la firma y las tres páginas visuales
 incluidas en el paquete.
+El editor táctil 1.21 se verificó visualmente a 430 × 900, con entrada ampliada,
+valores rápidos y cálculos automáticos en los campos reales de la hoja. Las 109
+pruebas .NET, la prueba específica de reglas JavaScript y el build Android
+finalizaron correctamente.
 
 ## Limitaciones del equipo
 

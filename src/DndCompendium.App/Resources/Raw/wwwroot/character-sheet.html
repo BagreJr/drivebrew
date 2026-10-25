@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="sheet/character-sheet.css" />
   <script defer="defer" src="_framework/hybridwebview.js"></script>
   <script defer="defer" src="sheet/layout.js"></script>
+  <script defer="defer" src="sheet/character-sheet-rules.js"></script>
   <script defer="defer" src="sheet/character-sheet.js"></script>
 </head>
 <body>
@@ -27,5 +28,29 @@
   <main id="sheet-stage" class="stage" aria-live="polite">
     <p id="sheet-status" class="status">Preparando la hoja…</p>
   </main>
+
+  <div id="edit-backdrop" class="editBackdrop" hidden>
+    <section class="editPanel" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+      <header class="editHeader">
+        <div>
+          <h2 id="edit-title">Editar campo</h2>
+          <p id="edit-help"></p>
+        </div>
+        <button id="auto-toggle" class="autoToggle active" type="button">Auto: sí</button>
+      </header>
+      <div id="quick-values" class="quickValues" hidden></div>
+      <div class="editControl">
+        <button id="value-down" class="stepButton" type="button" aria-label="Restar uno">−</button>
+        <input id="field-input" autocomplete="off" />
+        <textarea id="field-textarea" autocomplete="off"></textarea>
+        <button id="value-up" class="stepButton" type="button" aria-label="Sumar uno">+</button>
+      </div>
+      <footer class="editActions">
+        <button id="edit-cancel" type="button">Cancelar</button>
+        <button id="edit-clear" type="button">Limpiar</button>
+        <button id="edit-done" class="primary" type="button">Listo</button>
+      </footer>
+    </section>
+  </div>
 </body>
 </html>
