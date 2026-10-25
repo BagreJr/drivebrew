@@ -68,9 +68,6 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:SavedItemViewModel">
                         <Border Margin="2,0,2,9" Padding="13" Style="{StaticResource CardStyle}">
-                            <Border.GestureRecognizers>
-                                <DropGestureRecognizer AllowDrop="True" Drop="OnPreparedDrop" />
-                            </Border.GestureRecognizers>
                             <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
                                 <Border
                                     Grid.RowSpan="3"
@@ -82,7 +79,7 @@
                                     StrokeThickness="0"
                                     VerticalOptions="Center">
                                     <Border.GestureRecognizers>
-                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnPreparedDragStarting" />
+                                        <PanGestureRecognizer PanUpdated="OnPreparedPanUpdated" />
                                     </Border.GestureRecognizers>
                                     <Label FontAttributes="Bold" FontSize="28" Text="⋮" TextColor="{StaticResource Gold}" />
                                 </Border>

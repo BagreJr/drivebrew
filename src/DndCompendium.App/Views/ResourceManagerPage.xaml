@@ -34,14 +34,11 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:ResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
-                            <Border.GestureRecognizers>
-                                <DropGestureRecognizer AllowDrop="True" Drop="OnResourceDrop" />
-                            </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="6">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
                                     <Label FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}">
                                         <Label.GestureRecognizers>
-                                            <DragGestureRecognizer CanDrag="True" DragStarting="OnResourceDragStarting" />
+                                            <PanGestureRecognizer PanUpdated="OnResourcePanUpdated" />
                                         </Label.GestureRecognizers>
                                     </Label>
                                     <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center" />
@@ -66,14 +63,11 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:ResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
-                            <Border.GestureRecognizers>
-                                <DropGestureRecognizer AllowDrop="True" Drop="OnResourceDrop" />
-                            </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="6">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
                                     <Label FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}">
                                         <Label.GestureRecognizers>
-                                            <DragGestureRecognizer CanDrag="True" DragStarting="OnResourceDragStarting" />
+                                            <PanGestureRecognizer PanUpdated="OnResourcePanUpdated" />
                                         </Label.GestureRecognizers>
                                     </Label>
                                     <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center" />
@@ -98,13 +92,10 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:ResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
-                            <Border.GestureRecognizers>
-                                <DropGestureRecognizer AllowDrop="True" Drop="OnResourceDrop" />
-                            </Border.GestureRecognizers>
                             <Grid ColumnDefinitions="Auto,54,*,54" RowDefinitions="Auto,Auto,Auto" RowSpacing="5">
                                 <Label Grid.RowSpan="3" FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" VerticalOptions="Center">
                                     <Label.GestureRecognizers>
-                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnResourceDragStarting" />
+                                        <PanGestureRecognizer PanUpdated="OnResourcePanUpdated" />
                                     </Label.GestureRecognizers>
                                 </Label>
                                 <Button Grid.Column="1" Command="{Binding BindingContext.AdjustCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding Spend}" FontSize="22" Style="{StaticResource SmallSecondaryButtonStyle}" Text="−" />
@@ -126,13 +117,10 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:PreparedResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
-                            <Border.GestureRecognizers>
-                                <DropGestureRecognizer AllowDrop="True" Drop="OnPreparedResourceDrop" />
-                            </Border.GestureRecognizers>
                             <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
                                 <Label Grid.RowSpan="3" FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" VerticalOptions="Center">
                                     <Label.GestureRecognizers>
-                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnPreparedResourceDragStarting" />
+                                        <PanGestureRecognizer PanUpdated="OnPreparedResourcePanUpdated" />
                                     </Label.GestureRecognizers>
                                 </Label>
                                 <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />

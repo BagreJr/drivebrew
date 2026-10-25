@@ -5,6 +5,7 @@ namespace DndCompendium.App.Views;
 
 public partial class ResourceManagerPage : ContentView
 {
+    private const double ReorderStep = 80;
     private static readonly string[] KnownResources =
     [
         "Spell Slots", "Pact Magic Slots", "Exploit Dice", "Sorcery Points",
@@ -13,8 +14,14 @@ public partial class ResourceManagerPage : ContentView
         "Hit Dice", "Recurso personalizado"
     ];
     private readonly ResourceManagerViewModel _viewModel;
-    private ResourceItemViewModel? _draggedResource;
-    private PreparedResourceItemViewModel? _draggedPrepared;
+    private ResourceItemViewModel? _pannedResource;
+    private int _resourceOriginIndex = -1;
+    private int _resourceTargetIndex = -1;
+    private bool _resourceMovePending;
+    private PreparedResourceItemViewModel? _pannedPrepared;
+    private int _preparedOriginIndex = -1;
+    private int _preparedTargetIndex = -1;
+    private bool _preparedMovePending;
 
     public ResourceManagerPage(ResourceManagerViewModel viewModel)
     {
@@ -24,33 +31,74 @@ public partial class ResourceManagerPage : ContentView
 
     public Task LoadAsync() => _viewModel.LoadCommand.ExecuteAsync(null);
 
-    private void OnResourceDragStarting(object? sender, DragStartingEventArgs e)
+    private async void OnResourcePanUpdated(object? sender, PanUpdatedEventArgs e)
     {
-        _draggedResource = (sender as DragGestureRecognizer)?.BindingContext as ResourceItemViewModel;
-        if (_draggedResource is null) e.Cancel = true;
+        if (e.StatusType == GestureStatus.Started)
+        {
+            _pannedResource = (sender as PanGestureRecognizer)?.BindingContext as ResourceItemViewModel;
+            var collection = ResourceCollectionFor(_pannedResource);
+            _resourceOriginIndex = _pannedResource is null ? -1 : collection.IndexOf(_pannedResource);
+            _resourceTargetIndex = _resourceOriginIndex;
+            return;
+        }
+        if (e.StatusType == GestureStatus.Running && _pannedResource is not null && _resourceOriginIndex >= 0 && !_resourceMovePending)
+        {
+            var collection = ResourceCollectionFor(_pannedResource);
+            var targetIndex = Math.Clamp(
+                _resourceOriginIndex + (int)Math.Round(e.TotalY / ReorderStep, MidpointRounding.AwayFromZero),
+                0,
+                collection.Count - 1);
+            if (targetIndex == _resourceTargetIndex) return;
+            _resourceTargetIndex = targetIndex;
+            _resourceMovePending = true;
+            try { await _viewModel.MoveResourceAsync(_pannedResource, collection[targetIndex]); }
+            finally { _resourceMovePending = false; }
+            return;
+        }
+        if (e.StatusType is GestureStatus.Completed or GestureStatus.Canceled)
+        {
+            _pannedResource = null;
+            _resourceOriginIndex = -1;
+            _resourceTargetIndex = -1;
+        }
     }
 
-    private async void OnResourceDrop(object? sender, DropEventArgs e)
+    private async void OnPreparedResourcePanUpdated(object? sender, PanUpdatedEventArgs e)
     {
-        var target = (sender as DropGestureRecognizer)?.BindingContext as ResourceItemViewModel;
-        var source = _draggedResource;
-        _draggedResource = null;
-        await _viewModel.MoveResourceAsync(source, target);
+        if (e.StatusType == GestureStatus.Started)
+        {
+            _pannedPrepared = (sender as PanGestureRecognizer)?.BindingContext as PreparedResourceItemViewModel;
+            _preparedOriginIndex = _pannedPrepared is null ? -1 : _viewModel.PreparedItems.IndexOf(_pannedPrepared);
+            _preparedTargetIndex = _preparedOriginIndex;
+            return;
+        }
+        if (e.StatusType == GestureStatus.Running && _pannedPrepared is not null && _preparedOriginIndex >= 0 && !_preparedMovePending)
+        {
+            var targetIndex = Math.Clamp(
+                _preparedOriginIndex + (int)Math.Round(e.TotalY / ReorderStep, MidpointRounding.AwayFromZero),
+                0,
+                _viewModel.PreparedItems.Count - 1);
+            if (targetIndex == _preparedTargetIndex) return;
+            _preparedTargetIndex = targetIndex;
+            _preparedMovePending = true;
+            try { await _viewModel.MovePreparedAsync(_pannedPrepared, _viewModel.PreparedItems[targetIndex]); }
+            finally { _preparedMovePending = false; }
+            return;
+        }
+        if (e.StatusType is GestureStatus.Completed or GestureStatus.Canceled)
+        {
+            _pannedPrepared = null;
+            _preparedOriginIndex = -1;
+            _preparedTargetIndex = -1;
+        }
     }
 
-    private void OnPreparedResourceDragStarting(object? sender, DragStartingEventArgs e)
+    private IList<ResourceItemViewModel> ResourceCollectionFor(ResourceItemViewModel? item) => item?.Kind switch
     {
-        _draggedPrepared = (sender as DragGestureRecognizer)?.BindingContext as PreparedResourceItemViewModel;
-        if (_draggedPrepared is null) e.Cancel = true;
-    }
-
-    private async void OnPreparedResourceDrop(object? sender, DropEventArgs e)
-    {
-        var target = (sender as DropGestureRecognizer)?.BindingContext as PreparedResourceItemViewModel;
-        var source = _draggedPrepared;
-        _draggedPrepared = null;
-        await _viewModel.MovePreparedAsync(source, target);
-    }
+        CharacterResourceKind.SpellSlot => _viewModel.SpellSlots,
+        CharacterResourceKind.PactMagicSlot => _viewModel.PactSlots,
+        _ => _viewModel.OtherResources
+    };
 
     private async void OnAddClicked(object? sender, EventArgs e)
     {
