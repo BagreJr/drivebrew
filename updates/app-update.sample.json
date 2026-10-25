@@ -1,11 +1,11 @@
 {
-  "versionCode": 20,
-  "versionName": "1.19",
+  "versionCode": 21,
+  "versionName": "1.20",
   "packageId": "com.march.dndcompendium",
-  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.19/DndCompendium.apk",
-  "sha256": "d9b9e42ade598558129e924b9ddb89380445e7dcc80ec837595d426f70e2c863",
-  "releaseNotes": "La hoja de personaje ahora se edita completamente dentro de la aplicación. Incluye identidad, características, salvaciones, habilidades, combate, ataques, personalidad, equipo, rasgos, historia y spellcasting de nivel 0 a 9, con guardado offline por personaje y exportación al PDF original.",
-  "publishedAt": "2026-10-25T17:36:16.2093686Z",
+  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.20/DndCompendium.apk",
+  "sha256": "REEMPLAZADO_AUTOMATICAMENTE_AL_PUBLICAR",
+  "releaseNotes": "La Character Sheet ahora se muestra igual que el PDF original: tres páginas visuales editables directamente sobre cada casillero, con selector de página, zoom, guardado offline por personaje y exportación al PDF rellenable.",
+  "publishedAt": "2026-10-25T00:00:00Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false

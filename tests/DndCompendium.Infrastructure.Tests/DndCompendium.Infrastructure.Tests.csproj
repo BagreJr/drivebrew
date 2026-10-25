@@ -28,6 +28,12 @@
     <None Include="..\..\src\DndCompendium.App\Resources\Raw\character_sheet_template.pdf"
           Link="Fixtures\character_sheet_template.pdf"
           CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\DndCompendium.App\Resources\Raw\wwwroot\sheet\layout.js"
+          Link="Fixtures\sheet\layout.js"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\DndCompendium.App\Resources\Raw\wwwroot\sheet\character-sheet-*.png"
+          Link="Fixtures\sheet\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

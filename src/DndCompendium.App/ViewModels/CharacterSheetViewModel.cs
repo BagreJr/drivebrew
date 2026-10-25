@@ -1,3 +1,4 @@
+using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DndCompendium.App.Services;
@@ -11,29 +12,14 @@ public partial class CharacterSheetViewModel(
     ICharacterSheetService characterSheets) : ObservableObject
 {
     private CharacterProfile? _character;
+    private CharacterSheetData _data = new();
 
-    public IReadOnlyList<CharacterSheetSectionViewModel> Sections { get; private set; } = [];
-    public IReadOnlyList<CharacterSheetFieldViewModel> VisibleFields => SelectedSection?.Fields ?? [];
     public bool HasCharacter => _character is not null;
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
-    public bool CanGoPrevious => SelectedSection is not null && Sections.IndexOf(SelectedSection) > 0;
-    public bool CanGoNext => SelectedSection is not null && Sections.IndexOf(SelectedSection) < Sections.Count - 1;
-    public string SectionHelp => SelectedSection?.HelpText ?? string.Empty;
-    public string SectionPosition => SelectedSection is null
-        ? string.Empty
-        : $"{Sections.IndexOf(SelectedSection) + 1} de {Sections.Count}";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasCharacter))]
     private string characterName = string.Empty;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(VisibleFields))]
-    [NotifyPropertyChangedFor(nameof(SectionHelp))]
-    [NotifyPropertyChangedFor(nameof(SectionPosition))]
-    [NotifyPropertyChangedFor(nameof(CanGoPrevious))]
-    [NotifyPropertyChangedFor(nameof(CanGoNext))]
-    private CharacterSheetSectionViewModel? selectedSection;
 
     [ObservableProperty]
     private bool isBusy;
@@ -43,7 +29,7 @@ public partial class CharacterSheetViewModel(
     private string? errorMessage;
 
     [ObservableProperty]
-    private string statusText = "Los cambios se guardan en el perfil del personaje.";
+    private string statusText = "Hoja editable offline";
 
     [ObservableProperty]
     private bool hasUnsavedChanges;
@@ -58,16 +44,11 @@ public partial class CharacterSheetViewModel(
             _character = (await profiles.GetAllAsync()).SingleOrDefault(item => item.Id == characterId)
                 ?? throw new KeyNotFoundException("El personaje ya no existe.");
             CharacterName = _character.Name;
-            var data = await characterSheets.LoadDataAsync(_character);
-            Sections = CharacterSheetSchema.Sections
-                .Select(section => new CharacterSheetSectionViewModel(section, data, OnFieldChanged))
-                .ToArray();
-            OnPropertyChanged(nameof(Sections));
-            SelectedSection = Sections.FirstOrDefault();
+            _data = await characterSheets.LoadDataAsync(_character);
             HasUnsavedChanges = false;
-            StatusText = data.UpdatedAt == default
-                ? "Hoja lista para completar."
-                : $"Último guardado: {data.UpdatedAt.ToLocalTime():g}";
+            StatusText = _data.UpdatedAt == default
+                ? "Hoja lista para completar"
+                : $"Guardado: {_data.UpdatedAt.ToLocalTime():g}";
         }
         catch (Exception exception)
         {
@@ -77,6 +58,39 @@ public partial class CharacterSheetViewModel(
         {
             IsBusy = false;
         }
+    }
+
+    public string CreateEditorPayloadJson()
+        => JsonSerializer.Serialize(new
+        {
+            type = "load",
+            payload = new
+            {
+                characterName = CharacterName,
+                textFields = _data.TextFields,
+                checkedFields = _data.CheckedFields
+            }
+        });
+
+    public void ApplyEditorChange(string name, string kind, string? value, bool isChecked)
+    {
+        if (string.IsNullOrWhiteSpace(name) || _character is null) return;
+        if (string.Equals(kind, "checkbox", StringComparison.OrdinalIgnoreCase))
+        {
+            if (isChecked) _data.CheckedFields.Add(name);
+            else _data.CheckedFields.Remove(name);
+        }
+        else if (string.IsNullOrEmpty(value))
+        {
+            _data.TextFields.Remove(name);
+        }
+        else
+        {
+            _data.TextFields[name] = value;
+        }
+
+        HasUnsavedChanges = true;
+        StatusText = "Cambios sin guardar";
     }
 
     [RelayCommand(AllowConcurrentExecutions = false)]
@@ -141,128 +155,21 @@ public partial class CharacterSheetViewModel(
         }
     }
 
-    [RelayCommand]
-    private void PreviousSection()
-    {
-        if (SelectedSection is null) return;
-        var index = Sections.IndexOf(SelectedSection);
-        if (index > 0) SelectedSection = Sections[index - 1];
-    }
-
-    [RelayCommand]
-    private void NextSection()
-    {
-        if (SelectedSection is null) return;
-        var index = Sections.IndexOf(SelectedSection);
-        if (index >= 0 && index < Sections.Count - 1) SelectedSection = Sections[index + 1];
-    }
-
     public async Task SaveIfNeededAsync()
     {
         if (!HasUnsavedChanges || _character is null || IsBusy) return;
         await SaveAsync();
     }
 
+    public void ReportEditorError(string message)
+        => ErrorMessage = $"No se pudo mostrar la hoja: {message}";
+
     private async Task SaveCoreAsync()
     {
         if (_character is null) return;
-        var data = new CharacterSheetData();
-        foreach (var field in Sections.SelectMany(section => section.Fields))
-        {
-            if (field.HasTextInput && !string.IsNullOrEmpty(field.Value))
-            {
-                data.TextFields[field.FieldName] = field.Value;
-                foreach (var mirror in field.MirrorFieldNames)
-                    data.TextFields[mirror] = field.Value;
-            }
-            if (field.HasToggle && field.IsChecked && field.ToggleFieldName is not null)
-                data.CheckedFields.Add(field.ToggleFieldName);
-        }
-        data.UpdatedAt = DateTimeOffset.UtcNow;
-        await characterSheets.SaveDataAsync(_character, data);
+        _data.UpdatedAt = DateTimeOffset.UtcNow;
+        await characterSheets.SaveDataAsync(_character, _data);
         HasUnsavedChanges = false;
-        StatusText = $"Guardado: {data.UpdatedAt.ToLocalTime():g}";
-    }
-
-    private void OnFieldChanged()
-    {
-        HasUnsavedChanges = true;
-        StatusText = "Cambios sin guardar";
-    }
-}
-
-public sealed class CharacterSheetSectionViewModel
-{
-    public CharacterSheetSectionViewModel(
-        CharacterSheetSectionDefinition definition,
-        CharacterSheetData data,
-        Action changed)
-    {
-        Name = definition.Name;
-        HelpText = definition.HelpText;
-        Fields = definition.Fields
-            .Select(field => new CharacterSheetFieldViewModel(field, data, changed))
-            .ToArray();
-    }
-
-    public string Name { get; }
-    public string HelpText { get; }
-    public IReadOnlyList<CharacterSheetFieldViewModel> Fields { get; }
-}
-
-public partial class CharacterSheetFieldViewModel : ObservableObject
-{
-    private readonly Action _changed;
-
-    public CharacterSheetFieldViewModel(
-        CharacterSheetFieldDefinition definition,
-        CharacterSheetData data,
-        Action changed)
-    {
-        FieldName = definition.FieldName;
-        Label = definition.Label;
-        IsMultiline = definition.IsMultiline;
-        IsNumeric = definition.IsNumeric;
-        ToggleFieldName = definition.ToggleFieldName;
-        ToggleLabel = definition.ToggleLabel ?? string.Empty;
-        MirrorFieldNames = definition.MirrorFieldNames ?? [];
-        _changed = changed;
-        value = data.TextFields.TryGetValue(FieldName, out var current)
-            ? current
-            : MirrorFieldNames.Select(name => data.TextFields.GetValueOrDefault(name)).FirstOrDefault(text => text is not null)
-                ?? string.Empty;
-        isChecked = ToggleFieldName is not null && data.CheckedFields.Contains(ToggleFieldName);
-    }
-
-    public string FieldName { get; }
-    public string Label { get; }
-    public bool IsMultiline { get; }
-    public bool IsNumeric { get; }
-    public string? ToggleFieldName { get; }
-    public string ToggleLabel { get; }
-    public IReadOnlyList<string> MirrorFieldNames { get; }
-    public bool HasTextInput => !string.IsNullOrEmpty(FieldName);
-    public bool IsSingleLine => HasTextInput && !IsMultiline;
-    public bool HasToggle => ToggleFieldName is not null;
-    public bool IsToggleOnly => !HasTextInput && HasToggle;
-    public Keyboard InputKeyboard => IsNumeric ? Keyboard.Numeric : Keyboard.Default;
-
-    [ObservableProperty]
-    private string value = string.Empty;
-
-    [ObservableProperty]
-    private bool isChecked;
-
-    partial void OnValueChanged(string value) => _changed();
-    partial void OnIsCheckedChanged(bool value) => _changed();
-}
-
-internal static class CharacterSheetCollectionExtensions
-{
-    public static int IndexOf<T>(this IReadOnlyList<T> source, T item)
-    {
-        for (var index = 0; index < source.Count; index++)
-            if (EqualityComparer<T>.Default.Equals(source[index], item)) return index;
-        return -1;
+        StatusText = $"Guardado: {_data.UpdatedAt.ToLocalTime():g}";
     }
 }

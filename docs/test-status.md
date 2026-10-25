@@ -162,6 +162,10 @@ El APK 1.19/código 20 se publicó con SHA-256
 el manifiesto, el package ID, la firma, la plantilla incluida y el hash del
 asset de GitHub se verificaron. La prueba táctil USB queda pendiente porque el
 teléfono no aparece conectado en ADB.
+La Character Sheet visual 1.20 se verificó en sus tres páginas a tamaño móvil,
+con 210 campos de texto y 122 casillas superpuestos sobre la plantilla original.
+La compilación Android y las 109 pruebas finalizaron sin errores. La prueba
+táctil USB queda pendiente porque el teléfono no aparece conectado en ADB.
 
 ## Limitaciones del equipo
 

@@ -1,0 +1,171 @@
+:root {
+  color-scheme: light;
+  --gold: #c99634;
+  --ink: #17121a;
+  --surface: #27212b;
+  --scale: 1;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  background: #19151d;
+  color: #f5efe5;
+  font-family: Arial, Helvetica, sans-serif;
+  overscroll-behavior: contain;
+}
+
+body { overflow: hidden; }
+
+button { font: inherit; }
+
+.toolbar {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 46px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  background: rgba(25, 21, 29, 0.96);
+  border-bottom: 1px solid #5d4b64;
+}
+
+.pages, .zoom { display: flex; gap: 5px; }
+.zoom { margin-left: auto; }
+
+.toolbar button {
+  min-width: 32px;
+  min-height: 34px;
+  padding: 4px 7px;
+  border: 1px solid #7a687f;
+  border-radius: 9px;
+  background: var(--surface);
+  color: #f5efe5;
+}
+
+.toolbar button.active {
+  border-color: var(--gold);
+  background: #4a3820;
+  color: #ffd878;
+  font-weight: 700;
+}
+
+.stage {
+  position: fixed;
+  inset: 46px 0 0;
+  overflow: auto;
+  padding: 8px;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y pinch-zoom;
+}
+
+.status {
+  margin: 40px auto;
+  text-align: center;
+  color: #c9bdcb;
+}
+
+.pageViewport {
+  width: max-content;
+  min-width: 100%;
+  margin: 0 auto;
+  padding-bottom: 10px;
+}
+
+.sheetPage {
+  position: relative;
+  width: var(--page-width);
+  height: var(--page-height);
+  margin: 0 auto;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55);
+}
+
+.sheetPage[hidden] { display: none; }
+
+.pageImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  pointer-events: none;
+}
+
+.sheetField {
+  position: absolute;
+  z-index: 2;
+  display: block;
+  margin: 0;
+  padding: 0 2px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  outline: none;
+  background: rgba(255, 250, 210, 0.08);
+  color: #111;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: var(--field-font, 10px);
+  line-height: 1.05;
+  resize: none;
+  overflow: hidden;
+  -webkit-text-fill-color: #111;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.sheetField:focus {
+  z-index: 20;
+  min-height: 32px;
+  border: 2px solid var(--gold);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  font-size: 16px;
+  overflow: auto;
+}
+
+textarea.sheetField:focus { min-height: 72px; }
+
+.sheetCheck {
+  position: absolute;
+  z-index: 4;
+  min-width: 12px;
+  min-height: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: transparent;
+}
+
+.sheetCheck::after {
+  content: "";
+  position: absolute;
+  width: 58%;
+  height: 58%;
+  left: 21%;
+  top: 21%;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.sheetCheck.checked::after { background: #050505; }
+
+.sheetCheck:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (min-width: 700px) {
+  .stage { padding: 12px; }
+  .toolbar { padding-inline: 16px; }
+}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <meta name="color-scheme" content="light" />
+  <title>Character Sheet editable</title>
+  <link rel="stylesheet" href="sheet/character-sheet.css" />
+  <script defer="defer" src="_framework/hybridwebview.js"></script>
+  <script defer="defer" src="sheet/layout.js"></script>
+  <script defer="defer" src="sheet/character-sheet.js"></script>
+</head>
+<body>
+  <header class="toolbar" aria-label="Controles de la hoja">
+    <nav class="pages" aria-label="Páginas">
+      <button class="pageButton active" data-page="1" type="button">1</button>
+      <button class="pageButton" data-page="2" type="button">2</button>
+      <button class="pageButton" data-page="3" type="button">3</button>
+    </nav>
+    <div class="zoom" aria-label="Zoom">
+      <button id="zoom-out" type="button" aria-label="Alejar">−</button>
+      <button id="zoom-fit" type="button">Ajustar</button>
+      <button id="zoom-in" type="button" aria-label="Acercar">+</button>
+    </div>
+  </header>
+  <main id="sheet-stage" class="stage" aria-live="polite">
+    <p id="sheet-status" class="status">Preparando la hoja…</p>
+  </main>
+</body>
+</html>
