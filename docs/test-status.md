@@ -133,7 +133,13 @@ prueba táctil USB quedó pendiente porque el teléfono no apareció conectado e
 El APK 1.15/código 16 se publicó con SHA-256
 `4A1F33A8255811DE1C7DE5A61989D25861D7FD873C7316FCF5F6F98238755CE9`;
 el manifiesto, la versión, el package ID y el certificado se verificaron. La
-prueba táctil del reordenamiento nativo sigue pendiente hasta reconectar el teléfono.
+prueba USB posterior detectó y reprodujo el cierre al abrir Preparados.
+El APK 1.16/código 17 se publicó con SHA-256
+`0A31EEC34E30EE16AC5381D856ABE41E53603677F75808387E447EAE10157955`;
+el manifiesto, el package ID y el certificado se verificaron. Se instaló sobre
+1.15 conservando la fecha de instalación original y todos los datos. Antes de
+publicar se comprobaron por USB la apertura de Preparados y Favoritos, el hueco
+visual entre tarjetas, el desplazamiento en bordes y la persistencia del orden.
 
 ## Limitaciones del equipo
 

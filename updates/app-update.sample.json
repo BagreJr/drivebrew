@@ -3,9 +3,9 @@
   "versionName": "1.16",
   "packageId": "com.march.dndcompendium",
   "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.16/DndCompendium.apk",
-  "sha256": "4a1f33a8255811de1c7de5a61989d25861d7fd873c7316fcf5f6f98238755ce9",
+  "sha256": "0a31eec34e30ee16ac5381d856abe41e53603677f75808387e447eae10157955",
   "releaseNotes": "Preparados ya abre sin cerrarse. Preparados y Favoritos permiten ordenar libremente con los tres puntos, incluyen filtros y guardan el orden por personaje.",
-  "publishedAt": "2026-10-25T00:00:00Z",
+  "publishedAt": "2026-10-25T12:16:58.0553341Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false
