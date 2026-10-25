@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Stable release tag, for example v1.12
+        description: Stable release tag, for example v1.13
         required: true
         type: string
       version_name:
-        description: Android versionName, for example 1.12
+        description: Android versionName, for example 1.13
         required: true
         type: string
       version_code:

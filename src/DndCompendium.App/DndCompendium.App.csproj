@@ -39,8 +39,8 @@
 		<ApplicationId>com.march.dndcompendium</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.12</ApplicationDisplayVersion>
-		<ApplicationVersion>13</ApplicationVersion>
+		<ApplicationDisplayVersion>1.13</ApplicationDisplayVersion>
+		<ApplicationVersion>14</ApplicationVersion>
 		<!-- The workflow injects the repository-derived value as well. Keeping the
 		     official feed here also makes local signed builds update-aware. -->
 		<AppUpdateManifestUrl>https://github.com/BagreJr/drivebrew/releases/latest/download/app-update.json</AppUpdateManifestUrl>
@@ -60,6 +60,9 @@
 
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#19151D" BaseSize="128,128" />
+
+		<!-- Bottom navigation icons. SVG sources are packaged as tintable Android/iOS images. -->
+		<MauiImage Include="Resources\Images\nav_*.svg" BaseSize="32,32" />
 
 		<!-- Custom Fonts -->
 		<MauiFont Include="Resources\Fonts\*" />

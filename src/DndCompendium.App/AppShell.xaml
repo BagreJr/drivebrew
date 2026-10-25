@@ -10,22 +10,27 @@
     <TabBar Route="tabs">
         <ShellContent
             Title="Biblioteca"
+            Icon="nav_library.png"
             ContentTemplate="{DataTemplate views:LibraryPage}"
             Route="library" />
         <ShellContent
             Title="Buscar"
+            Icon="nav_search.png"
             ContentTemplate="{DataTemplate views:SearchPage}"
             Route="search" />
         <ShellContent
             Title="Spells"
+            Icon="nav_spells.png"
             ContentTemplate="{DataTemplate views:SpellsPage}"
             Route="spells" />
         <ShellContent
             Title="Exploits"
+            Icon="nav_exploits.png"
             ContentTemplate="{DataTemplate views:ExploitsPage}"
             Route="exploits" />
         <ShellContent
             Title="..."
+            Icon="nav_more.png"
             ContentTemplate="{DataTemplate views:MorePage}"
             Route="more" />
     </TabBar>

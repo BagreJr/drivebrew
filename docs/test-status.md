@@ -85,6 +85,7 @@ y los IDs de archivo se documentan en
 | Filtros de Spells y búsqueda manual resaltada 1.9 | Build, catálogo y 98 pruebas aprobados | Pendiente | 814 spells clasificados por casteo y componentes; Release firmado y hash público verificado. No había dispositivo ADB conectado |
 | Filtros y orden persistente de Preparados 1.10 | Build Android, 100 pruebas y PWA E2E aprobados | Aprobada | Filtros por contenido, nivel, clase, casteo y componente; orden manual por personaje; se conserva el scroll al marcar Preparado/Favorito |
 | Orden táctil de Preparados y Resources 1.12 | Build Android, 101 pruebas y PWA E2E aprobados | Aprobada | Tirador ⋮ con gesto táctil directo para mover Spells, Exploits y Resources; orden persistente por personaje y disponible también dentro de Resources |
+| Navegación visual Android 1.13 | Build Android, 101 pruebas y comprobación táctil en TECNO KL7 | Aprobada | Íconos visibles sobre Biblioteca, Buscar, Spells y Exploits; acceso de más opciones representado por tres puntos grandes |
 | Compilar/firmar paquete | APK Debug aprobado | Pendiente | El código iOS y `ios-arm64` compilan; la IPA se detiene por ausencia de firma Apple/Xcode |
 
 La APK más reciente, con actualizador instalable, catálogo Drive, spells,
