@@ -23,10 +23,37 @@
                 <Button Grid.Column="2" Clicked="OnAddClicked" Style="{StaticResource SmallAccentButtonStyle}" Text="＋" />
             </Grid>
 
+            <SearchBar
+                Margin="0,2"
+                Placeholder="Buscar en resources"
+                Style="{StaticResource CompendiumSearchBarStyle}"
+                Text="{Binding SearchQuery}" />
+            <ScrollView HorizontalScrollBarVisibility="Never" Orientation="Horizontal">
+                <HorizontalStackLayout Spacing="8">
+                    <VerticalStackLayout WidthRequest="174" Spacing="2">
+                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="TIPO" />
+                        <Picker ItemsSource="{Binding TypeOptions}" SelectedItem="{Binding SelectedType}" Style="{StaticResource CompactPickerStyle}" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout WidthRequest="158" Spacing="2">
+                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="RECUPERACIÓN" />
+                        <Picker IsEnabled="{Binding AreResourceFiltersEnabled}" ItemsSource="{Binding RecoveryOptions}" SelectedItem="{Binding SelectedRecovery}" Style="{StaticResource CompactPickerStyle}" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout WidthRequest="142" Spacing="2">
+                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="ESTADO" />
+                        <Picker IsEnabled="{Binding AreResourceFiltersEnabled}" ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding SelectedStatus}" Style="{StaticResource CompactPickerStyle}" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout WidthRequest="180" Spacing="2">
+                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="ORDEN" />
+                        <Picker ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSort}" Style="{StaticResource CompactPickerStyle}" />
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+            </ScrollView>
+            <Label Style="{StaticResource SectionLabelStyle}" Text="{Binding ResultSummary}" />
+
             <Label IsVisible="{Binding HasError}" Style="{StaticResource ErrorLabelStyle}" Text="{Binding ErrorMessage}" />
             <VerticalStackLayout IsVisible="{Binding IsEmpty}" Padding="18,30" Spacing="6">
-                <Label HorizontalTextAlignment="Center" Style="{StaticResource TitleLabelStyle}" Text="No hay recursos configurados" />
-                <Label HorizontalTextAlignment="Center" Style="{StaticResource MutedLabelStyle}" Text="Agregá solamente los recursos que usa este personaje." />
+                <Label HorizontalTextAlignment="Center" Style="{StaticResource TitleLabelStyle}" Text="Sin resultados" />
+                <Label HorizontalTextAlignment="Center" Style="{StaticResource MutedLabelStyle}" Text="{Binding EmptyText}" />
             </VerticalStackLayout>
 
             <Label IsVisible="{Binding HasSpellSlots}" Style="{StaticResource SectionLabelStyle}" Text="SPELL SLOTS" />
@@ -36,7 +63,7 @@
                         <Border Padding="12" Style="{StaticResource CardStyle}">
                             <VerticalStackLayout Spacing="6">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <Button BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded">
+                                    <Button BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" IsVisible="{Binding BindingContext.CanReorder, Source={x:Reference ResourcesRoot}}" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded">
                                         <Button.GestureRecognizers>
                                             <PanGestureRecognizer PanUpdated="OnResourcePanUpdated" />
                                         </Button.GestureRecognizers>
@@ -65,7 +92,7 @@
                         <Border Padding="12" Style="{StaticResource CardStyle}">
                             <VerticalStackLayout Spacing="6">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
-                                    <Button BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded">
+                                    <Button BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" IsVisible="{Binding BindingContext.CanReorder, Source={x:Reference ResourcesRoot}}" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded">
                                         <Button.GestureRecognizers>
                                             <PanGestureRecognizer PanUpdated="OnResourcePanUpdated" />
                                         </Button.GestureRecognizers>
@@ -93,7 +120,7 @@
                     <DataTemplate x:DataType="viewModels:ResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
                             <Grid ColumnDefinitions="Auto,54,*,54" RowDefinitions="Auto,Auto,Auto" RowSpacing="5">
-                                <Button Grid.RowSpan="3" BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded" VerticalOptions="Center">
+                                <Button Grid.RowSpan="3" BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" IsVisible="{Binding BindingContext.CanReorder, Source={x:Reference ResourcesRoot}}" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded" VerticalOptions="Center">
                                     <Button.GestureRecognizers>
                                         <PanGestureRecognizer PanUpdated="OnResourcePanUpdated" />
                                     </Button.GestureRecognizers>
@@ -118,7 +145,7 @@
                     <DataTemplate x:DataType="viewModels:PreparedResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
                             <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
-                                <Button Grid.RowSpan="3" BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded" VerticalOptions="Center">
+                                <Button Grid.RowSpan="3" BackgroundColor="Transparent" BorderWidth="0" FontAttributes="Bold" FontSize="28" IsVisible="{Binding BindingContext.CanReorder, Source={x:Reference ResourcesRoot}}" Loaded="OnResourceHandleLoaded" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" Unloaded="OnResourceHandleUnloaded" VerticalOptions="Center">
                                     <Button.GestureRecognizers>
                                         <PanGestureRecognizer PanUpdated="OnPreparedResourcePanUpdated" />
                                     </Button.GestureRecognizers>

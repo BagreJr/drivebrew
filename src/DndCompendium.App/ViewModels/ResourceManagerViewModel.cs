@@ -11,16 +11,42 @@ public partial class ResourceManagerViewModel(
     ISpellRepository spellRepository,
     IExploitRepository exploitRepository) : ObservableObject
 {
+    private readonly List<ResourceItemViewModel> _allResources = [];
+    private readonly List<PreparedResourceItemViewModel> _allPreparedItems = [];
+
     public ObservableCollection<ResourceItemViewModel> SpellSlots { get; } = [];
     public ObservableCollection<ResourceItemViewModel> PactSlots { get; } = [];
     public ObservableCollection<ResourceItemViewModel> OtherResources { get; } = [];
     public ObservableCollection<PreparedResourceItemViewModel> PreparedItems { get; } = [];
+    public IReadOnlyList<string> TypeOptions { get; } =
+        ["Todos", "Spell Slots", "Pact Magic", "Otros recursos", "Spells preparados", "Exploits preparados"];
+    public IReadOnlyList<string> RecoveryOptions { get; } =
+        ["Todos", "Manual", "Descanso corto", "Descanso largo"];
+    public IReadOnlyList<string> StatusOptions { get; } =
+        ["Todos", "Disponibles", "Agotados", "Completos"];
+    public IReadOnlyList<string> SortOptions { get; } =
+        ["Manual", "A–Z", "Z–A", "Menor a mayor", "Mayor a menor"];
     public bool HasSpellSlots => SpellSlots.Count > 0;
     public bool HasPactSlots => PactSlots.Count > 0;
     public bool HasOtherResources => OtherResources.Count > 0;
     public bool HasResources => HasSpellSlots || HasPactSlots || HasOtherResources;
-    public bool IsEmpty => !HasResources && !IsBusy;
     public bool HasPrepared => PreparedItems.Count > 0;
+    public bool HasVisibleItems => HasResources || HasPrepared;
+    public bool HasStoredItems => _allResources.Count > 0 || _allPreparedItems.Count > 0;
+    public bool IsEmpty => !HasVisibleItems && !IsBusy;
+    public bool CanReorder => SelectedSort == "Manual";
+    public bool AreResourceFiltersEnabled => SelectedType is not ("Spells preparados" or "Exploits preparados");
+    public string EmptyText => HasStoredItems
+        ? "No hay elementos que coincidan con los filtros actuales."
+        : "Agregá recursos o prepará un spell o exploit para verlo acá.";
+    public string ResultSummary
+    {
+        get
+        {
+            var count = SpellSlots.Count + PactSlots.Count + OtherResources.Count + PreparedItems.Count;
+            return count == 1 ? "1 elemento" : $"{count} elementos";
+        }
+    }
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
     public string ActiveSummary => string.IsNullOrWhiteSpace(ActiveCharacterName)
         ? "Cargando personaje…"
@@ -37,6 +63,41 @@ public partial class ResourceManagerViewModel(
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError))]
     private string? errorMessage;
+
+    [ObservableProperty]
+    private string searchQuery = string.Empty;
+
+    [ObservableProperty]
+    private string selectedType = "Todos";
+
+    [ObservableProperty]
+    private string selectedRecovery = "Todos";
+
+    [ObservableProperty]
+    private string selectedStatus = "Todos";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanReorder))]
+    private string selectedSort = "Manual";
+
+    partial void OnSearchQueryChanged(string value) => ApplyFilters();
+    partial void OnSelectedTypeChanged(string value)
+    {
+        OnPropertyChanged(nameof(AreResourceFiltersEnabled));
+        if (!AreResourceFiltersEnabled)
+        {
+            SelectedRecovery = "Todos";
+            SelectedStatus = "Todos";
+        }
+        ApplyFilters();
+    }
+    partial void OnSelectedRecoveryChanged(string value) => ApplyFilters();
+    partial void OnSelectedStatusChanged(string value) => ApplyFilters();
+    partial void OnSelectedSortChanged(string value)
+    {
+        ApplyFilters();
+        OnPropertyChanged(nameof(CanReorder));
+    }
 
     [RelayCommand(AllowConcurrentExecutions = false)]
     public async Task LoadAsync()
@@ -101,14 +162,17 @@ public partial class ResourceManagerViewModel(
     }
 
     public IReadOnlyList<ResourceItemViewModel> AvailableSlotsFor(int spellLevel)
-        => SpellSlots.Concat(PactSlots)
+        => _allResources
+            .Where(slot => slot.Kind is CharacterResourceKind.SpellSlot or CharacterResourceKind.PactMagicSlot)
             .Where(slot => slot.Level >= spellLevel && slot.Current > 0)
             .OrderBy(slot => slot.Level)
             .ThenBy(slot => slot.Kind)
             .ToArray();
 
     public IReadOnlyList<ResourceItemViewModel> SpendableManualResources()
-        => OtherResources.Where(resource => resource.Current > 0).ToArray();
+        => _allResources
+            .Where(resource => resource.Kind == CharacterResourceKind.Custom && resource.Current > 0)
+            .ToArray();
 
     public async Task SpendAsync(string resourceId, int amount)
     {
@@ -119,7 +183,7 @@ public partial class ResourceManagerViewModel(
 
     public async Task MoveResourceAsync(ResourceItemViewModel? item, ResourceItemViewModel? target)
     {
-        if (item is null || target is null || ReferenceEquals(item, target) || item.Kind != target.Kind) return;
+        if (!CanReorder || item is null || target is null || ReferenceEquals(item, target) || item.Kind != target.Kind) return;
         var collection = item.Kind switch
         {
             CharacterResourceKind.SpellSlot => SpellSlots,
@@ -129,10 +193,13 @@ public partial class ResourceManagerViewModel(
         var sourceIndex = collection.IndexOf(item);
         var targetIndex = collection.IndexOf(target);
         if (sourceIndex < 0 || targetIndex < 0) return;
-        collection.Move(sourceIndex, targetIndex);
+        _allResources.Remove(item);
+        var masterTargetIndex = _allResources.IndexOf(target);
+        _allResources.Insert(sourceIndex < targetIndex ? masterTargetIndex + 1 : masterTargetIndex, item);
+        ApplyFilters();
         try
         {
-            await profileStore.SetResourceOrderAsync(AllResources().Select(resource => resource.Id).ToArray());
+            await profileStore.SetResourceOrderAsync(_allResources.Select(resource => resource.Id).ToArray());
         }
         catch (Exception exception)
         {
@@ -142,14 +209,17 @@ public partial class ResourceManagerViewModel(
 
     public async Task MovePreparedAsync(PreparedResourceItemViewModel? item, PreparedResourceItemViewModel? target)
     {
-        if (item is null || target is null || ReferenceEquals(item, target)) return;
+        if (!CanReorder || item is null || target is null || ReferenceEquals(item, target)) return;
         var sourceIndex = PreparedItems.IndexOf(item);
         var targetIndex = PreparedItems.IndexOf(target);
         if (sourceIndex < 0 || targetIndex < 0) return;
-        PreparedItems.Move(sourceIndex, targetIndex);
+        _allPreparedItems.Remove(item);
+        var masterTargetIndex = _allPreparedItems.IndexOf(target);
+        _allPreparedItems.Insert(sourceIndex < targetIndex ? masterTargetIndex + 1 : masterTargetIndex, item);
+        ApplyFilters();
         try
         {
-            await profileStore.SetPreparedOrderAsync(PreparedItems.Select(entry => entry.Reference).ToArray());
+            await profileStore.SetPreparedOrderAsync(_allPreparedItems.Select(entry => entry.Reference).ToArray());
         }
         catch (Exception exception)
         {
@@ -160,20 +230,9 @@ public partial class ResourceManagerViewModel(
     private async Task ReloadResourcesAsync()
     {
         var resources = await profileStore.GetResourcesAsync();
-        SpellSlots.Clear();
-        PactSlots.Clear();
-        OtherResources.Clear();
-        foreach (var resource in resources)
-        {
-            var item = new ResourceItemViewModel(resource);
-            switch (resource.Kind)
-            {
-                case CharacterResourceKind.SpellSlot: SpellSlots.Add(item); break;
-                case CharacterResourceKind.PactMagicSlot: PactSlots.Add(item); break;
-                default: OtherResources.Add(item); break;
-            }
-        }
-        NotifyState();
+        _allResources.Clear();
+        _allResources.AddRange(resources.Select(resource => new ResourceItemViewModel(resource)));
+        ApplyFilters();
     }
 
     private async Task ReloadPreparedAsync()
@@ -188,18 +247,109 @@ public partial class ResourceManagerViewModel(
                 .Select(exploit => new PreparedResourceItemViewModel(exploit.Id, exploit.Name, false, exploit.Level, $"{exploit.Type} · Nivel {exploit.Level}")))
             .ToArray();
         var byKey = loaded.ToDictionary(item => item.ReferenceKey, StringComparer.Ordinal);
-        PreparedItems.Clear();
+        _allPreparedItems.Clear();
         foreach (var reference in await profileStore.GetPreparedOrderAsync())
         {
             var key = PreparedResourceItemViewModel.ReferenceKeyFor(reference.ContentKind, reference.ItemId);
-            if (byKey.Remove(key, out var item)) PreparedItems.Add(item);
+            if (byKey.Remove(key, out var item)) _allPreparedItems.Add(item);
         }
         foreach (var item in byKey.Values.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase))
-            PreparedItems.Add(item);
-        OnPropertyChanged(nameof(HasPrepared));
+            _allPreparedItems.Add(item);
+        ApplyFilters();
     }
 
-    private IEnumerable<ResourceItemViewModel> AllResources() => SpellSlots.Concat(PactSlots).Concat(OtherResources);
+    private IEnumerable<ResourceItemViewModel> AllResources() => _allResources;
+
+    private void ApplyFilters()
+    {
+        IEnumerable<ResourceItemViewModel> resources = _allResources;
+        IEnumerable<PreparedResourceItemViewModel> prepared = _allPreparedItems;
+        var query = SearchQuery.Trim();
+        if (query.Length > 0)
+        {
+            resources = resources.Where(item => item.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                || item.DetailText.Contains(query, StringComparison.CurrentCultureIgnoreCase));
+            prepared = prepared.Where(item => item.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                || item.DetailText.Contains(query, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        switch (SelectedType)
+        {
+            case "Spell Slots":
+                resources = resources.Where(item => item.Kind == CharacterResourceKind.SpellSlot);
+                prepared = [];
+                break;
+            case "Pact Magic":
+                resources = resources.Where(item => item.Kind == CharacterResourceKind.PactMagicSlot);
+                prepared = [];
+                break;
+            case "Otros recursos":
+                resources = resources.Where(item => item.Kind == CharacterResourceKind.Custom);
+                prepared = [];
+                break;
+            case "Spells preparados":
+                resources = [];
+                prepared = prepared.Where(item => item.IsSpell);
+                break;
+            case "Exploits preparados":
+                resources = [];
+                prepared = prepared.Where(item => !item.IsSpell);
+                break;
+        }
+
+        if (SelectedRecovery != "Todos")
+        {
+            resources = SelectedRecovery switch
+            {
+                "Manual" => resources.Where(item => item.Recovery == ResourceRecoveryKind.None),
+                "Descanso corto" => resources.Where(item => item.Recovery is ResourceRecoveryKind.ShortRest or ResourceRecoveryKind.ShortAndLongRest),
+                "Descanso largo" => resources.Where(item => item.Recovery is ResourceRecoveryKind.LongRest or ResourceRecoveryKind.ShortAndLongRest),
+                _ => resources
+            };
+            prepared = [];
+        }
+
+        if (SelectedStatus != "Todos")
+        {
+            resources = SelectedStatus switch
+            {
+                "Disponibles" => resources.Where(item => item.Current > 0),
+                "Agotados" => resources.Where(item => item.Current == 0),
+                "Completos" => resources.Where(item => item.Current == item.Maximum),
+                _ => resources
+            };
+            prepared = [];
+        }
+
+        resources = SelectedSort switch
+        {
+            "A–Z" => resources.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            "Z–A" => resources.OrderByDescending(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            "Menor a mayor" => resources.OrderBy(item => item.Current).ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            "Mayor a menor" => resources.OrderByDescending(item => item.Current).ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            _ => resources
+        };
+        prepared = SelectedSort switch
+        {
+            "A–Z" => prepared.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            "Z–A" => prepared.OrderByDescending(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            "Menor a mayor" => prepared.OrderBy(item => item.Level).ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            "Mayor a menor" => prepared.OrderByDescending(item => item.Level).ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase),
+            _ => prepared
+        };
+
+        Replace(SpellSlots, resources.Where(item => item.Kind == CharacterResourceKind.SpellSlot));
+        Replace(PactSlots, resources.Where(item => item.Kind == CharacterResourceKind.PactMagicSlot));
+        Replace(OtherResources, resources.Where(item => item.Kind == CharacterResourceKind.Custom));
+        Replace(PreparedItems, prepared);
+        NotifyState();
+    }
+
+    private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> source)
+    {
+        target.Clear();
+        foreach (var item in source) target.Add(item);
+    }
 
     private void NotifyState()
     {
@@ -207,7 +357,12 @@ public partial class ResourceManagerViewModel(
         OnPropertyChanged(nameof(HasPactSlots));
         OnPropertyChanged(nameof(HasOtherResources));
         OnPropertyChanged(nameof(HasResources));
+        OnPropertyChanged(nameof(HasPrepared));
+        OnPropertyChanged(nameof(HasVisibleItems));
+        OnPropertyChanged(nameof(HasStoredItems));
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(EmptyText));
+        OnPropertyChanged(nameof(ResultSummary));
     }
 }
 
@@ -227,6 +382,7 @@ public sealed class ResourceItemViewModel
     public int? Level => Resource.Level;
     public int Current => Resource.Current;
     public int Maximum => Resource.Maximum;
+    public ResourceRecoveryKind Recovery => Resource.Recovery;
     public string CountText => $"{Current} / {Maximum}{(string.IsNullOrWhiteSpace(Resource.Unit) ? string.Empty : $" {Resource.Unit}")}";
     public string DetailText => string.Join(" · ", new[] { RecoveryText, Resource.Description }.Where(value => !string.IsNullOrWhiteSpace(value)));
     public string RecoveryText => Resource.Recovery switch

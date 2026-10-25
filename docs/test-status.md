@@ -89,6 +89,7 @@ y los IDs de archivo se documentan en
 | Arrastre libre 1.14 | Build Android y 101 pruebas automáticas aprobadas | Aprobada con prueba USB pendiente | Pulsación mantenida sobre ⋮, tarjeta elevada que sigue el dedo, desplazamiento en bordes y una sola persistencia al soltar; el teléfono no estaba visible en ADB |
 | Reordenamiento visual 1.15 | Build Android y 101 pruebas automáticas | Falló al abrir Preparados | La prueba USB detectó que Android agregaba el controlador de arrastre durante el dibujo de la lista |
 | Preparados y Favoritos 1.16 | Build Android, 103 pruebas y comprobación táctil en TECNO KL7 | Aprobada | Preparados abre sin excepción; ambas listas permiten arrastrar con ⋮, apartan las tarjetas, desplazan en los bordes y conservan el orden por personaje |
+| Filtros y orden de Resources 1.17 | Build Android y 103 pruebas automáticas | Prueba USB pendiente | Búsqueda; filtros por tipo, recuperación y estado; orden Manual, A–Z, Z–A y por cantidad/nivel sin sobrescribir el orden manual |
 | Compilar/firmar paquete | APK Debug aprobado | Pendiente | El código iOS y `ios-arm64` compilan; la IPA se detiene por ausencia de firma Apple/Xcode |
 
 La APK más reciente, con actualizador instalable, catálogo Drive, spells,
