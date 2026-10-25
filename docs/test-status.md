@@ -157,6 +157,11 @@ El editor interno de Character Sheet 1.19 se verificó mediante build Android,
 105 pruebas y revisión visual/PDF. Funciona offline por personaje, cubre 210
 campos de texto y 122 casillas, y conserva los 334 campos y 336 widgets AcroForm.
 La prueba táctil USB queda pendiente si el teléfono no aparece conectado en ADB.
+El APK 1.19/código 20 se publicó con SHA-256
+`D9B9E42ADE598558129E924B9DDB89380445E7DCC80EC837595D426F70E2C863`;
+el manifiesto, el package ID, la firma, la plantilla incluida y el hash del
+asset de GitHub se verificaron. La prueba táctil USB queda pendiente porque el
+teléfono no aparece conectado en ADB.
 
 ## Limitaciones del equipo
 
