@@ -1,11 +1,11 @@
 {
-  "versionCode": 13,
-  "versionName": "1.12",
+  "versionCode": 14,
+  "versionName": "1.13",
   "packageId": "com.march.dndcompendium",
-  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.12/DndCompendium.apk",
-  "sha256": "a5e355a650ab8182767274ccdf1b5cdea1c257275f3554e35c541dff5c7fd0ec",
-  "releaseNotes": "Orden táctil directo mediante tiradores de tres puntos para Spells, Exploits y Resources, persistente por personaje.",
-  "publishedAt": "2026-10-25T06:03:43.4144367Z",
+  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.13/DndCompendium.apk",
+  "sha256": "fec920eaa5d3d8aa459a97bbb6751fcf69d4c333b5108a50bba1c38f755dd2ee",
+  "releaseNotes": "Agrega íconos visibles sobre Biblioteca, Buscar, Spells y Exploits, y muestra un botón de más opciones con tres puntos grandes.",
+  "publishedAt": "2026-10-25T06:18:12.5497365Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false

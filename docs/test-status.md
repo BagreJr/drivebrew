@@ -118,6 +118,11 @@ se instaló en el TECNO KL7 conservando los datos y la fecha original de
 instalación. En el dispositivo se verificó el arrastre táctil directo con ⋮,
 su persistencia tras reiniciar y la gestión tanto de Preparados como de
 Resources. La PWA pública versión 15 superó su prueba E2E equivalente.
+El APK 1.13/código 14 se publicó con SHA-256
+`FEC920EAA5D3D8AA459A97BBB6751FCF69D4C333B5108A50BBA1C38F755DD2EE`;
+se instaló en el TECNO KL7 conservando los 42 documentos y la fecha original
+de instalación. Se verificaron visualmente los cinco íconos de la navegación
+inferior y el acceso táctil a Biblioteca, Buscar, Spells, Exploits y más opciones.
 
 ## Limitaciones del equipo
 
