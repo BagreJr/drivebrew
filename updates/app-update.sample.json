@@ -3,9 +3,9 @@
   "versionName": "1.22",
   "packageId": "com.march.dndcompendium",
   "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.22/DndCompendium.apk",
-  "sha256": "REEMPLAZADO_AUTOMATICAMENTE_AL_PUBLICAR",
+  "sha256": "f57e1393cebc99a9b6cbea34520386ad40267d430f542d1ed1d0f4040dfde5cf",
   "releaseNotes": "Character Sheet 2.0 agrega edición móvil por secciones, modo de partida, cálculos con competencia y expertise, modificadores reversibles, selección offline desde el Compendium, spells y Resources sincronizados, migración segura y exportación PDF con páginas adicionales.",
-  "publishedAt": "2026-10-25T00:00:00Z",
+  "publishedAt": "2026-10-25T22:50:59.3038989Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false

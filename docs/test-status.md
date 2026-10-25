@@ -185,6 +185,10 @@ Resources compartidos con el perfil. Las 112 pruebas .NET y la prueba JavaScript
 pasaron; el build Android Debug terminó con 0 advertencias y 0 errores. La prueba
 visual no mostró desborde horizontal. La prueba USB queda pendiente si el teléfono
 no aparece conectado.
+El APK 1.22/código 23 se publicó con SHA-256
+`F57E1393CEBC99A9B6CBEA34520386AD40267D430F542D1ED1D0F4040DFDE5CF`;
+se verificaron el manifiesto, package ID, SDK mínimo 21, firma y los cuatro recursos
+web de Character Sheet 2.0 dentro del paquete publicado.
 
 ## Limitaciones del equipo
 
