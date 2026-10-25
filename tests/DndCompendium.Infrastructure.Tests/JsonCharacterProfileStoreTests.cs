@@ -80,6 +80,36 @@ public sealed class JsonCharacterProfileStoreTests
     }
 
     [Fact]
+    public async Task FavoriteOrderPersistsAndRemainsIsolatedPerCharacter()
+    {
+        using var directory = new TemporaryDirectory();
+        var store = new JsonCharacterProfileStore(directory.Path);
+        var first = await store.GetActiveAsync();
+        await store.SetSavedAsync(SavedContentKind.Spell, SavedStateKind.Favorite, "spell-a", true);
+        await store.SetSavedAsync(SavedContentKind.Exploit, SavedStateKind.Favorite, "exploit-b", true);
+        await store.SetFavoriteOrderAsync([
+            new(SavedContentKind.Exploit, "exploit-b"),
+            new(SavedContentKind.Spell, "spell-a")
+        ]);
+
+        var reloaded = new JsonCharacterProfileStore(directory.Path);
+        Assert.Equal([
+            new SavedItemReference(SavedContentKind.Exploit, "exploit-b"),
+            new SavedItemReference(SavedContentKind.Spell, "spell-a")
+        ], await reloaded.GetFavoriteOrderAsync());
+
+        await reloaded.SetSavedAsync(SavedContentKind.Exploit, SavedStateKind.Favorite, "exploit-b", false);
+        Assert.Equal(
+            new SavedItemReference(SavedContentKind.Spell, "spell-a"),
+            Assert.Single(await reloaded.GetFavoriteOrderAsync()));
+
+        await reloaded.CreateAsync("Nyx");
+        Assert.Empty(await reloaded.GetFavoriteOrderAsync());
+        await reloaded.SetActiveAsync(first.Id);
+        Assert.Equal("spell-a", Assert.Single(await reloaded.GetFavoriteOrderAsync()).ItemId);
+    }
+
+    [Fact]
     public async Task MigratesPreparedOrderFromVersionTwoProfiles()
     {
         using var directory = new TemporaryDirectory();
@@ -101,6 +131,34 @@ public sealed class JsonCharacterProfileStoreTests
 
         var store = new JsonCharacterProfileStore(directory.Path);
         var order = await store.GetPreparedOrderAsync();
+
+        Assert.Equal(2, order.Count);
+        Assert.Contains(new SavedItemReference(SavedContentKind.Spell, "spell-b"), order);
+        Assert.Contains(new SavedItemReference(SavedContentKind.Exploit, "exploit-a"), order);
+    }
+
+    [Fact]
+    public async Task MigratesFavoriteOrderFromVersionThreeProfiles()
+    {
+        using var directory = new TemporaryDirectory();
+        var profilesDirectory = Path.Combine(directory.Path, "profiles");
+        Directory.CreateDirectory(profilesDirectory);
+        const string state = """
+            {
+              "Version": 3,
+              "ActiveCharacterId": "hero",
+              "Characters": [{ "Id": "hero", "Name": "Nyx", "CreatedAt": "2026-10-20T00:00:00Z" }],
+              "Saved": [{
+                "CharacterId": "hero",
+                "FavoriteSpellIds": ["spell-b"],
+                "FavoriteExploitIds": ["exploit-a"]
+              }]
+            }
+            """;
+        await File.WriteAllTextAsync(Path.Combine(profilesDirectory, "characters.json"), state);
+
+        var store = new JsonCharacterProfileStore(directory.Path);
+        var order = await store.GetFavoriteOrderAsync();
 
         Assert.Equal(2, order.Count);
         Assert.Contains(new SavedItemReference(SavedContentKind.Spell, "spell-b"), order);

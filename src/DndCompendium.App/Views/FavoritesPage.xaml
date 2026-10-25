@@ -6,8 +6,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:viewModels="clr-namespace:DndCompendium.App.ViewModels"
     x:DataType="viewModels:FavoritesViewModel">
-
-    <Grid RowDefinitions="Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
         <Border Grid.Row="0" Margin="12,6,12,4" Padding="12,8" Style="{StaticResource HeroCardStyle}">
             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
                 <Label FontAttributes="Bold" FontSize="18" Text="{Binding PageTitle}" TextColor="{StaticResource PaperLight}" />
@@ -15,11 +14,46 @@
                 <ActivityIndicator Grid.RowSpan="2" Grid.Column="1" HeightRequest="24" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" WidthRequest="24" />
             </Grid>
         </Border>
-        <Grid Grid.Row="1" Margin="16,4,16,6" RowDefinitions="Auto,Auto">
+        <Grid Grid.Row="1" RowDefinitions="Auto,Auto">
+            <SearchBar
+                Margin="12,2"
+                Placeholder="Buscar en favoritos"
+                Style="{StaticResource CompendiumSearchBarStyle}"
+                Text="{Binding SearchQuery}" />
+            <ScrollView Grid.Row="1" Margin="12,2,12,4" HorizontalScrollBarVisibility="Never" Orientation="Horizontal">
+                <HorizontalStackLayout Spacing="8">
+                    <VerticalStackLayout WidthRequest="120" Spacing="2">
+                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="CONTENIDO" />
+                        <Picker ItemsSource="{Binding ContentOptions}" SelectedItem="{Binding SelectedContent}" Style="{StaticResource CompactPickerStyle}" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout WidthRequest="116" Spacing="2">
+                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="NIVEL" />
+                        <Picker ItemsSource="{Binding LevelOptions}" SelectedItem="{Binding SelectedLevel}" Style="{StaticResource CompactPickerStyle}" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout WidthRequest="138" Spacing="2">
+                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="CLASE" />
+                        <Picker ItemsSource="{Binding ClassOptions}" SelectedItem="{Binding SelectedClass}" Style="{StaticResource CompactPickerStyle}" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout WidthRequest="150" Spacing="2">
+                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="CASTEO" />
+                        <Picker ItemsSource="{Binding CastingTimeOptions}" SelectedItem="{Binding SelectedCastingTime}" Style="{StaticResource CompactPickerStyle}" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout WidthRequest="150" Spacing="2">
+                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="COMPONENTE" />
+                        <Picker ItemsSource="{Binding ComponentOptions}" SelectedItem="{Binding SelectedComponent}" Style="{StaticResource CompactPickerStyle}" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout WidthRequest="180" Spacing="2">
+                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="ORDEN" />
+                        <Picker ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSort}" Style="{StaticResource CompactPickerStyle}" />
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+            </ScrollView>
+        </Grid>
+        <Grid Grid.Row="2" Margin="16,4,16,6" RowDefinitions="Auto,Auto">
             <Label Style="{StaticResource SectionLabelStyle}" Text="{Binding ResultSummary}" />
             <Label Grid.Row="1" Margin="0,5,0,0" IsVisible="{Binding HasError}" Style="{StaticResource ErrorLabelStyle}" Text="{Binding ErrorMessage}" />
         </Grid>
-        <RefreshView Grid.Row="2" Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
+        <RefreshView Grid.Row="3" Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
             <CollectionView Margin="10,0" ItemsSource="{Binding Items}" SelectionMode="None">
                 <CollectionView.EmptyView>
                     <VerticalStackLayout Padding="28" Spacing="8">
@@ -30,12 +64,31 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:SavedItemViewModel">
                         <Border Margin="2,0,2,9" Padding="13" Style="{StaticResource CardStyle}">
-                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
-                                <Label FontAttributes="Bold" FontSize="16" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
-                                <Label Grid.Column="1" FontAttributes="Bold" FontSize="10" Text="{Binding Kind}" TextColor="{StaticResource Gold}" />
-                                <Label Grid.Row="1" Grid.ColumnSpan="2" FontSize="12" Text="{Binding LevelText}" />
-                                <Label Grid.Row="1" Grid.ColumnSpan="2" Margin="80,0,0,0" FontSize="12" Text="{Binding DetailText}" TextColor="{StaticResource TextMuted}" />
-                                <HorizontalStackLayout Grid.Row="2" Grid.ColumnSpan="2" HorizontalOptions="End" Spacing="6">
+                            <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+                                <Button
+                                    Grid.RowSpan="3"
+                                    Margin="0,0,10,0"
+                                    Padding="7,12"
+                                    BackgroundColor="Transparent"
+                                    BorderWidth="0"
+                                    FontAttributes="Bold"
+                                    FontSize="28"
+                                    IsVisible="{Binding BindingContext.CanReorder, Source={x:Reference FavoritesRoot}}"
+                                    Loaded="OnFavoriteHandleLoaded"
+                                    SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden"
+                                    Text="⋮"
+                                    TextColor="{StaticResource Gold}"
+                                    Unloaded="OnFavoriteHandleUnloaded"
+                                    VerticalOptions="Center">
+                                    <Button.GestureRecognizers>
+                                        <PanGestureRecognizer PanUpdated="OnFavoritePanUpdated" />
+                                    </Button.GestureRecognizers>
+                                </Button>
+                                <Label Grid.Column="1" FontAttributes="Bold" FontSize="16" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
+                                <Label Grid.Column="2" FontAttributes="Bold" FontSize="10" Text="{Binding Kind}" TextColor="{StaticResource Gold}" />
+                                <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" FontSize="12" Text="{Binding LevelText}" />
+                                <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="80,0,0,0" FontSize="12" Text="{Binding DetailText}" TextColor="{StaticResource TextMuted}" />
+                                <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalOptions="End" Spacing="6">
                                     <Button Command="{Binding BindingContext.RemoveCommand, Source={x:Reference FavoritesRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Quitar" />
                                     <Button Command="{Binding BindingContext.OpenDetailCommand, Source={x:Reference FavoritesRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallAccentButtonStyle}" Text="Ver todo" />
                                 </HorizontalStackLayout>

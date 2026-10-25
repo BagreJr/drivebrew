@@ -28,7 +28,7 @@ public abstract partial class SavedItemsViewModel : ObservableObject
         pageSubtitle = preparedOnly
             ? "Tus spells y exploits preparados, disponibles offline."
             : "Tus spells y exploits favoritos, disponibles offline.";
-        selectedSort = preparedOnly ? "Manual" : "A–Z";
+        selectedSort = "Manual";
     }
 
     public ObservableCollection<SavedItemViewModel> Items { get; } = [];
@@ -40,7 +40,7 @@ public abstract partial class SavedItemsViewModel : ObservableObject
     public IReadOnlyList<string> ComponentOptions { get; } = ["Todos", "Verbal (V)", "Somático (S)", "Material (M)"];
     public IReadOnlyList<string> SortOptions { get; } = ["Manual", "A–Z", "Z–A", "Nivel menor a mayor", "Nivel mayor a menor"];
     public bool ShowPreparedFilters => _preparedOnly;
-    public bool CanReorder => _preparedOnly && SelectedSort == "Manual";
+    public bool CanReorder => SelectedSort == "Manual";
 
     [ObservableProperty]
     private string pageSubtitle;
@@ -130,20 +130,16 @@ public abstract partial class SavedItemsViewModel : ObservableObject
                 .ToArray();
 
             _allItems.Clear();
-            if (_preparedOnly)
+            var savedOrder = _preparedOnly
+                ? await _profileStore.GetPreparedOrderAsync()
+                : await _profileStore.GetFavoriteOrderAsync();
+            var byKey = loaded.ToDictionary(item => item.ReferenceKey, StringComparer.Ordinal);
+            foreach (var reference in savedOrder)
             {
-                var byKey = loaded.ToDictionary(item => item.ReferenceKey, StringComparer.Ordinal);
-                foreach (var reference in await _profileStore.GetPreparedOrderAsync())
-                {
-                    var key = SavedItemViewModel.ReferenceKeyFor(reference.ContentKind, reference.ItemId);
-                    if (byKey.Remove(key, out var item)) _allItems.Add(item);
-                }
-                _allItems.AddRange(byKey.Values.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase));
+                var key = SavedItemViewModel.ReferenceKeyFor(reference.ContentKind, reference.ItemId);
+                if (byKey.Remove(key, out var item)) _allItems.Add(item);
             }
-            else
-            {
-                _allItems.AddRange(loaded.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase));
-            }
+            _allItems.AddRange(byKey.Values.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase));
 
             ClassOptions = ["Todas", .. _allItems
                 .SelectMany(item => item.Classes)
@@ -200,7 +196,7 @@ public abstract partial class SavedItemsViewModel : ObservableObject
 
     public async Task MoveToAsync(SavedItemViewModel? item, SavedItemViewModel? target)
     {
-        if (!_preparedOnly || !CanReorder || item is null || target is null || ReferenceEquals(item, target)) return;
+        if (!CanReorder || item is null || target is null || ReferenceEquals(item, target)) return;
         var targetVisibleIndex = Items.IndexOf(target);
         if (!MoveToIndex(item, targetVisibleIndex)) return;
         await PersistOrderAsync();
@@ -208,7 +204,7 @@ public abstract partial class SavedItemsViewModel : ObservableObject
 
     public bool MoveToIndex(SavedItemViewModel? item, int targetVisibleIndex)
     {
-        if (!_preparedOnly || !CanReorder || item is null || Items.Count == 0) return false;
+        if (!CanReorder || item is null || Items.Count == 0) return false;
         var visibleIndex = Items.IndexOf(item);
         targetVisibleIndex = Math.Clamp(targetVisibleIndex, 0, Items.Count - 1);
         if (visibleIndex < 0 || visibleIndex == targetVisibleIndex) return false;
@@ -223,10 +219,12 @@ public abstract partial class SavedItemsViewModel : ObservableObject
 
     public async Task PersistOrderAsync()
     {
-        if (!_preparedOnly || !CanReorder) return;
+        if (!CanReorder) return;
         try
         {
-            await _profileStore.SetPreparedOrderAsync(_allItems.Select(entry => entry.Reference).ToArray());
+            var order = _allItems.Select(entry => entry.Reference).ToArray();
+            if (_preparedOnly) await _profileStore.SetPreparedOrderAsync(order);
+            else await _profileStore.SetFavoriteOrderAsync(order);
         }
         catch (Exception exception)
         {

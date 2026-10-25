@@ -8,7 +8,7 @@ aprobar una prueba de dispositivo.
 | Verificación | Resultado |
 |---|---|
 | `DndCompendium.Core.Tests` | 39/39 aprobadas |
-| `DndCompendium.Infrastructure.Tests` | 62/62 aprobadas |
+| `DndCompendium.Infrastructure.Tests` | 64/64 aprobadas |
 | Smart Search: mayúsculas, tildes, puntuación y aliases | Aprobada |
 | Smart Search: full-text real (`Dexterity Saving Throw` → Acid Splash) | Aprobada con `artifacts/spells.json` (814 spells) |
 | Smart Search: Class Feature/Subclass Feature | Aprobada con Wizard, Alchemist, Magus y Psion |
@@ -52,7 +52,7 @@ aprobar una prueba de dispositivo.
 | APK autónomo (sin Fast Deployment) | Instalación y arranque aprobados |
 | Mensajes HybridWebView en hilo principal | Lector estable; sin crash nativo/administrado |
 
-Resultado .NET total: **101 aprobadas, 0 fallidas, 0 omitidas**.
+Resultado .NET total: **103 aprobadas, 0 fallidas, 0 omitidas**.
 
 El corpus es el descargado del Drive suministrado por el propietario. Los hashes
 y los IDs de archivo se documentan en
@@ -87,7 +87,8 @@ y los IDs de archivo se documentan en
 | Orden táctil de Preparados y Resources 1.12 | Build Android, 101 pruebas y PWA E2E aprobados | Aprobada | Tirador ⋮ con gesto táctil directo para mover Spells, Exploits y Resources; orden persistente por personaje y disponible también dentro de Resources |
 | Navegación visual Android 1.13 | Build Android, 101 pruebas y comprobación táctil en TECNO KL7 | Aprobada | Íconos visibles sobre Biblioteca, Buscar, Spells y Exploits; acceso de más opciones representado por tres puntos grandes |
 | Arrastre libre 1.14 | Build Android y 101 pruebas automáticas aprobadas | Aprobada con prueba USB pendiente | Pulsación mantenida sobre ⋮, tarjeta elevada que sigue el dedo, desplazamiento en bordes y una sola persistencia al soltar; el teléfono no estaba visible en ADB |
-| Reordenamiento visual 1.15 | Build Android y 101 pruebas automáticas | Pendiente de prueba USB | Reordenamiento nativo: las tarjetas vecinas abren el hueco en tiempo real y la lista continúa desplazándose en los bordes durante arrastres largos |
+| Reordenamiento visual 1.15 | Build Android y 101 pruebas automáticas | Falló al abrir Preparados | La prueba USB detectó que Android agregaba el controlador de arrastre durante el dibujo de la lista |
+| Preparados y Favoritos 1.16 | Build Android, 103 pruebas y comprobación táctil en TECNO KL7 | Aprobada | Preparados abre sin excepción; ambas listas permiten arrastrar con ⋮, apartan las tarjetas, desplazan en los bordes y conservan el orden por personaje |
 | Compilar/firmar paquete | APK Debug aprobado | Pendiente | El código iOS y `ios-arm64` compilan; la IPA se detiene por ausencia de firma Apple/Xcode |
 
 La APK más reciente, con actualizador instalable, catálogo Drive, spells,

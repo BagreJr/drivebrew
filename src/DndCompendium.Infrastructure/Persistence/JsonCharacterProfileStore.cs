@@ -7,7 +7,7 @@ namespace DndCompendium.Infrastructure.Persistence;
 
 public sealed class JsonCharacterProfileStore : ICharacterProfileStore
 {
-    private const int ProfileVersion = 3;
+    private const int ProfileVersion = 4;
     private const string DefaultCharacterName = "Mi personaje";
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -215,20 +215,20 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
                 ids.RemoveAll(id => string.Equals(id, itemId, StringComparison.Ordinal));
             }
             ids.Sort(StringComparer.Ordinal);
-            if (stateKind == SavedStateKind.Prepared)
+            var order = stateKind == SavedStateKind.Prepared
+                ? saved.PreparedItemOrder
+                : saved.FavoriteItemOrder;
+            var key = SavedItemKey(contentKind, itemId);
+            if (isSaved)
             {
-                var key = PreparedKey(contentKind, itemId);
-                if (isSaved)
+                if (!order.Contains(key, StringComparer.Ordinal))
                 {
-                    if (!saved.PreparedItemOrder.Contains(key, StringComparer.Ordinal))
-                    {
-                        saved.PreparedItemOrder.Add(key);
-                    }
+                    order.Add(key);
                 }
-                else
-                {
-                    saved.PreparedItemOrder.RemoveAll(item => string.Equals(item, key, StringComparison.Ordinal));
-                }
+            }
+            else
+            {
+                order.RemoveAll(item => string.Equals(item, key, StringComparison.Ordinal));
             }
             await SaveStateAsync(state, cancellationToken).ConfigureAwait(false);
         }
@@ -238,15 +238,38 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
         }
     }
 
-    public async Task<IReadOnlyList<SavedItemReference>> GetPreparedOrderAsync(
+    public Task<IReadOnlyList<SavedItemReference>> GetPreparedOrderAsync(
         CancellationToken cancellationToken = default)
+        => GetSavedOrderAsync(SavedStateKind.Prepared, cancellationToken);
+
+    public Task SetPreparedOrderAsync(
+        IReadOnlyList<SavedItemReference> items,
+        CancellationToken cancellationToken = default)
+        => SetSavedOrderAsync(SavedStateKind.Prepared, items, cancellationToken);
+
+    public Task<IReadOnlyList<SavedItemReference>> GetFavoriteOrderAsync(
+        CancellationToken cancellationToken = default)
+        => GetSavedOrderAsync(SavedStateKind.Favorite, cancellationToken);
+
+    public Task SetFavoriteOrderAsync(
+        IReadOnlyList<SavedItemReference> items,
+        CancellationToken cancellationToken = default)
+        => SetSavedOrderAsync(SavedStateKind.Favorite, items, cancellationToken);
+
+    private async Task<IReadOnlyList<SavedItemReference>> GetSavedOrderAsync(
+        SavedStateKind stateKind,
+        CancellationToken cancellationToken)
     {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             var state = await EnsureStateAsync(cancellationToken).ConfigureAwait(false);
-            return GetSavedData(state, state.ActiveCharacterId).PreparedItemOrder
-                .Select(ParsePreparedKey)
+            var saved = GetSavedData(state, state.ActiveCharacterId);
+            var order = stateKind == SavedStateKind.Prepared
+                ? saved.PreparedItemOrder
+                : saved.FavoriteItemOrder;
+            return order
+                .Select(ParseSavedItemKey)
                 .Where(item => item is not null)
                 .Cast<SavedItemReference>()
                 .ToArray();
@@ -257,9 +280,10 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
         }
     }
 
-    public async Task SetPreparedOrderAsync(
+    private async Task SetSavedOrderAsync(
+        SavedStateKind stateKind,
         IReadOnlyList<SavedItemReference> items,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(items);
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -268,22 +292,26 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
             var state = await EnsureStateAsync(cancellationToken).ConfigureAwait(false);
             var saved = GetSavedData(state, state.ActiveCharacterId);
             var valid = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var id in saved.PreparedSpellIds) valid.Add(PreparedKey(SavedContentKind.Spell, id));
-            foreach (var id in saved.PreparedExploitIds) valid.Add(PreparedKey(SavedContentKind.Exploit, id));
+            foreach (var id in SelectIds(saved, SavedContentKind.Spell, stateKind))
+                valid.Add(SavedItemKey(SavedContentKind.Spell, id));
+            foreach (var id in SelectIds(saved, SavedContentKind.Exploit, stateKind))
+                valid.Add(SavedItemKey(SavedContentKind.Exploit, id));
 
-            saved.PreparedItemOrder = items
+            var order = items
                 .Where(item => !string.IsNullOrWhiteSpace(item.ItemId))
-                .Select(item => PreparedKey(item.ContentKind, item.ItemId))
+                .Select(item => SavedItemKey(item.ContentKind, item.ItemId))
                 .Where(valid.Contains)
                 .Distinct(StringComparer.Ordinal)
                 .ToList();
             foreach (var key in valid)
             {
-                if (!saved.PreparedItemOrder.Contains(key, StringComparer.Ordinal))
+                if (!order.Contains(key, StringComparer.Ordinal))
                 {
-                    saved.PreparedItemOrder.Add(key);
+                    order.Add(key);
                 }
             }
+            if (stateKind == SavedStateKind.Prepared) saved.PreparedItemOrder = order;
+            else saved.FavoriteItemOrder = order;
             await SaveStateAsync(state, cancellationToken).ConfigureAwait(false);
         }
         finally
@@ -523,7 +551,9 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
             saved.FavoriteExploitIds ??= [];
             saved.PreparedExploitIds ??= [];
             saved.PreparedItemOrder ??= [];
-            NormalizePreparedOrder(saved);
+            saved.FavoriteItemOrder ??= [];
+            saved.PreparedItemOrder = NormalizeSavedOrder(saved, SavedStateKind.Prepared, saved.PreparedItemOrder);
+            saved.FavoriteItemOrder = NormalizeSavedOrder(saved, SavedStateKind.Favorite, saved.FavoriteItemOrder);
             var normalizedResources = new List<CharacterResource>();
             foreach (var resource in saved.Resources)
             {
@@ -557,29 +587,34 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
             _ => throw new ArgumentOutOfRangeException()
         };
 
-    private static void NormalizePreparedOrder(CharacterSavedData saved)
+    private static List<string> NormalizeSavedOrder(
+        CharacterSavedData saved,
+        SavedStateKind stateKind,
+        IEnumerable<string> existingOrder)
     {
         var valid = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var id in saved.PreparedSpellIds.Where(id => !string.IsNullOrWhiteSpace(id)))
-            valid.Add(PreparedKey(SavedContentKind.Spell, id));
-        foreach (var id in saved.PreparedExploitIds.Where(id => !string.IsNullOrWhiteSpace(id)))
-            valid.Add(PreparedKey(SavedContentKind.Exploit, id));
+        foreach (var id in SelectIds(saved, SavedContentKind.Spell, stateKind)
+                     .Where(id => !string.IsNullOrWhiteSpace(id)))
+            valid.Add(SavedItemKey(SavedContentKind.Spell, id));
+        foreach (var id in SelectIds(saved, SavedContentKind.Exploit, stateKind)
+                     .Where(id => !string.IsNullOrWhiteSpace(id)))
+            valid.Add(SavedItemKey(SavedContentKind.Exploit, id));
 
-        saved.PreparedItemOrder = saved.PreparedItemOrder
+        var normalized = existingOrder
             .Where(valid.Contains)
             .Distinct(StringComparer.Ordinal)
             .ToList();
         foreach (var key in valid.Order(StringComparer.Ordinal))
         {
-            if (!saved.PreparedItemOrder.Contains(key, StringComparer.Ordinal))
-                saved.PreparedItemOrder.Add(key);
+            if (!normalized.Contains(key, StringComparer.Ordinal)) normalized.Add(key);
         }
+        return normalized;
     }
 
-    private static string PreparedKey(SavedContentKind contentKind, string itemId)
+    private static string SavedItemKey(SavedContentKind contentKind, string itemId)
         => $"{(contentKind == SavedContentKind.Spell ? "spell" : "exploit")}:{itemId}";
 
-    private static SavedItemReference? ParsePreparedKey(string key)
+    private static SavedItemReference? ParseSavedItemKey(string key)
     {
         if (key.StartsWith("spell:", StringComparison.Ordinal))
             return new(SavedContentKind.Spell, key[6..]);
@@ -651,6 +686,7 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
         public List<string> FavoriteExploitIds { get; set; } = [];
         public List<string> PreparedExploitIds { get; set; } = [];
         public List<string> PreparedItemOrder { get; set; } = [];
+        public List<string> FavoriteItemOrder { get; set; } = [];
         public List<CharacterResource> Resources { get; set; } = [];
     }
 }

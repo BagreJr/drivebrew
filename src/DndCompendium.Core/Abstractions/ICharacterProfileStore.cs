@@ -37,6 +37,13 @@ public interface ICharacterProfileStore
         IReadOnlyList<SavedItemReference> items,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<SavedItemReference>> GetFavoriteOrderAsync(
+        CancellationToken cancellationToken = default);
+
+    Task SetFavoriteOrderAsync(
+        IReadOnlyList<SavedItemReference> items,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<CharacterResource>> GetResourcesAsync(CancellationToken cancellationToken = default);
 
     Task SetResourceOrderAsync(
