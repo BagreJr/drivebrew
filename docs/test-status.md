@@ -7,8 +7,8 @@ aprobar una prueba de dispositivo.
 
 | Verificación | Resultado |
 |---|---|
-| `DndCompendium.Core.Tests` | 25/25 aprobadas |
-| `DndCompendium.Infrastructure.Tests` | 55/55 aprobadas |
+| `DndCompendium.Core.Tests` | 39/39 aprobadas |
+| `DndCompendium.Infrastructure.Tests` | 62/62 aprobadas |
 | Smart Search: mayúsculas, tildes, puntuación y aliases | Aprobada |
 | Smart Search: full-text real (`Dexterity Saving Throw` → Acid Splash) | Aprobada con `artifacts/spells.json` (814 spells) |
 | Smart Search: Class Feature/Subclass Feature | Aprobada con Wizard, Alchemist, Magus y Psion |
@@ -52,7 +52,7 @@ aprobar una prueba de dispositivo.
 | APK autónomo (sin Fast Deployment) | Instalación y arranque aprobados |
 | Mensajes HybridWebView en hilo principal | Lector estable; sin crash nativo/administrado |
 
-Resultado .NET total: **80 aprobadas, 0 fallidas, 0 omitidas**.
+Resultado .NET total: **101 aprobadas, 0 fallidas, 0 omitidas**.
 
 El corpus es el descargado del Drive suministrado por el propietario. Los hashes
 y los IDs de archivo se documentan en
@@ -84,6 +84,7 @@ y los IDs de archivo se documentan en
 | Filtro Subclases y jerarquías Homebrewery 1.8 | Build, corpus y 89 pruebas aprobados | Pendiente | El filtro incluye subclases y sus features; 35 TXT reales validados. Release firmado y hash público verificado; no había dispositivo ADB conectado |
 | Filtros de Spells y búsqueda manual resaltada 1.9 | Build, catálogo y 98 pruebas aprobados | Pendiente | 814 spells clasificados por casteo y componentes; Release firmado y hash público verificado. No había dispositivo ADB conectado |
 | Filtros y orden persistente de Preparados 1.10 | Build Android, 100 pruebas y PWA E2E aprobados | Aprobada | Filtros por contenido, nivel, clase, casteo y componente; orden manual por personaje; se conserva el scroll al marcar Preparado/Favorito |
+| Orden táctil de Preparados y Resources 1.11 | Build Android, 101 pruebas y PWA E2E aprobados | Aprobada | Tirador ⋮ para mover Spells, Exploits y Resources; orden persistente por personaje y disponible también dentro de Resources |
 | Compilar/firmar paquete | APK Debug aprobado | Pendiente | El código iOS y `ios-arm64` compilan; la IPA se detiene por ausencia de firma Apple/Xcode |
 
 La APK más reciente, con actualizador instalable, catálogo Drive, spells,

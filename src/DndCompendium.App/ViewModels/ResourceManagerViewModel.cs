@@ -117,6 +117,46 @@ public partial class ResourceManagerViewModel(
         await ReloadResourcesAsync();
     }
 
+    public async Task MoveResourceAsync(ResourceItemViewModel? item, ResourceItemViewModel? target)
+    {
+        if (item is null || target is null || ReferenceEquals(item, target) || item.Kind != target.Kind) return;
+        var collection = item.Kind switch
+        {
+            CharacterResourceKind.SpellSlot => SpellSlots,
+            CharacterResourceKind.PactMagicSlot => PactSlots,
+            _ => OtherResources
+        };
+        var sourceIndex = collection.IndexOf(item);
+        var targetIndex = collection.IndexOf(target);
+        if (sourceIndex < 0 || targetIndex < 0) return;
+        collection.Move(sourceIndex, targetIndex);
+        try
+        {
+            await profileStore.SetResourceOrderAsync(AllResources().Select(resource => resource.Id).ToArray());
+        }
+        catch (Exception exception)
+        {
+            ErrorMessage = $"No se pudo guardar el orden: {exception.Message}";
+        }
+    }
+
+    public async Task MovePreparedAsync(PreparedResourceItemViewModel? item, PreparedResourceItemViewModel? target)
+    {
+        if (item is null || target is null || ReferenceEquals(item, target)) return;
+        var sourceIndex = PreparedItems.IndexOf(item);
+        var targetIndex = PreparedItems.IndexOf(target);
+        if (sourceIndex < 0 || targetIndex < 0) return;
+        PreparedItems.Move(sourceIndex, targetIndex);
+        try
+        {
+            await profileStore.SetPreparedOrderAsync(PreparedItems.Select(entry => entry.Reference).ToArray());
+        }
+        catch (Exception exception)
+        {
+            ErrorMessage = $"No se pudo guardar el orden: {exception.Message}";
+        }
+    }
+
     private async Task ReloadResourcesAsync()
     {
         var resources = await profileStore.GetResourcesAsync();
@@ -142,11 +182,20 @@ public partial class ResourceManagerViewModel(
         var exploitIds = await exploitRepository.GetPreparedIdsAsync();
         var spells = await spellRepository.GetAllAsync(false);
         var exploits = await exploitRepository.GetAllAsync(false);
+        var loaded = spells.Where(item => spellIds.Contains(item.Id))
+            .Select(spell => new PreparedResourceItemViewModel(spell.Id, spell.Name, true, spell.Level, spell.Level == 0 ? "Truco" : $"Spell · Nivel {spell.Level}"))
+            .Concat(exploits.Where(item => exploitIds.Contains(item.Id))
+                .Select(exploit => new PreparedResourceItemViewModel(exploit.Id, exploit.Name, false, exploit.Level, $"{exploit.Type} · Nivel {exploit.Level}")))
+            .ToArray();
+        var byKey = loaded.ToDictionary(item => item.ReferenceKey, StringComparer.Ordinal);
         PreparedItems.Clear();
-        foreach (var spell in spells.Where(item => spellIds.Contains(item.Id)).OrderBy(item => item.Level).ThenBy(item => item.Name))
-            PreparedItems.Add(new PreparedResourceItemViewModel(spell.Id, spell.Name, true, spell.Level, spell.Level == 0 ? "Truco" : $"Spell · Nivel {spell.Level}"));
-        foreach (var exploit in exploits.Where(item => exploitIds.Contains(item.Id)).OrderBy(item => item.Level).ThenBy(item => item.Name))
-            PreparedItems.Add(new PreparedResourceItemViewModel(exploit.Id, exploit.Name, false, exploit.Level, $"{exploit.Type} · Nivel {exploit.Level}"));
+        foreach (var reference in await profileStore.GetPreparedOrderAsync())
+        {
+            var key = PreparedResourceItemViewModel.ReferenceKeyFor(reference.ContentKind, reference.ItemId);
+            if (byKey.Remove(key, out var item)) PreparedItems.Add(item);
+        }
+        foreach (var item in byKey.Values.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase))
+            PreparedItems.Add(item);
         OnPropertyChanged(nameof(HasPrepared));
     }
 
@@ -204,4 +253,7 @@ public sealed record PreparedResourceItemViewModel(string Id, string Name, bool 
 {
     public string KindText => IsSpell ? "SPELL" : "EXPLOIT";
     public string UseText => IsSpell ? (Level == 0 ? "Usar truco" : "Gastar slot…") : "Gastar recurso…";
+    public SavedItemReference Reference => new(IsSpell ? SavedContentKind.Spell : SavedContentKind.Exploit, Id);
+    public string ReferenceKey => ReferenceKeyFor(Reference.ContentKind, Id);
+    public static string ReferenceKeyFor(SavedContentKind contentKind, string id) => $"{contentKind}:{id}";
 }

@@ -39,8 +39,8 @@
 		<ApplicationId>com.march.dndcompendium</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.10</ApplicationDisplayVersion>
-		<ApplicationVersion>11</ApplicationVersion>
+		<ApplicationDisplayVersion>1.11</ApplicationDisplayVersion>
+		<ApplicationVersion>12</ApplicationVersion>
 		<!-- The workflow injects the repository-derived value as well. Keeping the
 		     official feed here also makes local signed builds update-aware. -->
 		<AppUpdateManifestUrl>https://github.com/BagreJr/drivebrew/releases/latest/download/app-update.json</AppUpdateManifestUrl>

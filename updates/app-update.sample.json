@@ -1,11 +1,11 @@
 {
-  "versionCode": 11,
-  "versionName": "1.10",
+  "versionCode": 12,
+  "versionName": "1.11",
   "packageId": "com.march.dndcompendium",
-  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.10/DndCompendium.apk",
-  "sha256": "5491D731446BBD466AA15AB643EA10D71C1F1C0F0F24420ED930963E75831955",
-  "releaseNotes": "Filtros y orden manual persistente en Preparados; se conserva la posición al marcar Preparados o Favoritos.",
-  "publishedAt": "2026-10-25T00:30:00.9859925Z",
+  "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.11/DndCompendium.apk",
+  "sha256": "GENERATED_BY_RELEASE_WORKFLOW",
+  "releaseNotes": "Orden táctil mediante tiradores de tres puntos para Spells, Exploits y Resources, persistente por personaje.",
+  "publishedAt": "2026-10-24T00:00:00Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false

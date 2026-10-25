@@ -34,10 +34,18 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:ResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
+                            <Border.GestureRecognizers>
+                                <DropGestureRecognizer AllowDrop="True" Drop="OnResourceDrop" />
+                            </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="6">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Label FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
-                                    <Button Grid.Column="1" Clicked="OnEditClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallGhostButtonStyle}" Text="Editar" />
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Label FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}">
+                                        <Label.GestureRecognizers>
+                                            <DragGestureRecognizer CanDrag="True" DragStarting="OnResourceDragStarting" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                    <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center" />
+                                    <Button Grid.Column="2" Clicked="OnEditClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallGhostButtonStyle}" Text="Editar" />
                                 </Grid>
                                 <FlexLayout BindableLayout.ItemsSource="{Binding Dots}" Direction="Row" Wrap="Wrap" JustifyContent="Start">
                                     <BindableLayout.ItemTemplate>
@@ -58,10 +66,18 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:ResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
+                            <Border.GestureRecognizers>
+                                <DropGestureRecognizer AllowDrop="True" Drop="OnResourceDrop" />
+                            </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="6">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Label FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
-                                    <Button Grid.Column="1" Clicked="OnEditClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallGhostButtonStyle}" Text="Editar" />
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Label FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}">
+                                        <Label.GestureRecognizers>
+                                            <DragGestureRecognizer CanDrag="True" DragStarting="OnResourceDragStarting" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                    <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center" />
+                                    <Button Grid.Column="2" Clicked="OnEditClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallGhostButtonStyle}" Text="Editar" />
                                 </Grid>
                                 <FlexLayout BindableLayout.ItemsSource="{Binding Dots}" Direction="Row" Wrap="Wrap">
                                     <BindableLayout.ItemTemplate>
@@ -82,15 +98,23 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:ResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
-                            <Grid ColumnDefinitions="54,*,54" RowDefinitions="Auto,Auto,Auto" RowSpacing="5">
-                                <Button Command="{Binding BindingContext.AdjustCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding Spend}" FontSize="22" Style="{StaticResource SmallSecondaryButtonStyle}" Text="−" />
-                                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="0">
+                            <Border.GestureRecognizers>
+                                <DropGestureRecognizer AllowDrop="True" Drop="OnResourceDrop" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="Auto,54,*,54" RowDefinitions="Auto,Auto,Auto" RowSpacing="5">
+                                <Label Grid.RowSpan="3" FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnResourceDragStarting" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                                <Button Grid.Column="1" Command="{Binding BindingContext.AdjustCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding Spend}" FontSize="22" Style="{StaticResource SmallSecondaryButtonStyle}" Text="−" />
+                                <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="0">
                                     <Label FontAttributes="Bold" HorizontalTextAlignment="Center" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
                                     <Label FontSize="20" HorizontalTextAlignment="Center" Text="{Binding CountText}" TextColor="{StaticResource Gold}" />
                                 </VerticalStackLayout>
-                                <Button Grid.Column="2" Command="{Binding BindingContext.AdjustCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding Recover}" FontSize="22" Style="{StaticResource SmallAccentButtonStyle}" Text="＋" />
-                                <Label Grid.Row="1" Grid.ColumnSpan="3" HorizontalTextAlignment="Center" Style="{StaticResource MutedLabelStyle}" Text="{Binding DetailText}" />
-                                <Button Grid.Row="2" Grid.ColumnSpan="3" Clicked="OnEditClicked" CommandParameter="{Binding .}" HorizontalOptions="End" Style="{StaticResource SmallGhostButtonStyle}" Text="Editar / cantidad manual" />
+                                <Button Grid.Column="3" Command="{Binding BindingContext.AdjustCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding Recover}" FontSize="22" Style="{StaticResource SmallAccentButtonStyle}" Text="＋" />
+                                <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" HorizontalTextAlignment="Center" Style="{StaticResource MutedLabelStyle}" Text="{Binding DetailText}" />
+                                <Button Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Clicked="OnEditClicked" CommandParameter="{Binding .}" HorizontalOptions="End" Style="{StaticResource SmallGhostButtonStyle}" Text="Editar / cantidad manual" />
                             </Grid>
                         </Border>
                     </DataTemplate>
@@ -102,11 +126,19 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:PreparedResourceItemViewModel">
                         <Border Padding="12" Style="{StaticResource CardStyle}">
-                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
-                                <Label FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
-                                <Label Grid.Column="1" FontAttributes="Bold" FontSize="10" Text="{Binding KindText}" TextColor="{StaticResource Gold}" />
-                                <Label Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource MutedLabelStyle}" Text="{Binding DetailText}" />
-                                <HorizontalStackLayout Grid.Row="2" Grid.ColumnSpan="2" HorizontalOptions="End" Spacing="6">
+                            <Border.GestureRecognizers>
+                                <DropGestureRecognizer AllowDrop="True" Drop="OnPreparedResourceDrop" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+                                <Label Grid.RowSpan="3" FontAttributes="Bold" FontSize="28" Padding="7,5" SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden" Text="⋮" TextColor="{StaticResource Gold}" VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnPreparedResourceDragStarting" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                                <Label Grid.Column="1" FontAttributes="Bold" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
+                                <Label Grid.Column="2" FontAttributes="Bold" FontSize="10" Text="{Binding KindText}" TextColor="{StaticResource Gold}" />
+                                <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Style="{StaticResource MutedLabelStyle}" Text="{Binding DetailText}" />
+                                <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalOptions="End" Spacing="6">
                                     <Button Command="{Binding BindingContext.OpenPreparedCommand, Source={x:Reference ResourcesRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Ver" />
                                     <Button Clicked="OnUsePreparedClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallAccentButtonStyle}" Text="{Binding UseText}" />
                                 </HorizontalStackLayout>

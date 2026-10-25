@@ -13,6 +13,8 @@ public partial class ResourceManagerPage : ContentView
         "Hit Dice", "Recurso personalizado"
     ];
     private readonly ResourceManagerViewModel _viewModel;
+    private ResourceItemViewModel? _draggedResource;
+    private PreparedResourceItemViewModel? _draggedPrepared;
 
     public ResourceManagerPage(ResourceManagerViewModel viewModel)
     {
@@ -21,6 +23,34 @@ public partial class ResourceManagerPage : ContentView
     }
 
     public Task LoadAsync() => _viewModel.LoadCommand.ExecuteAsync(null);
+
+    private void OnResourceDragStarting(object? sender, DragStartingEventArgs e)
+    {
+        _draggedResource = (sender as DragGestureRecognizer)?.BindingContext as ResourceItemViewModel;
+        if (_draggedResource is null) e.Cancel = true;
+    }
+
+    private async void OnResourceDrop(object? sender, DropEventArgs e)
+    {
+        var target = (sender as DropGestureRecognizer)?.BindingContext as ResourceItemViewModel;
+        var source = _draggedResource;
+        _draggedResource = null;
+        await _viewModel.MoveResourceAsync(source, target);
+    }
+
+    private void OnPreparedResourceDragStarting(object? sender, DragStartingEventArgs e)
+    {
+        _draggedPrepared = (sender as DragGestureRecognizer)?.BindingContext as PreparedResourceItemViewModel;
+        if (_draggedPrepared is null) e.Cancel = true;
+    }
+
+    private async void OnPreparedResourceDrop(object? sender, DropEventArgs e)
+    {
+        var target = (sender as DropGestureRecognizer)?.BindingContext as PreparedResourceItemViewModel;
+        var source = _draggedPrepared;
+        _draggedPrepared = null;
+        await _viewModel.MovePreparedAsync(source, target);
+    }
 
     private async void OnAddClicked(object? sender, EventArgs e)
     {

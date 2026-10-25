@@ -299,10 +299,33 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
         {
             var state = await EnsureStateAsync(cancellationToken).ConfigureAwait(false);
             return GetSavedData(state, state.ActiveCharacterId).Resources
-                .OrderBy(resource => resource.Kind)
-                .ThenBy(resource => resource.Level)
-                .ThenBy(resource => resource.Name, StringComparer.CurrentCultureIgnoreCase)
                 .ToArray();
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task SetResourceOrderAsync(
+        IReadOnlyList<string> resourceIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(resourceIds);
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var state = await EnsureStateAsync(cancellationToken).ConfigureAwait(false);
+            var resources = GetSavedData(state, state.ActiveCharacterId).Resources;
+            var byId = resources.ToDictionary(resource => resource.Id, StringComparer.Ordinal);
+            var reordered = resourceIds
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct(StringComparer.Ordinal)
+                .Where(byId.ContainsKey)
+                .Select(id => byId[id])
+                .ToList();
+            reordered.AddRange(resources.Where(resource =>
+                !reordered.Any(existing => string.Equals(existing.Id, resource.Id, StringComparison.Ordinal))));
+            resources.Clear();
+            resources.AddRange(reordered);
+            await SaveStateAsync(state, cancellationToken).ConfigureAwait(false);
         }
         finally { _gate.Release(); }
     }

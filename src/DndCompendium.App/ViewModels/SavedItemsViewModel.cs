@@ -190,7 +190,6 @@ public abstract partial class SavedItemsViewModel : ObservableObject
 
             _allItems.Remove(item);
             Items.Remove(item);
-            UpdateMoveAvailability();
             NotifyListState();
         }
         catch (Exception exception)
@@ -199,25 +198,17 @@ public abstract partial class SavedItemsViewModel : ObservableObject
         }
     }
 
-    [RelayCommand(AllowConcurrentExecutions = false)]
-    private Task MoveUpAsync(SavedItemViewModel? item) => MoveAsync(item, -1);
-
-    [RelayCommand(AllowConcurrentExecutions = false)]
-    private Task MoveDownAsync(SavedItemViewModel? item) => MoveAsync(item, 1);
-
-    private async Task MoveAsync(SavedItemViewModel? item, int direction)
+    public async Task MoveToAsync(SavedItemViewModel? item, SavedItemViewModel? target)
     {
-        if (!_preparedOnly || !CanReorder || item is null) return;
+        if (!_preparedOnly || !CanReorder || item is null || target is null || ReferenceEquals(item, target)) return;
         var visibleIndex = Items.IndexOf(item);
-        var targetVisibleIndex = visibleIndex + direction;
-        if (visibleIndex < 0 || targetVisibleIndex < 0 || targetVisibleIndex >= Items.Count) return;
+        var targetVisibleIndex = Items.IndexOf(target);
+        if (visibleIndex < 0 || targetVisibleIndex < 0) return;
 
-        var neighbor = Items[targetVisibleIndex];
         _allItems.Remove(item);
-        var neighborIndex = _allItems.IndexOf(neighbor);
-        _allItems.Insert(direction < 0 ? neighborIndex : neighborIndex + 1, item);
+        var targetIndex = _allItems.IndexOf(target);
+        _allItems.Insert(visibleIndex < targetVisibleIndex ? targetIndex + 1 : targetIndex, item);
         Items.Move(visibleIndex, targetVisibleIndex);
-        UpdateMoveAvailability();
 
         try
         {
@@ -284,17 +275,7 @@ public abstract partial class SavedItemsViewModel : ObservableObject
 
         Items.Clear();
         foreach (var item in filtered) Items.Add(item);
-        UpdateMoveAvailability();
         NotifyListState();
-    }
-
-    private void UpdateMoveAvailability()
-    {
-        for (var index = 0; index < Items.Count; index++)
-        {
-            Items[index].CanMoveUp = CanReorder && index > 0;
-            Items[index].CanMoveDown = CanReorder && index < Items.Count - 1;
-        }
     }
 
     private void NotifyListState()
@@ -349,12 +330,6 @@ public partial class SavedItemViewModel : ObservableObject
     public SavedContentKind ContentKind => IsSpell ? SavedContentKind.Spell : SavedContentKind.Exploit;
     public SavedItemReference Reference => new(ContentKind, Id);
     public string ReferenceKey => ReferenceKeyFor(ContentKind, Id);
-
-    [ObservableProperty]
-    private bool canMoveUp;
-
-    [ObservableProperty]
-    private bool canMoveDown;
 
     public static SavedItemViewModel FromSpell(Spell spell) => new(
         spell.Id,

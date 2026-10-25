@@ -164,6 +164,33 @@ public sealed class JsonCharacterProfileStoreTests
     }
 
     [Fact]
+    public async Task ResourceOrderPersistsAndRemainsIsolatedPerCharacter()
+    {
+        using var directory = new TemporaryDirectory();
+        var store = new JsonCharacterProfileStore(directory.Path);
+        var first = await store.GetActiveAsync();
+        var firstResource = await store.UpsertResourceAsync(new CharacterResource
+        {
+            Id = string.Empty, Name = "Exploit Dice", Maximum = 4, Current = 4
+        });
+        var secondResource = await store.UpsertResourceAsync(new CharacterResource
+        {
+            Id = string.Empty, Name = "Sorcery Points", Maximum = 6, Current = 6
+        });
+
+        await store.SetResourceOrderAsync([secondResource.Id, firstResource.Id]);
+        var reloaded = new JsonCharacterProfileStore(directory.Path);
+        Assert.Equal([secondResource.Id, firstResource.Id],
+            (await reloaded.GetResourcesAsync()).Select(resource => resource.Id));
+
+        await reloaded.CreateAsync("Nyx");
+        Assert.Empty(await reloaded.GetResourcesAsync());
+        await reloaded.SetActiveAsync(first.Id);
+        Assert.Equal([secondResource.Id, firstResource.Id],
+            (await reloaded.GetResourcesAsync()).Select(resource => resource.Id));
+    }
+
+    [Fact]
     public async Task CorruptProfileIsBackedUpAndReplacedWithSafeDefault()
     {
         using var directory = new TemporaryDirectory();

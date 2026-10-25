@@ -68,26 +68,29 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:SavedItemViewModel">
                         <Border Margin="2,0,2,9" Padding="13" Style="{StaticResource CardStyle}">
-                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
-                                <Label FontAttributes="Bold" FontSize="16" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
-                                <Label Grid.Column="1" FontAttributes="Bold" FontSize="10" Text="{Binding Kind}" TextColor="{StaticResource Gold}" />
-                                <Label Grid.Row="1" Grid.ColumnSpan="2" FontSize="12" Text="{Binding LevelText}" />
-                                <Label Grid.Row="1" Grid.ColumnSpan="2" Margin="80,0,0,0" FontSize="12" Text="{Binding DetailText}" TextColor="{StaticResource TextMuted}" />
-                                <HorizontalStackLayout Grid.Row="2" Grid.ColumnSpan="2" HorizontalOptions="End" Spacing="6">
-                                    <Button
-                                        Command="{Binding BindingContext.MoveUpCommand, Source={x:Reference PreparedRoot}}"
-                                        CommandParameter="{Binding .}"
-                                        IsEnabled="{Binding CanMoveUp}"
-                                        IsVisible="{Binding BindingContext.CanReorder, Source={x:Reference PreparedRoot}}"
-                                        Style="{StaticResource SmallSecondaryButtonStyle}"
-                                        Text="↑" />
-                                    <Button
-                                        Command="{Binding BindingContext.MoveDownCommand, Source={x:Reference PreparedRoot}}"
-                                        CommandParameter="{Binding .}"
-                                        IsEnabled="{Binding CanMoveDown}"
-                                        IsVisible="{Binding BindingContext.CanReorder, Source={x:Reference PreparedRoot}}"
-                                        Style="{StaticResource SmallSecondaryButtonStyle}"
-                                        Text="↓" />
+                            <Border.GestureRecognizers>
+                                <DropGestureRecognizer AllowDrop="True" Drop="OnPreparedDrop" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+                                <Border
+                                    Grid.RowSpan="3"
+                                    Margin="0,0,10,0"
+                                    Padding="7,12"
+                                    BackgroundColor="Transparent"
+                                    IsVisible="{Binding BindingContext.CanReorder, Source={x:Reference PreparedRoot}}"
+                                    SemanticProperties.Description="Mantener presionado y arrastrar para cambiar el orden"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center">
+                                    <Border.GestureRecognizers>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnPreparedDragStarting" />
+                                    </Border.GestureRecognizers>
+                                    <Label FontAttributes="Bold" FontSize="28" Text="⋮" TextColor="{StaticResource Gold}" />
+                                </Border>
+                                <Label Grid.Column="1" FontAttributes="Bold" FontSize="16" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
+                                <Label Grid.Column="2" FontAttributes="Bold" FontSize="10" Text="{Binding Kind}" TextColor="{StaticResource Gold}" />
+                                <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" FontSize="12" Text="{Binding LevelText}" />
+                                <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="80,0,0,0" FontSize="12" Text="{Binding DetailText}" TextColor="{StaticResource TextMuted}" />
+                                <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalOptions="End" Spacing="6">
                                     <Button Command="{Binding BindingContext.RemoveCommand, Source={x:Reference PreparedRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Quitar" />
                                     <Button Command="{Binding BindingContext.OpenDetailCommand, Source={x:Reference PreparedRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallAccentButtonStyle}" Text="Ver todo" />
                                 </HorizontalStackLayout>

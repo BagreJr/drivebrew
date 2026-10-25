@@ -39,6 +39,10 @@ public interface ICharacterProfileStore
 
     Task<IReadOnlyList<CharacterResource>> GetResourcesAsync(CancellationToken cancellationToken = default);
 
+    Task SetResourceOrderAsync(
+        IReadOnlyList<string> resourceIds,
+        CancellationToken cancellationToken = default);
+
     Task<CharacterResource> UpsertResourceAsync(
         CharacterResource resource,
         CancellationToken cancellationToken = default);
