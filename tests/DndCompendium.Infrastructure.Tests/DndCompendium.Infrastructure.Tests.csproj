@@ -23,4 +23,11 @@
     <ProjectReference Include="..\..\src\DndCompendium.Infrastructure\DndCompendium.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\src\DndCompendium.App\Services\CharacterSheetSchema.cs" Link="Fixtures\CharacterSheetSchema.cs" />
+    <None Include="..\..\src\DndCompendium.App\Resources\Raw\character_sheet_template.pdf"
+          Link="Fixtures\character_sheet_template.pdf"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="PDFsharp" Version="6.2.4" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
     <ProjectReference Include="..\DndCompendium.Core\DndCompendium.Core.csproj" />
   </ItemGroup>
 
@@ -11,6 +13,8 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Sources\Fixtures\*.txt" />
+    <EmbeddedResource Include="..\DndCompendium.App\Resources\Fonts\OpenSans-Regular.ttf" LogicalName="DndCompendium.Infrastructure.Fonts.OpenSans-Regular.ttf" />
+    <EmbeddedResource Include="..\DndCompendium.App\Resources\Fonts\OpenSans-Semibold.ttf" LogicalName="DndCompendium.Infrastructure.Fonts.OpenSans-Semibold.ttf" />
     <EmbeddedResource Include="..\..\test-data\homebrewery-real\Magus.txt" LogicalName="DndCompendium.Infrastructure.Sources.RealDocuments.Magus.txt" />
     <EmbeddedResource Include="..\..\test-data\homebrewery-real\Psion.txt" LogicalName="DndCompendium.Infrastructure.Sources.RealDocuments.Psion.txt" />
     <EmbeddedResource Include="..\..\test-data\homebrewery-real\Backgrounds, Feats &amp; Equipment.txt" LogicalName="DndCompendium.Infrastructure.Sources.RealDocuments.Backgrounds, Feats &amp; Equipment.txt" />

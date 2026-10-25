@@ -14,4 +14,5 @@ internal static class AppRoutes
     public const string Favorites = "favorites";
     public const string Settings = "settings";
     public const string ResourceEditor = "resource-editor";
+    public const string CharacterSheet = "character-sheet";
 }

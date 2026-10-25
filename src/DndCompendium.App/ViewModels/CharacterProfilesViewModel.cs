@@ -96,6 +96,7 @@ public partial class CharacterProfilesViewModel(
         {
             ErrorMessage = null;
             await store.RenameAsync(character.Id, name);
+            await characterSheets.UpdateCharacterNameAsync(character.Profile with { Name = name.Trim() });
             await ReloadAsync();
         }
         catch (Exception exception)
@@ -126,7 +127,8 @@ public partial class CharacterProfilesViewModel(
         try
         {
             ErrorMessage = null;
-            await characterSheets.OpenAsync(character.Profile);
+            await Shell.Current.GoToAsync(
+                $"{AppRoutes.CharacterSheet}?characterId={Uri.EscapeDataString(character.Id)}");
         }
         catch (Exception exception)
         {

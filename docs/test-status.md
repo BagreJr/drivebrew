@@ -153,6 +153,10 @@ el workflow, las 103 pruebas, el manifiesto público, el package ID, la firma y
 el hash del asset de GitHub se verificaron. La hoja empaquetada conserva sus 3
 páginas, 334 campos AcroForm y 336 widgets. La prueba USB queda pendiente porque
 el teléfono no aparece conectado en ADB.
+El editor interno de Character Sheet 1.19 se verificó mediante build Android,
+105 pruebas y revisión visual/PDF. Funciona offline por personaje, cubre 210
+campos de texto y 122 casillas, y conserva los 334 campos y 336 widgets AcroForm.
+La prueba táctil USB queda pendiente si el teléfono no aparece conectado en ADB.
 
 ## Limitaciones del equipo
 

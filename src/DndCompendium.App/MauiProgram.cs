@@ -51,6 +51,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<SpellDetailViewModel>();
 		builder.Services.AddTransient<ExploitDetailViewModel>();
 		builder.Services.AddTransient<ResourceEditorViewModel>();
+		builder.Services.AddTransient<CharacterSheetViewModel>();
 
 		builder.Services.AddSingleton<LibraryPage>();
 		builder.Services.AddSingleton<SearchPage>();
@@ -68,6 +69,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<SpellDetailPage>();
 		builder.Services.AddTransient<ExploitDetailPage>();
 		builder.Services.AddTransient<ResourceEditorPage>();
+		builder.Services.AddTransient<CharacterSheetPage>();
 
 #if DEBUG
 		builder.Services.AddHybridWebViewDeveloperTools();

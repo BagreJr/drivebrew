@@ -36,7 +36,7 @@
                             <Label Grid.Row="1" Grid.ColumnSpan="2" FontSize="11" Text="{Binding SheetStatusText}" TextColor="{StaticResource TextMuted}" />
                             <FlexLayout Grid.Row="2" Grid.ColumnSpan="2" AlignItems="Center" Direction="Row" JustifyContent="End" Wrap="Wrap">
                                 <Button Margin="3" Command="{Binding BindingContext.SelectCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" IsEnabled="{Binding IsNotActive}" Style="{StaticResource SmallAccentButtonStyle}" Text="Usar" />
-                                <Button Margin="3" Command="{Binding BindingContext.OpenSheetCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallAccentButtonStyle}" Text="Completar PDF" />
+                                <Button Margin="3" Command="{Binding BindingContext.OpenSheetCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallAccentButtonStyle}" Text="Editar hoja" />
                                 <Button Margin="3" Command="{Binding BindingContext.ShareSheetCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Guardar copia" />
                                 <Button Margin="3" Clicked="OnImportSheetClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Importar PDF" />
                                 <Button Margin="3" Clicked="OnRenameClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Renombrar" />
