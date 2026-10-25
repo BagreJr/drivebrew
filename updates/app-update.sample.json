@@ -3,9 +3,9 @@
   "versionName": "1.20",
   "packageId": "com.march.dndcompendium",
   "apkUrl": "https://github.com/BagreJr/drivebrew/releases/download/v1.20/DndCompendium.apk",
-  "sha256": "REEMPLAZADO_AUTOMATICAMENTE_AL_PUBLICAR",
+  "sha256": "3177d8936c244c2e4650634a394b52a0929f32a1c27a0d777d2d8a993718efc3",
   "releaseNotes": "La Character Sheet ahora se muestra igual que el PDF original: tres páginas visuales editables directamente sobre cada casillero, con selector de página, zoom, guardado offline por personaje y exportación al PDF rellenable.",
-  "publishedAt": "2026-10-25T00:00:00Z",
+  "publishedAt": "2026-10-25T18:04:51.4462523Z",
   "minimumAndroidApi": 21,
   "channel": "stable",
   "isPrerelease": false

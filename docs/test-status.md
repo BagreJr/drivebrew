@@ -166,6 +166,10 @@ La Character Sheet visual 1.20 se verificó en sus tres páginas a tamaño móvi
 con 210 campos de texto y 122 casillas superpuestos sobre la plantilla original.
 La compilación Android y las 109 pruebas finalizaron sin errores. La prueba
 táctil USB queda pendiente porque el teléfono no aparece conectado en ADB.
+El APK 1.20/código 21 se publicó con SHA-256
+`3177D8936C244C2E4650634A394B52A0929F32A1C27A0D777D2D8A993718EFC3`;
+se verificaron el manifiesto, la versión, la firma y las tres páginas visuales
+incluidas en el paquete.
 
 ## Limitaciones del equipo
 
