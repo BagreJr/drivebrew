@@ -1,66 +1,28 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
-  <meta name="color-scheme" content="light" />
-  <title>Character Sheet editable</title>
-  <link rel="stylesheet" href="sheet/character-sheet.css" />
-  <script defer="defer" src="_framework/hybridwebview.js"></script>
-  <script defer="defer" src="sheet/layout.js"></script>
-  <script defer="defer" src="sheet/character-sheet-rules.js"></script>
-  <script defer="defer" src="sheet/character-sheet.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>Drivebrew Character</title>
+  <link rel="stylesheet" href="sheet3/tokens.css">
+  <link rel="stylesheet" href="sheet3/app.css">
+  <script defer src="sheet/character-sheet-rules.js"></script>
+  <script defer src="sheet3/state.js"></script>
+  <script defer src="sheet3/calculations.js"></script>
+  <script defer src="sheet3/components.js"></script>
+  <script defer src="sheet3/creator.js"></script>
+  <script defer src="sheet3/sections.js"></script>
+  <script defer src="sheet3/app.js"></script>
 </head>
 <body>
-  <header class="toolbar" aria-label="Controles de la hoja">
-    <nav class="modeTabs" aria-label="Modo de la hoja">
-      <button class="modeButton active" data-mode="edit" type="button">Editar</button>
-      <button class="modeButton" data-mode="play" type="button">Jugar</button>
-      <button class="modeButton" data-mode="pdf" type="button">PDF</button>
-    </nav>
-    <nav class="pages pdfOnly" aria-label="Páginas" hidden>
-      <button class="pageButton active" data-page="1" type="button">1</button>
-      <button class="pageButton" data-page="2" type="button">2</button>
-      <button class="pageButton" data-page="3" type="button">3</button>
-    </nav>
-    <div class="zoom pdfOnly" aria-label="Zoom" hidden>
-      <button id="zoom-out" type="button" aria-label="Alejar">−</button>
-      <button id="zoom-fit" type="button">Ajustar</button>
-      <button id="zoom-in" type="button" aria-label="Acercar">+</button>
-    </div>
-  </header>
-  <nav id="section-tabs" class="sectionTabs" aria-label="Secciones de edición"></nav>
-  <main id="edit-stage" class="adaptiveStage" aria-live="polite">
-    <p class="status">Preparando el editor…</p>
-  </main>
-  <main id="play-stage" class="adaptiveStage" aria-live="polite" hidden></main>
-  <main id="sheet-stage" class="stage" aria-live="polite" hidden>
-    <p id="sheet-status" class="status">Preparando la hoja…</p>
-  </main>
-
-  <div id="edit-backdrop" class="editBackdrop" hidden>
-    <section class="editPanel" role="dialog" aria-modal="true" aria-labelledby="edit-title">
-      <header class="editHeader">
-        <div>
-          <h2 id="edit-title">Editar campo</h2>
-          <p id="edit-help"></p>
-        </div>
-        <button id="auto-toggle" class="autoToggle active" type="button">Auto: sí</button>
-      </header>
-      <div id="quick-values" class="quickValues" hidden></div>
-      <div class="editControl">
-        <button id="value-down" class="stepButton" type="button" aria-label="Restar uno">−</button>
-        <input id="field-input" autocomplete="off" />
-        <textarea id="field-textarea" autocomplete="off"></textarea>
-        <button id="value-up" class="stepButton" type="button" aria-label="Sumar uno">+</button>
-      </div>
-      <footer class="editActions">
-        <button id="edit-cancel" type="button">Cancelar</button>
-        <button id="edit-clear" type="button">Limpiar</button>
-        <button id="edit-done" class="primary" type="button">Listo</button>
-      </footer>
-    </section>
+  <div id="app" class="appShell" aria-live="polite">
+    <main class="loadingScreen">
+      <div class="sigil">D20</div>
+      <strong>Preparando tu personaje</strong>
+      <span>Todo se carga desde el almacenamiento offline.</span>
+    </main>
   </div>
+  <div id="toast-region" class="toastRegion" aria-live="assertive"></div>
 </body>
 </html>

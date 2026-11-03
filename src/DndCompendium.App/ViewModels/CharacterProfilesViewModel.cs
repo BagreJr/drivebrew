@@ -67,6 +67,8 @@ public partial class CharacterProfilesViewModel(
             await characterSheets.EnsureCreatedAsync(created);
             NewCharacterName = string.Empty;
             await ReloadAsync();
+            await Shell.Current.GoToAsync(
+                $"{AppRoutes.CharacterSheet}?characterId={Uri.EscapeDataString(created.Id)}&mode=create");
         }
         catch (Exception exception)
         {
@@ -112,6 +114,21 @@ public partial class CharacterProfilesViewModel(
             ErrorMessage = null;
             await store.DeleteAsync(character.Id);
             await characterSheets.DeleteAsync(character.Id);
+            await ReloadAsync();
+        }
+        catch (Exception exception)
+        {
+            ErrorMessage = exception.Message;
+        }
+    }
+
+    public async Task DuplicateAsync(CharacterProfileItemViewModel character, string name)
+    {
+        try
+        {
+            ErrorMessage = null;
+            var duplicate = await store.DuplicateAsync(character.Id, name);
+            await characterSheets.DuplicateAsync(character.Profile, duplicate);
             await ReloadAsync();
         }
         catch (Exception exception)
@@ -175,10 +192,12 @@ public partial class CharacterProfilesViewModel(
         foreach (var character in characters)
         {
             await characterSheets.EnsureCreatedAsync(character);
+            var sheet = await characterSheets.LoadDataAsync(character);
             Characters.Add(new CharacterProfileItemViewModel(
                 character,
                 character.Id == active.Id,
-                characters.Count > 1));
+                characters.Count > 1,
+                sheet));
         }
     }
 }
@@ -186,14 +205,38 @@ public partial class CharacterProfilesViewModel(
 public sealed class CharacterProfileItemViewModel(
     CharacterProfile profile,
     bool isActive,
-    bool canDelete)
+    bool canDelete,
+    CharacterSheetData sheet)
 {
     public CharacterProfile Profile { get; } = profile;
     public string Id { get; } = profile.Id;
     public string Name { get; } = profile.Name;
+    public string Initial => string.IsNullOrWhiteSpace(Name) ? "?" : Name[..1].ToUpperInvariant();
     public bool IsActive { get; } = isActive;
     public bool IsNotActive => !IsActive;
     public bool CanDelete { get; } = canDelete;
     public string StatusText => IsActive ? "ACTIVO" : string.Empty;
-    public string SheetStatusText => "Hoja PDF rellenable · 3 páginas · guardada en la app";
+    public string RaceText => sheet.TextFields.GetValueOrDefault("Race ", "Sin raza");
+    public string ClassText => sheet.TextFields.GetValueOrDefault("ClassLevel", "Sin clase");
+    public string SubclassText => sheet.TextFields.GetValueOrDefault("Digital.Subclass", string.Empty);
+    public string HitPointsText => $"HP {sheet.TextFields.GetValueOrDefault("HPCurrent", "—")} / {sheet.TextFields.GetValueOrDefault("HPMax", "—")}";
+    public string SheetStatusText => string.Join(" · ", new[] { RaceText, ClassText, SubclassText }.Where(value => !string.IsNullOrWhiteSpace(value)));
+    public bool HasPortrait => !string.IsNullOrWhiteSpace(sheet.PortraitDataUrl);
+    public ImageSource? PortraitSource => DecodePortrait(sheet.PortraitDataUrl);
+
+    private static ImageSource? DecodePortrait(string? dataUrl)
+    {
+        if (string.IsNullOrWhiteSpace(dataUrl)) return null;
+        var comma = dataUrl.IndexOf(',');
+        if (comma < 0) return null;
+        try
+        {
+            var bytes = Convert.FromBase64String(dataUrl[(comma + 1)..]);
+            return ImageSource.FromStream(() => new MemoryStream(bytes, writable: false));
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
+    }
 }

@@ -18,6 +18,7 @@ public interface ICharacterSheetService
     Task EnsureCreatedAsync(CharacterProfile character, CancellationToken cancellationToken = default);
     Task<CharacterSheetData> LoadDataAsync(CharacterProfile character, CancellationToken cancellationToken = default);
     Task SaveDataAsync(CharacterProfile character, CharacterSheetData data, CancellationToken cancellationToken = default);
+    Task DuplicateAsync(CharacterProfile source, CharacterProfile target, CancellationToken cancellationToken = default);
     Task UpdateCharacterNameAsync(CharacterProfile character, CancellationToken cancellationToken = default);
     Task OpenAsync(CharacterProfile character, CancellationToken cancellationToken = default);
     Task<bool> PickAndImportAsync(CharacterProfile character, CancellationToken cancellationToken = default);
@@ -52,6 +53,7 @@ public sealed class CharacterSheetService(
             CharacterSheetData data;
             if (File.Exists(dataPath))
             {
+                await BackupBeforeV4MigrationAsync(character.Id, dataPath, pdfPath, cancellationToken).ConfigureAwait(false);
                 data = await ReadDataAsync(dataPath, cancellationToken).ConfigureAwait(false);
             }
             else if (File.Exists(pdfPath))
@@ -61,13 +63,14 @@ public sealed class CharacterSheetService(
             }
             else
             {
-                data = new CharacterSheetData();
+                data = new CharacterSheetData { IsCreationDraft = true, CreatorStep = 1 };
             }
 
             var changed = EnsureCharacterName(data, character.Name);
             // Writing the normalized JSON also performs additive schema migration.
             // The original values and PDF fields are never removed by this step.
             await WriteDataAtomicallyAsync(dataPath, data, cancellationToken).ConfigureAwait(false);
+            MarkV4MigrationComplete(character.Id);
             if (!File.Exists(pdfPath) || changed)
                 await GeneratePdfAtomicallyAsync(pdfPath, data, cancellationToken).ConfigureAwait(false);
         }
@@ -120,6 +123,18 @@ public sealed class CharacterSheetService(
         await SaveDataAsync(character, data, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task DuplicateAsync(
+        CharacterProfile source,
+        CharacterProfile target,
+        CancellationToken cancellationToken = default)
+    {
+        var data = await LoadDataAsync(source, cancellationToken).ConfigureAwait(false);
+        data.TextFields["CharacterName"] = target.Name;
+        data.TextFields["CharacterName 2"] = target.Name;
+        data.IsCreationDraft = false;
+        await SaveDataAsync(target, data, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task OpenAsync(CharacterProfile character, CancellationToken cancellationToken = default)
     {
         await EnsureCreatedAsync(character, cancellationToken);
@@ -151,6 +166,7 @@ public sealed class CharacterSheetService(
         {
             Directory.CreateDirectory(_sheetDirectory);
             var pdfPath = SheetPath(character.Id);
+            BackupCurrentSheet(character.Id, "before-import");
             await WritePdfAtomicallyAsync(pdfPath, input, cancellationToken).ConfigureAwait(false);
             await using var imported = File.OpenRead(pdfPath);
             var data = await pdfService.ReadAsync(imported, cancellationToken).ConfigureAwait(false);
@@ -313,6 +329,9 @@ public sealed class CharacterSheetService(
         {
             SchemaVersion = CharacterSheetData.CurrentSchemaVersion,
             RuleSet = data.RuleSet is "2024" or "Homebrew" ? data.RuleSet : "2014",
+            IsCreationDraft = data.IsCreationDraft,
+            CreatorStep = Math.Clamp(data.CreatorStep, 1, 8),
+            PortraitDataUrl = IsSafePortrait(data.PortraitDataUrl) ? data.PortraitDataUrl : null,
             TextFields = textFields,
             CheckedFields = checkedFields,
             AbilityBaseScores = abilityBases,
@@ -353,6 +372,27 @@ public sealed class CharacterSheetService(
                 .GroupBy(item => item.Id, StringComparer.Ordinal)
                 .Select(group => group.First())
                 .ToList(),
+            ClassLevels = (data.ClassLevels ?? [])
+                .Where(item => !string.IsNullOrWhiteSpace(item.Id)
+                    && !string.IsNullOrWhiteSpace(item.Name) && item.Level is >= 1 and <= 20)
+                .GroupBy(item => item.Id, StringComparer.Ordinal)
+                .Select(group => group.First())
+                .ToList(),
+            Conditions = (data.Conditions ?? [])
+                .Where(item => !string.IsNullOrWhiteSpace(item.Id) && !string.IsNullOrWhiteSpace(item.Name))
+                .GroupBy(item => item.Id, StringComparer.Ordinal)
+                .Select(group => group.First())
+                .ToList(),
+            Attacks = (data.Attacks ?? [])
+                .Where(item => !string.IsNullOrWhiteSpace(item.Id) && !string.IsNullOrWhiteSpace(item.Name))
+                .GroupBy(item => item.Id, StringComparer.Ordinal)
+                .Select(group => group.First())
+                .ToList(),
+            Inventory = (data.Inventory ?? [])
+                .Where(item => !string.IsNullOrWhiteSpace(item.Id) && !string.IsNullOrWhiteSpace(item.Name))
+                .GroupBy(item => item.Id, StringComparer.Ordinal)
+                .Select(group => group.First())
+                .ToList(),
             GeneratedTextFields = (data.GeneratedTextFields ?? [])
                 .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal),
@@ -361,9 +401,101 @@ public sealed class CharacterSheetService(
                 .ToHashSet(StringComparer.Ordinal),
             UpdatedAt = data.UpdatedAt
         };
+        EnsureClassProgression(normalized);
         CharacterSheetEffectEngine.Rebuild(normalized);
         return normalized;
     }
+
+    private static void EnsureClassProgression(CharacterSheetData data)
+    {
+        if (data.ClassLevels.Count > 0) return;
+        var selectedClass = data.Selections.LastOrDefault(item => item.IsActive
+            && item.Kind == nameof(SearchContentKind.Class));
+        if (selectedClass is null) return;
+        var level = selectedClass.Level ?? 1;
+        if (data.TextFields.TryGetValue("ClassLevel", out var classText))
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(classText, @"\b(?:[1-9]|1\d|20)\b");
+            if (match.Success && int.TryParse(match.Value, out var parsed)) level = parsed;
+        }
+        var subclass = data.Selections.LastOrDefault(item => item.IsActive && item.Kind == nameof(SearchContentKind.Subclass));
+        data.ClassLevels.Add(new CharacterClassLevel
+        {
+            Name = selectedClass.Name,
+            SelectionId = selectedClass.Id,
+            SubclassName = subclass?.Name,
+            SubclassSelectionId = subclass?.Id,
+            Level = Math.Clamp(level, 1, 20),
+            IsPrimary = true
+        });
+    }
+
+    private async Task BackupBeforeV4MigrationAsync(
+        string characterId,
+        string dataPath,
+        string pdfPath,
+        CancellationToken cancellationToken)
+    {
+        var marker = MigrationMarkerPath(characterId);
+        if (File.Exists(marker)) return;
+        var schemaVersion = await ReadStoredSchemaVersionAsync(dataPath, cancellationToken).ConfigureAwait(false);
+        if (schemaVersion >= CharacterSheetData.CurrentSchemaVersion)
+        {
+            MarkV4MigrationComplete(characterId);
+            return;
+        }
+
+        var backupDirectory = Path.Combine(_sheetDirectory, "backups", SafeCharacterId(characterId));
+        Directory.CreateDirectory(backupDirectory);
+        var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture);
+        File.Copy(dataPath, Path.Combine(backupDirectory, $"sheet-v{schemaVersion}-{stamp}.json"), overwrite: false);
+        if (File.Exists(pdfPath))
+            File.Copy(pdfPath, Path.Combine(backupDirectory, $"sheet-v{schemaVersion}-{stamp}.pdf"), overwrite: false);
+    }
+
+    private static async Task<int> ReadStoredSchemaVersionAsync(string path, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var input = File.OpenRead(path);
+            using var document = await JsonDocument.ParseAsync(input, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return document.RootElement.TryGetProperty("SchemaVersion", out var version)
+                && version.TryGetInt32(out var parsed) ? parsed : 1;
+        }
+        catch (JsonException)
+        {
+            return 1;
+        }
+    }
+
+    private void MarkV4MigrationComplete(string characterId)
+    {
+        var marker = MigrationMarkerPath(characterId);
+        Directory.CreateDirectory(Path.GetDirectoryName(marker)!);
+        if (!File.Exists(marker)) File.WriteAllText(marker, CharacterSheetData.CurrentSchemaVersion.ToString());
+    }
+
+    private void BackupCurrentSheet(string characterId, string reason)
+    {
+        var dataPath = DataPath(characterId);
+        var pdfPath = SheetPath(characterId);
+        if (!File.Exists(dataPath) && !File.Exists(pdfPath)) return;
+        var directory = Path.Combine(_sheetDirectory, "backups", SafeCharacterId(characterId), reason);
+        Directory.CreateDirectory(directory);
+        var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", System.Globalization.CultureInfo.InvariantCulture);
+        if (File.Exists(dataPath)) File.Copy(dataPath, Path.Combine(directory, $"sheet-{stamp}.json"), overwrite: false);
+        if (File.Exists(pdfPath)) File.Copy(pdfPath, Path.Combine(directory, $"sheet-{stamp}.pdf"), overwrite: false);
+    }
+
+    private string MigrationMarkerPath(string characterId)
+        => Path.Combine(_sheetDirectory, "backups", SafeCharacterId(characterId), "v4.complete");
+
+    private static bool IsSafePortrait(string? value)
+        => string.IsNullOrWhiteSpace(value)
+            || value.Length <= 2_800_000
+            && (value.StartsWith("data:image/jpeg;base64,", StringComparison.Ordinal)
+                || value.StartsWith("data:image/png;base64,", StringComparison.Ordinal)
+                || value.StartsWith("data:image/webp;base64,", StringComparison.Ordinal));
 
     private static readonly string[] AbilityNames = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
 

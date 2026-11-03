@@ -1,0 +1,64 @@
+(() => {
+  'use strict';
+  const api = globalThis.DrivebrewSheet3;
+  const h = (...args) => api.h(...args);
+  const steps = ['Identidad','Clase','Características','Background','Competencias','Equipamiento','Spells y Features','Confirmación'];
+  let abilityMethod = 'manual';
+
+  const selectionValue = item => ({
+    id:item.id??item.Id,name:item.name??item.Name,kind:item.kind??item.Kind,description:item.description??item.Description,
+    snippet:item.snippet??item.Snippet,sourceKey:item.sourceKey??item.SourceKey,documentId:item.documentId??item.DocumentId,
+    target:item.target??item.Target,parentClass:item.parentClass??item.ParentClass,parent:item.parent??item.Parent
+  });
+  function searchBox(placeholder, type, filter) {
+    const input = h('input',{type:'search',placeholder});
+    const button = api.button('Buscar',()=>{const query=input.value.trim();if(query)api.send({type,query});},'gold');
+    input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();button.click();}});
+    const results = h('div',{class:'searchResults'});
+    const source = type==='identitySearch'?api.state.identityResults:type==='featureSearch'?api.state.featureResults:api.state.spellResults;
+    for (const raw of source.filter(filter||(()=>true))) {
+      const result=selectionValue(raw);const article=h('article',{class:'result'},h('h4',{text:result.name}),h('small',{text:[result.kind,result.parentClass||result.parent].filter(Boolean).join(' · ')}),h('p',{text:result.description||result.snippet||''}));
+      const actions=h('div',{class:'buttonRow'});
+      actions.append(api.button('Elegir',()=>api.send({type:'selectionApply',...result}),'primary'));
+      if(result.kind==='Race')actions.append(api.button('Usar como subraza',()=>api.send({type:'selectionApply',...result,kind:'Subrace'}),'ghost'));
+      if(result.documentId)actions.append(api.button('Leer',()=>api.openReference(result),'ghost'));
+      article.append(actions);results.append(article);
+    }
+    return h('div',{},h('div',{class:'searchRow'},input,button),results);
+  }
+  function portraitControl() {
+    const input=h('input',{type:'file',accept:'image/png,image/jpeg,image/webp'});
+    input.addEventListener('change',async()=>{try{const dataUrl=await api.readPortrait(input.files?.[0]);api.state.payload.portraitDataUrl=dataUrl;api.send({type:'portrait',dataUrl});api.scheduleSave(100);api.notify();}catch(error){api.toast(error.message);}});
+    return h('div',{class:'field'},h('label',{text:'Retrato opcional'}),input);
+  }
+  function identityStep() {
+    const values=api.state.text;return h('div',{},
+      api.card('Quién es tu personaje',h('div',{class:'fieldGrid'},api.field('Nombre','CharacterName',values.CharacterName,{live:true}),portraitControl(),api.field('Descripción inicial','Digital.Notes',values['Digital.Notes'],{multiline:true,wide:true})),true),
+      api.card('Raza y subraza',searchBox('Buscar raza del Compendium','identitySearch',item=>(item.kind??item.Kind)==='Race'))
+    );
+  }
+  function classStep() {
+    const classSelections=(api.state.payload.selections||[]).filter(item=>(item.kind??item.Kind)==='Class'&&(item.isActive??item.IsActive)!==false);
+    return h('div',{},api.card('Clase principal',h('div',{},
+      classSelections.length?h('div',{class:'pillRow'},...classSelections.map(item=>api.pill(item.name??item.Name,true))):api.empty('Elegí una clase desde tu compendio.'),
+      searchBox('Buscar clase o subclase','identitySearch',item=>['Class','Subclass'].includes(item.kind??item.Kind)))),
+      api.card('Nivel inicial',api.field('Nivel','ClassLevel',api.state.text.ClassLevel||'',{placeholder:'Ej: Wizard 1'})));
+  }
+  function setArray(array){['STR','DEX','CON','INT','WIS','CHA'].forEach((ability,index)=>api.setBase(ability,array[index]));api.notify();}
+  function rollScores(){const roll=()=>Array.from({length:4},()=>1+Math.floor(Math.random()*6)).sort((a,b)=>a-b).slice(1).reduce((a,b)=>a+b,0);setArray(Array.from({length:6},roll));}
+  function abilitiesStep(){
+    const tabs=h('div',{class:'methodTabs'});for(const [id,label] of [['manual','Manual'],['standard','Standard Array'],['point','Point Buy'],['dice','Tiradas']])tabs.append(h('button',{type:'button',class:abilityMethod===id?'active':'',text:label,onclick:()=>{abilityMethod=id;if(id==='standard')setArray([15,14,13,12,10,8]);if(id==='point')setArray([8,8,8,8,8,8]);if(id==='dice')rollScores();api.notify();}}));
+    const grid=h('div',{class:'abilityGrid'});for(const ability of ['STR','DEX','CON','INT','WIS','CHA']){const value=api.state.payload.abilityBaseScores?.[ability]??api.state.text[ability]??10;const input=h('input',{type:'number',min:abilityMethod==='point'?8:1,max:abilityMethod==='point'?15:30,value});input.addEventListener('change',()=>api.setBase(ability,Math.max(Number(input.min),Math.min(Number(input.max),Number(input.value)||10))));grid.append(h('div',{class:'ability'},h('label',{text:ability}),input));}
+    const scores=Object.values(api.state.payload.abilityBaseScores||{}).map(Number);const pointCost=score=>score<=13?score-8:score===14?7:9;const spent=scores.reduce((sum,score)=>sum+pointCost(score),0);
+    return h('div',{},api.card('Método de características',h('div',{},tabs,abilityMethod==='point'?h('p',{class:'muted',text:`Puntos usados: ${spent} / 27`}):null)),api.card('Puntuaciones base',grid,true));
+  }
+  function backgroundStep(){return h('div',{},api.card('Background',searchBox('Buscar background','identitySearch',item=>(item.kind??item.Kind)==='Background')),api.card('Personalidad inicial',h('div',{class:'fieldGrid'},api.field('Rasgos','PersonalityTraits ',api.state.text['PersonalityTraits '],{multiline:true}),api.field('Ideales','Ideals',api.state.text.Ideals,{multiline:true}),api.field('Vínculos','Bonds',api.state.text.Bonds,{multiline:true}),api.field('Defectos','Flaws',api.state.text.Flaws,{multiline:true}))));}
+  function proficienciesStep(){const rules=globalThis.DRIVEBREW_CHARACTER_RULES;const list=h('div',{class:'list'});for(const [name,ability] of [...rules.SAVES,...rules.SKILLS]){const rank=Number(api.state.payload.proficiencyRanks?.[name]||0);const row=h('article',{class:'listItem'},h('div',{},h('strong',{text:name.trim()}),h('span',{text:ability})));const select=h('select');for(const [value,label] of [[0,'Sin competencia'],[1,'Competente'],[2,'Expertise']])select.append(h('option',{value,text:label}));select.value=String(rank);select.addEventListener('change',()=>api.setRank(name,Number(select.value)));row.append(select);list.append(row);}return h('div',{},api.card('Saving Throws y Skills',list),api.card('Idiomas, tools y entrenamiento',h('div',{class:'fieldGrid'},api.field('Idiomas y herramientas','ProficienciesLang',api.state.text.ProficienciesLang,{multiline:true,wide:true}),api.field('Armas y armaduras','Digital.Proficiencies',api.state.text['Digital.Proficiencies'],{multiline:true,wide:true}))));}
+  function equipmentStep(){const items=api.state.payload.inventory||[];const list=h('div',{class:'list'});for(const item of items)list.append(api.listItem(item.name??item.Name,`${item.kind??item.Kind} · ×${item.quantity??item.Quantity??1}`,'Quitar',()=>api.send({type:'inventoryDelete',id:item.id??item.Id})));const custom=api.button('Agregar objeto personalizado',()=>{const body=h('div',{class:'fieldGrid'});const name=api.field('Nombre','', '',{});const qty=api.field('Cantidad','',1,{type:'number'});const add=api.button('Agregar',()=>{const inputs=body.querySelectorAll('input');api.send({type:'inventoryUpsert',name:inputs[0].value,kind:'Custom',quantity:Number(inputs[1].value)||1,equipped:false});body.closest('.modalBackdrop')?.remove();},'primary');body.append(add);api.modal('Nuevo objeto',body);},'ghost');return h('div',{},api.card('Equipo elegido',h('div',{},items.length?list:api.empty('Todavía no agregaste equipo.'),custom)),api.card('Buscar en el Compendium',searchBox('Arma, armadura o equipo','featureSearch',item=>(item.kind??item.Kind)==='Equipment')));}
+  function spellsStep(){const prepared=api.state.payload.preparedSpells||[],known=api.state.payload.knownSpells||[];const selected=h('div',{class:'list'});for(const spell of [...known,...prepared.filter(p=>!known.some(k=>k.id===p.id))])selected.append(api.listItem(spell.name,`${spell.level===0?'Cantrip':`Nivel ${spell.level}`} · ${prepared.some(p=>p.id===spell.id)?'Preparado':'Conocido'}`,'Ver',()=>api.send({type:'openSpell',id:spell.id})));return h('div',{},api.card('Spells seleccionados',selected.childElementCount?selected:api.empty('No hay spells seleccionados.')),api.card('Buscar spells offline',spellSearch()),api.card('Features vinculadas',featureSummary()));}
+  function spellSearch(){const input=h('input',{type:'search',placeholder:'Nombre o efecto'});const button=api.button('Buscar',()=>api.send({type:'spellSearch',query:input.value.trim(),level:null}),'gold');const results=h('div',{class:'searchResults'});for(const spell of api.state.spellResults){const row=h('article',{class:'result'},h('h4',{text:spell.name}),h('small',{text:`Nivel ${spell.level} · ${spell.school}`}),h('p',{text:spell.effect||''}));row.append(h('div',{class:'buttonRow'},api.button('Conocer',()=>api.send({type:'setKnownSpell',id:spell.id,known:true}),'primary'),api.button('Preparar',()=>api.send({type:'setPreparedSpell',id:spell.id,prepared:true}),'ghost')));results.append(row);}return h('div',{},h('div',{class:'searchRow'},input,button),results);}
+  function featureSummary(){const features=api.state.payload.features||[];const list=h('div',{class:'list'});for(const item of features)list.append(api.listItem(item.name??item.Name,[item.kind??item.Kind,item.level??item.Level].filter(Boolean).join(' · '),'Leer',()=>api.openReference({documentId:item.documentId??item.DocumentId,target:item.target??item.Target})));return features.length?list:api.empty('Las features de clase y raza aparecerán aquí.');}
+  function confirmationStep(){const values=api.calculated();const abilities=h('div',{class:'abilityGrid'});for(const ability of ['STR','DEX','CON','INT','WIS','CHA'])abilities.append(h('div',{class:'ability'},h('label',{text:ability}),h('strong',{text:values[ability]||'10'}),h('span',{class:'mod',text:values[globalThis.DRIVEBREW_CHARACTER_RULES.ABILITIES[ability].modifier]||'+0'})));return h('div',{},api.card(null,h('div',{class:'hero'},h('span',{class:'eyebrow',text:'LISTO PARA LA AVENTURA'}),h('h2',{class:'heroName',text:api.state.text.CharacterName||'Sin nombre'}),h('p',{class:'heroMeta',text:[api.state.text['Race '],api.state.text.ClassLevel,api.state.text['Digital.Subclass']].filter(Boolean).join(' · ')})),true),api.card('Características',abilities),api.card('Revisión final',h('p',{class:'muted',text:'Podrás cambiar cualquier dato después. Las selecciones del Compendium y los valores manuales se conservan por separado.'})) );}
+  const renderers=[identityStep,classStep,abilitiesStep,backgroundStep,proficienciesStep,equipmentStep,spellsStep,confirmationStep];
+  api.renderCreator=()=>{const step=Math.max(1,Math.min(8,Number(api.state.payload.creatorStep)||1));const wrapper=h('main',{class:'content'},h('section',{class:'progressShell'},h('div',{class:'progressTop'},h('strong',{text:`Paso ${step} de 8`}),h('span',{text:steps[step-1]})),h('div',{class:'progress'},h('span',{style:`width:${step/8*100}%`}))),api.sectionHeader(steps[step-1],step===8?'Revisá todo antes de guardar el personaje.':'Tus cambios se guardan como borrador sin conexión.'),renderers[step-1]());const actions=h('div',{class:'wizardActions'},api.button('Anterior',()=>{if(step>1){api.state.payload.creatorStep=step-1;api.send({type:'creatorStep',step:step-1});api.notify();}},'ghost'),api.button(step===8?'Crear personaje':'Continuar',()=>{if(step===1&&!api.state.text.CharacterName?.trim()){api.toast('Escribí el nombre del personaje.');return;}if(step===8){api.send({type:'completeCreation'});return;}api.state.payload.creatorStep=step+1;api.send({type:'creatorStep',step:step+1});api.scheduleSave(100);api.notify();},step===8?'gold':'primary'));wrapper.append(actions);return wrapper;};
+})();

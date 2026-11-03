@@ -12,6 +12,11 @@ public interface ICharacterProfileStore
 
     Task<CharacterProfile> CreateAsync(string name, CancellationToken cancellationToken = default);
 
+    Task<CharacterProfile> DuplicateAsync(
+        string characterId,
+        string name,
+        CancellationToken cancellationToken = default);
+
     Task RenameAsync(string characterId, string name, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string characterId, CancellationToken cancellationToken = default);

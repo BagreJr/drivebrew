@@ -89,6 +89,50 @@ public sealed class JsonCharacterProfileStore : ICharacterProfileStore
         return ToModel(created);
     }
 
+    public async Task<CharacterProfile> DuplicateAsync(
+        string characterId,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(characterId);
+        var normalizedName = NormalizeName(name);
+        CharacterData created;
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var state = await EnsureStateAsync(cancellationToken).ConfigureAwait(false);
+            EnsureUniqueName(state, normalizedName);
+            var source = FindCharacter(state, characterId);
+            var saved = GetSavedData(state, source.Id);
+            created = new CharacterData
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                Name = normalizedName,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            state.Characters.Add(created);
+            state.Saved.Add(new CharacterSavedData
+            {
+                CharacterId = created.Id,
+                FavoriteSpellIds = [.. saved.FavoriteSpellIds],
+                PreparedSpellIds = [.. saved.PreparedSpellIds],
+                FavoriteExploitIds = [.. saved.FavoriteExploitIds],
+                PreparedExploitIds = [.. saved.PreparedExploitIds],
+                PreparedItemOrder = [.. saved.PreparedItemOrder],
+                FavoriteItemOrder = [.. saved.FavoriteItemOrder],
+                Resources = [.. saved.Resources]
+            });
+            state.ActiveCharacterId = created.Id;
+            await SaveStateAsync(state, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+        ActiveCharacterChanged?.Invoke(this, EventArgs.Empty);
+        return ToModel(created);
+    }
+
     public async Task RenameAsync(
         string characterId,
         string name,

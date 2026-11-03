@@ -94,6 +94,9 @@ public partial class CharacterSheetViewModel(
             payload = new
             {
                 characterName = CharacterName,
+                portraitDataUrl = _data.PortraitDataUrl,
+                isCreationDraft = _data.IsCreationDraft,
+                creatorStep = _data.CreatorStep,
                 textFields = _data.TextFields,
                 checkedFields = _data.CheckedFields,
                 fieldLabels = FieldLabels,
@@ -108,6 +111,10 @@ public partial class CharacterSheetViewModel(
                 features = _data.Features,
                 selections = _data.Selections.Where(item => item.IsActive),
                 effects = _data.Effects,
+                classLevels = _data.ClassLevels,
+                conditions = _data.Conditions,
+                attacks = _data.Attacks,
+                inventory = _data.Inventory,
                 knownSpellIds = _data.KnownSpellIds,
                 preparedSpells = _preparedSpells.Select(spell => new
                 {
@@ -231,6 +238,112 @@ public partial class CharacterSheetViewModel(
 
         HasUnsavedChanges = true;
         StatusText = "Cambios sin guardar";
+    }
+
+    public void SetPortrait(string? dataUrl)
+    {
+        if (_character is null) return;
+        if (!string.IsNullOrWhiteSpace(dataUrl)
+            && (dataUrl.Length > 2_800_000
+                || !(dataUrl.StartsWith("data:image/jpeg;base64,", StringComparison.Ordinal)
+                    || dataUrl.StartsWith("data:image/png;base64,", StringComparison.Ordinal)
+                    || dataUrl.StartsWith("data:image/webp;base64,", StringComparison.Ordinal))))
+            throw new InvalidDataException("El retrato debe ser JPG, PNG o WebP y pesar menos de 2 MB.");
+        _data.PortraitDataUrl = string.IsNullOrWhiteSpace(dataUrl) ? null : dataUrl;
+        MarkChanged();
+    }
+
+    public void SetCreatorStep(int step)
+    {
+        if (_character is null || !_data.IsCreationDraft) return;
+        _data.CreatorStep = Math.Clamp(step, 1, 8);
+        MarkChanged();
+    }
+
+    public async Task CompleteCreationAsync()
+    {
+        if (_character is null) return;
+        var name = _data.TextFields.GetValueOrDefault("CharacterName")?.Trim();
+        if (string.IsNullOrWhiteSpace(name)) throw new InvalidOperationException("El personaje necesita un nombre.");
+        if (!string.Equals(name, _character.Name, StringComparison.CurrentCulture))
+        {
+            await profiles.RenameAsync(_character.Id, name);
+            _character = _character with { Name = name };
+            CharacterName = name;
+        }
+        _data.IsCreationDraft = false;
+        _data.CreatorStep = 8;
+        MarkChanged();
+    }
+
+    public void UpsertCondition(string? id, string name, string? description, bool isActive)
+    {
+        if (_character is null || string.IsNullOrWhiteSpace(name)) return;
+        var safeId = string.IsNullOrWhiteSpace(id) ? Guid.NewGuid().ToString("N") : id.Trim();
+        var replacement = new CharacterCondition
+        {
+            Id = safeId, Name = name.Trim(), Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
+            Source = "Manual", IsActive = isActive
+        };
+        var index = _data.Conditions.FindIndex(item => item.Id == safeId);
+        if (index >= 0) _data.Conditions[index] = replacement;
+        else _data.Conditions.Add(replacement);
+        MarkChanged();
+    }
+
+    public void RemoveCondition(string id)
+    {
+        if (_data.Conditions.RemoveAll(item => item.Id == id) > 0) MarkChanged();
+    }
+
+    public void UpsertAttack(string? id, string name, string attackBonus, string damage, string? notes, bool equipped)
+    {
+        if (_character is null || string.IsNullOrWhiteSpace(name)) return;
+        var safeId = string.IsNullOrWhiteSpace(id) ? Guid.NewGuid().ToString("N") : id.Trim();
+        var replacement = new CharacterAttack
+        {
+            Id = safeId, Name = name.Trim(), AttackBonus = attackBonus.Trim(), Damage = damage.Trim(),
+            Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim(), IsEquipped = equipped
+        };
+        var index = _data.Attacks.FindIndex(item => item.Id == safeId);
+        if (index >= 0) _data.Attacks[index] = replacement;
+        else _data.Attacks.Add(replacement);
+        ProjectAttacksToPdf();
+        MarkChanged();
+    }
+
+    public void RemoveAttack(string id)
+    {
+        if (_data.Attacks.RemoveAll(item => item.Id == id) == 0) return;
+        ProjectAttacksToPdf();
+        MarkChanged();
+    }
+
+    public void UpsertInventoryItem(
+        string? id, string name, string kind, int quantity, string? description, bool equipped)
+    {
+        if (_character is null || string.IsNullOrWhiteSpace(name)) return;
+        var safeId = string.IsNullOrWhiteSpace(id) ? Guid.NewGuid().ToString("N") : id.Trim();
+        var existing = _data.Inventory.FirstOrDefault(item => item.Id == safeId);
+        var replacement = new CharacterInventoryItem
+        {
+            Id = safeId, Name = name.Trim(), Kind = string.IsNullOrWhiteSpace(kind) ? "Equipment" : kind.Trim(),
+            Quantity = Math.Clamp(quantity, 1, 999), Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
+            ReferenceId = existing?.ReferenceId, DocumentId = existing?.DocumentId, Target = existing?.Target,
+            IsEquipped = equipped
+        };
+        var index = _data.Inventory.FindIndex(item => item.Id == safeId);
+        if (index >= 0) _data.Inventory[index] = replacement;
+        else _data.Inventory.Add(replacement);
+        ProjectInventoryToPdf();
+        MarkChanged();
+    }
+
+    public void RemoveInventoryItem(string id)
+    {
+        if (_data.Inventory.RemoveAll(item => item.Id == id) == 0) return;
+        ProjectInventoryToPdf();
+        MarkChanged();
     }
 
     public void UpsertModifier(
@@ -392,6 +505,53 @@ public partial class CharacterSheetViewModel(
         return JsonSerializer.Serialize(new { type = "identityResults", results });
     }
 
+    public async Task<string> CreateLevelUpPreviewPayloadJsonAsync(string classLevelId)
+    {
+        var progression = _data.ClassLevels.FirstOrDefault(item =>
+            string.Equals(item.Id, classLevelId, StringComparison.Ordinal));
+        if (progression is null || progression.Level >= 20)
+            return JsonSerializer.Serialize(new { type = "levelUpPreview", available = false });
+        var selectedClass = _data.Selections.FirstOrDefault(item => item.IsActive
+            && string.Equals(item.Id, progression.SelectionId, StringComparison.Ordinal));
+        if (selectedClass is null)
+            return JsonSerializer.Serialize(new { type = "levelUpPreview", available = false });
+
+        var nextLevel = progression.Level + 1;
+        var candidates = (await search.SearchAsync(selectedClass.Name, limit: 250))
+            .Where(result => result.Entry.Kind == SearchContentKind.ClassFeature
+                && BelongsToSelection(result.Entry, selectedClass)
+                && UnlocksAtLevel(result.Entry.Level, nextLevel))
+            .ToList();
+        var selectedSubclass = _data.Selections.FirstOrDefault(item => item.IsActive
+            && string.Equals(item.Id, progression.SubclassSelectionId, StringComparison.Ordinal));
+        if (selectedSubclass is not null)
+            candidates.AddRange((await search.SearchAsync(selectedSubclass.Name, limit: 250))
+                .Where(result => result.Entry.Kind == SearchContentKind.SubclassFeature
+                    && BelongsToSelection(result.Entry, selectedSubclass)
+                    && UnlocksAtLevel(result.Entry.Level, nextLevel)));
+
+        var gains = candidates.DistinctBy(result => result.Entry.Id, StringComparer.Ordinal)
+            .OrderBy(result => result.Entry.Name, StringComparer.CurrentCultureIgnoreCase)
+            .Select(result => new
+            {
+                name = result.Entry.Name,
+                kind = result.Entry.Kind.ToString(),
+                description = result.Entry.Description,
+                documentId = result.Entry.DocumentId,
+                target = result.Entry.Target
+            });
+        return JsonSerializer.Serialize(new
+        {
+            type = "levelUpPreview",
+            available = true,
+            classLevelId = progression.Id,
+            className = progression.Name,
+            currentLevel = progression.Level,
+            nextLevel,
+            gains
+        });
+    }
+
     public async Task ApplyCompendiumSelectionAsync(
         string referenceId,
         string name,
@@ -401,7 +561,8 @@ public partial class CharacterSheetViewModel(
         string? documentId,
         string? target,
         string? parentClass,
-        string? parentName)
+        string? parentName,
+        bool addAsMulticlass = false)
     {
         if (_character is null || string.IsNullOrWhiteSpace(referenceId)
             || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(kind)) return;
@@ -414,14 +575,19 @@ public partial class CharacterSheetViewModel(
             && !_data.Selections.Any(item => item.IsActive && item.Kind == nameof(SearchContentKind.Race)))
             throw new InvalidOperationException("Elegí primero la raza principal antes de agregar una subraza.");
 
-        var singleton = kind is nameof(SearchContentKind.Class) or nameof(SearchContentKind.Subclass)
-            or nameof(SearchContentKind.Race) or "Subrace" or nameof(SearchContentKind.Background);
+        var isMulticlass = addAsMulticlass && kind == nameof(SearchContentKind.Class);
+        var singleton = !isMulticlass && kind is (nameof(SearchContentKind.Class)
+            or nameof(SearchContentKind.Race) or "Subrace" or nameof(SearchContentKind.Background));
         var replaced = _data.Selections
             .Where(item => singleton && item.IsActive
                 && (string.Equals(item.Kind, kind, StringComparison.Ordinal)
                     || kind == nameof(SearchContentKind.Race) && item.Kind == "Subrace"))
             .Concat(_data.Selections.Where(item => singleton && item.IsActive
                 && kind == nameof(SearchContentKind.Class) && item.Kind == nameof(SearchContentKind.Subclass)))
+            .Concat(_data.Selections.Where(item => kind == nameof(SearchContentKind.Subclass)
+                && item.IsActive && item.Kind == nameof(SearchContentKind.Subclass)
+                && (string.IsNullOrWhiteSpace(parentClass)
+                    || string.Equals(item.ParentClass, parentClass, StringComparison.CurrentCultureIgnoreCase))))
             .DistinctBy(item => item.Id, StringComparer.Ordinal)
             .ToArray();
         foreach (var old in replaced)
@@ -445,13 +611,38 @@ public partial class CharacterSheetViewModel(
             ParentClass = parentClass,
             ParentName = parentName,
             Level = kind is nameof(SearchContentKind.Class) or nameof(SearchContentKind.Subclass)
-                ? LevelFromClassText(_data.TextFields.GetValueOrDefault("ClassLevel"))
+                ? isMulticlass ? 1 : LevelFromClassText(_data.TextFields.GetValueOrDefault("ClassLevel"))
                 : null,
             IsActive = true
         };
         var existing = _data.Selections.FindIndex(item => string.Equals(item.Id, selectionId, StringComparison.Ordinal));
         if (existing >= 0) _data.Selections[existing] = selection;
         else _data.Selections.Add(selection);
+
+        if (kind == nameof(SearchContentKind.Class))
+        {
+            if (!isMulticlass) _data.ClassLevels.Clear();
+            if (!_data.ClassLevels.Any(item => string.Equals(item.SelectionId, selection.Id, StringComparison.Ordinal)))
+                _data.ClassLevels.Add(new CharacterClassLevel
+            {
+                Name = selection.Name,
+                SelectionId = selection.Id,
+                Level = selection.Level ?? 1,
+                IsPrimary = !isMulticlass
+            });
+        }
+        else if (kind == nameof(SearchContentKind.Subclass))
+        {
+            var classLevel = _data.ClassLevels.FirstOrDefault(item => !string.IsNullOrWhiteSpace(parentClass)
+                    && string.Equals(item.Name, parentClass, StringComparison.CurrentCultureIgnoreCase))
+                ?? _data.ClassLevels.FirstOrDefault(item => item.IsPrimary)
+                ?? _data.ClassLevels.FirstOrDefault();
+            if (classLevel is not null)
+            {
+                classLevel.SubclassName = selection.Name;
+                classLevel.SubclassSelectionId = selection.Id;
+            }
+        }
 
         if (kind == nameof(SearchContentKind.Feat)
             && !_data.Features.Any(item => string.Equals(item.Id, referenceId, StringComparison.Ordinal)))
@@ -462,6 +653,16 @@ public partial class CharacterSheetViewModel(
                 DocumentId = documentId, Target = target, SelectionId = selection.Id
             });
         }
+        if (kind == nameof(SearchContentKind.Equipment)
+            && !_data.Inventory.Any(item => string.Equals(item.ReferenceId, referenceId, StringComparison.Ordinal)))
+        {
+            _data.Inventory.Add(new CharacterInventoryItem
+            {
+                Id = $"inventory:{referenceId}", ReferenceId = referenceId, Name = name.Trim(), Kind = "Equipment",
+                Quantity = 1, Description = description, DocumentId = documentId, Target = target
+            });
+            ProjectInventoryToPdf();
+        }
 
         await AddRelatedFeaturesAsync(selection);
         ProjectSelectionFields();
@@ -469,19 +670,25 @@ public partial class CharacterSheetViewModel(
         StatusText = "Cambios sin guardar";
     }
 
-    public async Task LevelUpAsync(int nextLevel)
+    public async Task LevelUpAsync(int nextLevel, string? classLevelId = null)
     {
         if (_character is null || nextLevel is < 2 or > 20) return;
-        var selectedClass = _data.Selections.LastOrDefault(item => item.IsActive
-            && item.Kind == nameof(SearchContentKind.Class));
+        var progression = _data.ClassLevels.FirstOrDefault(item => !string.IsNullOrWhiteSpace(classLevelId)
+                && string.Equals(item.Id, classLevelId, StringComparison.Ordinal))
+            ?? _data.ClassLevels.FirstOrDefault(item => item.IsPrimary)
+            ?? _data.ClassLevels.FirstOrDefault();
+        if (progression is null || nextLevel != progression.Level + 1
+            || _data.ClassLevels.Sum(item => item.Level) >= 20) return;
+        var selectedClass = _data.Selections.FirstOrDefault(item => item.IsActive
+            && string.Equals(item.Id, progression.SelectionId, StringComparison.Ordinal));
         if (selectedClass is null) return;
+        progression.Level = nextLevel;
         selectedClass.Level = nextLevel;
-        foreach (var subclass in _data.Selections.Where(item => item.IsActive
-                     && item.Kind == nameof(SearchContentKind.Subclass))) subclass.Level = nextLevel;
-        SetGeneratedText("ClassLevel", $"{selectedClass.Name} {nextLevel}", force: true);
+        var subclass = _data.Selections.FirstOrDefault(item => item.IsActive
+            && string.Equals(item.Id, progression.SubclassSelectionId, StringComparison.Ordinal));
+        if (subclass is not null) subclass.Level = nextLevel;
         await AddRelatedFeaturesAsync(selectedClass);
-        foreach (var subclass in _data.Selections.Where(item => item.IsActive
-                     && item.Kind == nameof(SearchContentKind.Subclass))) await AddRelatedFeaturesAsync(subclass);
+        if (subclass is not null) await AddRelatedFeaturesAsync(subclass);
         ProjectSelectionFields();
         HasUnsavedChanges = true;
         StatusText = "Cambios sin guardar";
@@ -503,11 +710,29 @@ public partial class CharacterSheetViewModel(
         }
         if (selection.Kind == nameof(SearchContentKind.Class))
         {
+            var progression = _data.ClassLevels.FirstOrDefault(item =>
+                string.Equals(item.SelectionId, selection.Id, StringComparison.Ordinal));
+            if (progression is not null) _data.ClassLevels.Remove(progression);
+            var subclassId = progression?.SubclassSelectionId;
             foreach (var subclass in _data.Selections.Where(item => item.IsActive
-                         && item.Kind == nameof(SearchContentKind.Subclass)))
+                         && item.Kind == nameof(SearchContentKind.Subclass)
+                         && (!string.IsNullOrWhiteSpace(subclassId)
+                             ? string.Equals(item.Id, subclassId, StringComparison.Ordinal)
+                             : string.Equals(item.ParentClass, selection.Name, StringComparison.CurrentCultureIgnoreCase))))
             {
                 subclass.IsActive = false;
                 CharacterSheetEffectEngine.RemoveSelectionEffects(_data, subclass.Id);
+            }
+            if (progression?.IsPrimary == true && _data.ClassLevels.Count > 0)
+                _data.ClassLevels[0].IsPrimary = true;
+        }
+        if (selection.Kind == nameof(SearchContentKind.Subclass))
+        {
+            foreach (var classLevel in _data.ClassLevels.Where(item =>
+                         string.Equals(item.SubclassSelectionId, selection.Id, StringComparison.Ordinal)))
+            {
+                classLevel.SubclassName = null;
+                classLevel.SubclassSelectionId = null;
             }
         }
         SyncEffectProficiencyChecks();
@@ -556,6 +781,17 @@ public partial class CharacterSheetViewModel(
     public void RemoveSelectionEffect(string effectId)
     {
         if (!CharacterSheetEffectEngine.RemoveEffect(_data, effectId)) return;
+        SyncEffectProficiencyChecks();
+        HasUnsavedChanges = true;
+        StatusText = "Cambios sin guardar";
+    }
+
+    public void SetSelectionEffectActive(string effectId, bool isActive)
+    {
+        var effect = _data.Effects.FirstOrDefault(item => string.Equals(item.Id, effectId, StringComparison.Ordinal));
+        if (effect is null || effect.IsActive == isActive) return;
+        effect.IsActive = isActive;
+        CharacterSheetEffectEngine.Rebuild(_data);
         SyncEffectProficiencyChecks();
         HasUnsavedChanges = true;
         StatusText = "Cambios sin guardar";
@@ -682,6 +918,38 @@ public partial class CharacterSheetViewModel(
         StatusText = $"Guardado: {_data.UpdatedAt.ToLocalTime():g}";
     }
 
+    private void MarkChanged()
+    {
+        HasUnsavedChanges = true;
+        StatusText = "Cambios sin guardar";
+    }
+
+    private void ProjectAttacksToPdf()
+    {
+        var fields = new[]
+        {
+            ("Wpn Name", "Wpn1 AtkBonus", "Wpn1 Damage"),
+            ("Wpn Name 2", "Wpn2 AtkBonus ", "Wpn2 Damage "),
+            ("Wpn Name 3", "Wpn3 AtkBonus  ", "Wpn3 Damage ")
+        };
+        foreach (var field in fields.SelectMany(item => new[] { item.Item1, item.Item2, item.Item3 })) ClearGeneratedText(field);
+        var attacks = _data.Attacks.Where(item => item.IsEquipped).Take(fields.Length).ToArray();
+        for (var index = 0; index < attacks.Length; index++)
+        {
+            SetGeneratedText(fields[index].Item1, attacks[index].Name);
+            SetGeneratedText(fields[index].Item2, attacks[index].AttackBonus);
+            SetGeneratedText(fields[index].Item3, attacks[index].Damage);
+        }
+    }
+
+    private void ProjectInventoryToPdf()
+    {
+        var text = string.Join('\n', _data.Inventory.OrderBy(item => item.Kind).ThenBy(item => item.Name)
+            .Select(item => $"{item.Name}{(item.Quantity > 1 ? $" ×{item.Quantity}" : string.Empty)}"));
+        if (string.IsNullOrWhiteSpace(text)) ClearGeneratedText("Equipment");
+        else SetGeneratedText("Equipment", text);
+    }
+
     private async Task ReloadSessionDataAsync()
     {
         try
@@ -742,6 +1010,15 @@ public partial class CharacterSheetViewModel(
     private static bool IsAvailableAtLevel(SearchIndexEntry entry, CharacterCompendiumSelection selection)
         => CharacterSelectionRules.IsAvailableAtLevel(entry.Level, selection.Level);
 
+    private static bool UnlocksAtLevel(string? levelText, int level)
+    {
+        if (string.IsNullOrWhiteSpace(levelText)) return false;
+        foreach (System.Text.RegularExpressions.Match match in
+                 System.Text.RegularExpressions.Regex.Matches(levelText, @"(?<!\d)(?:[1-9]|1\d|20)(?!\d)"))
+            if (int.TryParse(match.Value, out var parsed) && parsed == level) return true;
+        return false;
+    }
+
     private static bool BelongsToSelection(SearchIndexEntry entry, CharacterCompendiumSelection selection)
     {
         static bool Same(string? left, string right)
@@ -768,7 +1045,12 @@ public partial class CharacterSheetViewModel(
         SetIdentity(nameof(SearchContentKind.Background), "Background");
         SetIdentity(nameof(SearchContentKind.Subclass), "Digital.Subclass");
         var selectedClass = _data.Selections.LastOrDefault(item => item.IsActive && item.Kind == nameof(SearchContentKind.Class));
-        if (selectedClass is not null)
+        if (_data.ClassLevels.Count > 0)
+        {
+            var classText = string.Join(" / ", _data.ClassLevels.Select(item => $"{item.Name} {item.Level}"));
+            SetGeneratedText("ClassLevel", classText, force: true);
+        }
+        else if (selectedClass is not null)
         {
             var level = rulesLevel(_data.TextFields.GetValueOrDefault("ClassLevel"));
             SetGeneratedText("ClassLevel", $"{selectedClass.Name} {level}", force: true);

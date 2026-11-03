@@ -70,6 +70,65 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
             case "save":
                 await _viewModel.SaveIfNeededAsync();
                 break;
+            case "portrait":
+                _viewModel.SetPortrait(NullableStringProperty(root, "dataUrl"));
+                break;
+            case "creatorStep":
+                if (root.TryGetProperty("step", out var creatorStep) && creatorStep.TryGetInt32(out var parsedCreatorStep))
+                    _viewModel.SetCreatorStep(parsedCreatorStep);
+                break;
+            case "completeCreation":
+                await _viewModel.CompleteCreationAsync();
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
+            case "conditionUpsert":
+                _viewModel.UpsertCondition(
+                    NullableStringProperty(root, "id"), StringProperty(root, "name"),
+                    NullableStringProperty(root, "description"),
+                    !root.TryGetProperty("isActive", out var conditionActive) || conditionActive.GetBoolean());
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
+            case "conditionDelete":
+                _viewModel.RemoveCondition(StringProperty(root, "id"));
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
+            case "attackUpsert":
+                _viewModel.UpsertAttack(
+                    NullableStringProperty(root, "id"), StringProperty(root, "name"),
+                    StringProperty(root, "attackBonus"), StringProperty(root, "damage"),
+                    NullableStringProperty(root, "notes"),
+                    !root.TryGetProperty("equipped", out var attackEquipped) || attackEquipped.GetBoolean());
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
+            case "attackDelete":
+                _viewModel.RemoveAttack(StringProperty(root, "id"));
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
+            case "inventoryUpsert":
+                _viewModel.UpsertInventoryItem(
+                    NullableStringProperty(root, "id"), StringProperty(root, "name"), StringProperty(root, "kind"),
+                    root.TryGetProperty("quantity", out var quantity) && quantity.TryGetInt32(out var parsedQuantity) ? parsedQuantity : 1,
+                    NullableStringProperty(root, "description"),
+                    root.TryGetProperty("equipped", out var itemEquipped) && itemEquipped.GetBoolean());
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
+            case "inventoryDelete":
+                _viewModel.RemoveInventoryItem(StringProperty(root, "id"));
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
+            case "openPdf":
+                _viewModel.OpenPdfCommand.Execute(null);
+                break;
+            case "sharePdf":
+                _viewModel.ShareCommand.Execute(null);
+                break;
             case "modifierUpsert":
                 _viewModel.UpsertModifier(
                     root.TryGetProperty("id", out var modifierId) ? modifierId.GetString() : null,
@@ -137,7 +196,8 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
                     NullableStringProperty(root, "documentId"),
                     NullableStringProperty(root, "target"),
                     NullableStringProperty(root, "parentClass"),
-                    NullableStringProperty(root, "parent"));
+                    NullableStringProperty(root, "parent"),
+                    root.TryGetProperty("multiclass", out var multiclass) && multiclass.ValueKind is JsonValueKind.True);
                 await _viewModel.SaveIfNeededAsync();
                 SendSheetPayload();
                 break;
@@ -167,13 +227,24 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
                 await _viewModel.SaveIfNeededAsync();
                 SendSheetPayload();
                 break;
+            case "selectionEffectToggle":
+                _viewModel.SetSelectionEffectActive(
+                    StringProperty(root, "id"),
+                    root.TryGetProperty("active", out var activeEffect) && activeEffect.ValueKind is JsonValueKind.True);
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
             case "levelUp":
                 if (root.TryGetProperty("level", out var nextLevel) && nextLevel.TryGetInt32(out var parsedNextLevel))
                 {
-                    await _viewModel.LevelUpAsync(parsedNextLevel);
+                    await _viewModel.LevelUpAsync(parsedNextLevel, NullableStringProperty(root, "classLevelId"));
                     await _viewModel.SaveIfNeededAsync();
                     SendSheetPayload();
                 }
+                break;
+            case "levelUpPreview":
+                SheetWebView.SendRawMessage(await _viewModel.CreateLevelUpPreviewPayloadJsonAsync(
+                    StringProperty(root, "classLevelId")));
                 break;
             case "featureAdd":
                 _viewModel.AddFeatureReference(
@@ -236,6 +307,9 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
         e.Handled = true;
         e.SetResponse(403, "Editor offline: las conexiones externas están bloqueadas");
     }
+
+    private async void OnCloseErrorClicked(object? sender, EventArgs e)
+        => await Shell.Current.GoToAsync("..");
 
     protected override async void OnDisappearing()
     {

@@ -50,6 +50,28 @@ public sealed class JsonCharacterProfileStoreTests
     }
 
     [Fact]
+    public async Task Duplicate_CopiesSavedContentAndResourcesWithoutChangingSource()
+    {
+        using var directory = new TemporaryDirectory();
+        var store = new JsonCharacterProfileStore(directory.Path);
+        var source = await store.GetActiveAsync();
+        await store.SetSavedAsync(SavedContentKind.Spell, SavedStateKind.Prepared, "misty-step", true);
+        await store.UpsertResourceAsync(new CharacterResource
+        {
+            Id = string.Empty, Name = "Psi Points", Maximum = 4, Current = 3
+        });
+
+        var copy = await store.DuplicateAsync(source.Id, "Copia");
+
+        Assert.Equal("Copia", copy.Name);
+        Assert.Contains("misty-step", await store.GetSavedIdsAsync(SavedContentKind.Spell, SavedStateKind.Prepared));
+        Assert.Equal("Psi Points", Assert.Single(await store.GetResourcesAsync()).Name);
+        await store.SetActiveAsync(source.Id);
+        Assert.Contains("misty-step", await store.GetSavedIdsAsync(SavedContentKind.Spell, SavedStateKind.Prepared));
+        Assert.Equal(2, (await store.GetAllAsync()).Count);
+    }
+
+    [Fact]
     public async Task PreparedOrderPersistsAndRemainsIsolatedPerCharacter()
     {
         using var directory = new TemporaryDirectory();

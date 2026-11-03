@@ -2,11 +2,17 @@ namespace DndCompendium.Core.Models;
 
 public sealed class CharacterSheetData
 {
-    public const int CurrentSchemaVersion = 3;
+    public const int CurrentSchemaVersion = 4;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
 
     public string RuleSet { get; set; } = "2014";
+
+    public bool IsCreationDraft { get; set; }
+
+    public int CreatorStep { get; set; } = 1;
+
+    public string? PortraitDataUrl { get; set; }
 
     public Dictionary<string, string> TextFields { get; init; } = new(StringComparer.Ordinal);
 
@@ -40,6 +46,14 @@ public sealed class CharacterSheetData
     public HashSet<string> KnownSpellIds { get; init; } = new(StringComparer.Ordinal);
 
     public List<CharacterSpellReference> Spells { get; init; } = [];
+
+    public List<CharacterClassLevel> ClassLevels { get; init; } = [];
+
+    public List<CharacterCondition> Conditions { get; init; } = [];
+
+    public List<CharacterAttack> Attacks { get; init; } = [];
+
+    public List<CharacterInventoryItem> Inventory { get; init; } = [];
 
     public Dictionary<string, string> GeneratedTextFields { get; init; } = new(StringComparer.Ordinal);
 
@@ -115,4 +129,48 @@ public sealed class CharacterSpellReference
     public string? School { get; init; }
     public bool IsKnown { get; set; }
     public bool IsPrepared { get; set; }
+}
+
+public sealed class CharacterClassLevel
+{
+    public string Id { get; init; } = Guid.NewGuid().ToString("N");
+    public string Name { get; init; } = string.Empty;
+    public string? SelectionId { get; init; }
+    public string? SubclassName { get; set; }
+    public string? SubclassSelectionId { get; set; }
+    public int Level { get; set; } = 1;
+    public bool IsPrimary { get; set; }
+}
+
+public sealed class CharacterCondition
+{
+    public string Id { get; init; } = Guid.NewGuid().ToString("N");
+    public string Name { get; init; } = string.Empty;
+    public string? Description { get; init; }
+    public string? Source { get; init; }
+    public bool IsActive { get; set; } = true;
+}
+
+public sealed class CharacterAttack
+{
+    public string Id { get; init; } = Guid.NewGuid().ToString("N");
+    public string Name { get; set; } = string.Empty;
+    public string AttackBonus { get; set; } = string.Empty;
+    public string Damage { get; set; } = string.Empty;
+    public string? Notes { get; set; }
+    public string? InventoryItemId { get; init; }
+    public bool IsEquipped { get; set; } = true;
+}
+
+public sealed class CharacterInventoryItem
+{
+    public string Id { get; init; } = Guid.NewGuid().ToString("N");
+    public string Name { get; set; } = string.Empty;
+    public string Kind { get; set; } = "Equipment";
+    public int Quantity { get; set; } = 1;
+    public string? Description { get; set; }
+    public string? ReferenceId { get; init; }
+    public string? DocumentId { get; init; }
+    public string? Target { get; init; }
+    public bool IsEquipped { get; set; }
 }

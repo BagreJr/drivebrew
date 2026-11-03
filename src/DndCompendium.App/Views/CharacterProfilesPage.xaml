@@ -7,45 +7,62 @@
     xmlns:viewModels="clr-namespace:DndCompendium.App.ViewModels"
     x:DataType="viewModels:CharacterProfilesViewModel">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*">
-        <Border Grid.Row="0" Margin="12,6,12,4" Padding="12,8" Style="{StaticResource HeroCardStyle}">
-            <VerticalStackLayout Spacing="3">
-                <Label FontAttributes="Bold" FontSize="18" Text="Personajes" TextColor="{StaticResource PaperLight}" />
-                <Label FontSize="11" Text="{Binding ActiveSummary}" TextColor="{StaticResource Gold}" />
-                <Label FontSize="11" Text="Cada perfil guarda sus Spells, Exploits, Resources y una hoja de personaje PDF independiente." TextColor="{StaticResource TextMuted}" />
+    <Grid RowDefinitions="Auto,Auto,*">
+        <Grid Grid.Row="0" Margin="18,14,18,8" ColumnDefinitions="*,Auto">
+            <VerticalStackLayout>
+                <Label Style="{StaticResource EyebrowLabelStyle}" Text="CAMPAÑA OFFLINE" />
+                <Label Style="{StaticResource DisplayLabelStyle}" Text="Personajes" />
+                <Label Style="{StaticResource MutedLabelStyle}" Text="{Binding ActiveSummary}" />
             </VerticalStackLayout>
+            <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
+        </Grid>
+
+        <Border Grid.Row="1" Margin="14,4,14,12" Padding="12" Style="{StaticResource ToolbarCardStyle}">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <Entry MaxLength="60" Placeholder="Nombre del nuevo héroe" ReturnType="Done" Text="{Binding NewCharacterName}" />
+                <Button Grid.Column="1" Command="{Binding CreateCommand}" Style="{StaticResource SmallAccentButtonStyle}" Text="Crear" />
+            </Grid>
         </Border>
 
-        <Grid Grid.Row="1" Margin="12,4" ColumnDefinitions="*,Auto" ColumnSpacing="8">
-            <Entry MaxLength="60" Placeholder="Nombre del nuevo personaje" Text="{Binding NewCharacterName}" />
-            <Button Grid.Column="1" Command="{Binding CreateCommand}" Style="{StaticResource SmallAccentButtonStyle}" Text="Crear" />
-        </Grid>
+        <Grid Grid.Row="2" RowDefinitions="Auto,*">
+            <Label Margin="18,0,18,8" IsVisible="{Binding HasError}" Style="{StaticResource ErrorLabelStyle}" Text="{Binding ErrorMessage}" />
+            <CollectionView Grid.Row="1" Margin="12,0" ItemsSource="{Binding Characters}" SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Padding="28" Spacing="8" VerticalOptions="Center">
+                        <Label HorizontalTextAlignment="Center" Style="{StaticResource TitleLabelStyle}" Text="Tu grupo todavía está vacío" />
+                        <Label HorizontalTextAlignment="Center" Style="{StaticResource MutedLabelStyle}" Text="Creá un personaje para comenzar el asistente paso a paso." />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:CharacterProfileItemViewModel">
+                        <Border Margin="2,0,2,12" Padding="14" Style="{StaticResource CardStyle}">
+                            <Grid RowDefinitions="Auto" ColumnDefinitions="72,*" ColumnSpacing="14">
+                                <Border WidthRequest="72" HeightRequest="88" BackgroundColor="{StaticResource SurfaceRaised}" Stroke="{StaticResource Outline}">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="14" /></Border.StrokeShape>
+                                    <Grid>
+                                        <Image Aspect="AspectFill" IsVisible="{Binding HasPortrait}" Source="{Binding PortraitSource}" />
+                                        <Label FontAttributes="Bold" FontSize="28" HorizontalOptions="Center" IsVisible="{Binding HasPortrait, Converter={StaticResource InvertedBoolConverter}}" Text="{Binding Initial}" TextColor="{StaticResource Gold}" VerticalOptions="Center" />
+                                    </Grid>
+                                </Border>
 
-        <Grid Grid.Row="2" Margin="16,2,16,6" RowDefinitions="Auto,Auto">
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
-            <Label Grid.Row="1" IsVisible="{Binding HasError}" Style="{StaticResource ErrorLabelStyle}" Text="{Binding ErrorMessage}" />
+                                <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                                    <Label FontAttributes="Bold" FontSize="19" LineBreakMode="TailTruncation" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
+                                    <Border Grid.Column="1" Padding="8,3" IsVisible="{Binding IsActive}" Style="{StaticResource StatusPillStyle}">
+                                        <Label FontAttributes="Bold" FontSize="9" Text="ACTIVO" TextColor="{StaticResource Gold}" />
+                                    </Border>
+                                    <Label Grid.Row="1" Grid.ColumnSpan="2" Margin="0,3,0,0" FontSize="12" LineBreakMode="TailTruncation" Text="{Binding SheetStatusText}" TextColor="{StaticResource TextMuted}" />
+                                    <Label Grid.Row="2" Grid.ColumnSpan="2" Margin="0,7,0,0" FontAttributes="Bold" FontSize="13" Text="{Binding HitPointsText}" TextColor="{StaticResource PaperLight}" />
+                                    <HorizontalStackLayout Grid.Row="3" Grid.ColumnSpan="2" Margin="0,9,0,0" Spacing="8">
+                                        <Button Command="{Binding BindingContext.OpenSheetCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallAccentButtonStyle}" Text="Abrir" />
+                                        <Button Command="{Binding BindingContext.SelectCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" IsEnabled="{Binding IsNotActive}" Style="{StaticResource SmallGhostButtonStyle}" Text="Activar" />
+                                        <Button Clicked="OnMoreClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="•••" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </Grid>
-
-        <CollectionView Grid.Row="3" Margin="10,0" ItemsSource="{Binding Characters}" SelectionMode="None">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="viewModels:CharacterProfileItemViewModel">
-                    <Border Margin="2,0,2,9" Padding="13" Style="{StaticResource CardStyle}">
-                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="8">
-                            <Label FontAttributes="Bold" FontSize="16" Text="{Binding Name}" TextColor="{StaticResource TextPrimary}" />
-                            <Label Grid.Column="1" FontAttributes="Bold" FontSize="10" Text="{Binding StatusText}" TextColor="{StaticResource Gold}" />
-                            <Label Grid.Row="1" Grid.ColumnSpan="2" FontSize="11" Text="{Binding SheetStatusText}" TextColor="{StaticResource TextMuted}" />
-                            <FlexLayout Grid.Row="2" Grid.ColumnSpan="2" AlignItems="Center" Direction="Row" JustifyContent="End" Wrap="Wrap">
-                                <Button Margin="3" Command="{Binding BindingContext.SelectCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" IsEnabled="{Binding IsNotActive}" Style="{StaticResource SmallAccentButtonStyle}" Text="Usar" />
-                                <Button Margin="3" Command="{Binding BindingContext.OpenSheetCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallAccentButtonStyle}" Text="Editar hoja" />
-                                <Button Margin="3" Command="{Binding BindingContext.ShareSheetCommand, Source={x:Reference CharactersRoot}}" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Guardar copia" />
-                                <Button Margin="3" Clicked="OnImportSheetClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Importar PDF" />
-                                <Button Margin="3" Clicked="OnRenameClicked" CommandParameter="{Binding .}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Renombrar" />
-                                <Button Margin="3" Clicked="OnDeleteClicked" CommandParameter="{Binding .}" IsEnabled="{Binding CanDelete}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Eliminar" />
-                            </FlexLayout>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
     </Grid>
 </ContentView>

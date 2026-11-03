@@ -1,0 +1,11 @@
+@font-face{font-family:DrivebrewDisplay;src:url('../fonts/5e/Nodesto Caps Condensed Bold.woff2') format('woff2');font-display:swap}
+@font-face{font-family:DrivebrewBody;src:url('../fonts/5e/Scaly Sans.woff2') format('woff2');font-display:swap}
+:root{
+  --bg:#121116;--surface:#1d1b21;--raised:#26232b;--soft:#302c35;--line:#49424e;
+  --gold:#d5aa52;--gold-soft:#8f7138;--paper:#f5eddc;--text:#eee8df;--muted:#aba3a9;
+  --danger:#df756f;--success:#79bf91;--arcane:#8875c7;--shadow:0 12px 30px rgba(0,0,0,.28);
+  --r-sm:10px;--r-md:16px;--r-lg:24px;--tap:48px;--pad:16px;
+  --display:DrivebrewDisplay,Georgia,serif;--body:DrivebrewBody,system-ui,sans-serif;
+}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:var(--body)}
+button,input,select,textarea{font:inherit}button{touch-action:manipulation}

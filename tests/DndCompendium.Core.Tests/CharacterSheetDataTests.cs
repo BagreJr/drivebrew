@@ -58,4 +58,28 @@ public sealed class CharacterSheetDataTests
         Assert.Single(restored.Modifiers);
         Assert.Single(restored.Features);
     }
+
+    [Fact]
+    public void VersionFourData_RoundTripsDraftProgressionAndPlayState()
+    {
+        var original = new CharacterSheetData
+        {
+            IsCreationDraft = true,
+            CreatorStep = 6,
+            PortraitDataUrl = "data:image/jpeg;base64,YQ==",
+            ClassLevels = [new CharacterClassLevel { Name = "Psion", Level = 3, IsPrimary = true }],
+            Conditions = [new CharacterCondition { Name = "Restrained", IsActive = true }],
+            Attacks = [new CharacterAttack { Name = "Mind Blade", AttackBonus = "+5", Damage = "1d8 psychic" }],
+            Inventory = [new CharacterInventoryItem { Name = "Crystal focus", Quantity = 1 }]
+        };
+
+        var restored = JsonSerializer.Deserialize<CharacterSheetData>(JsonSerializer.Serialize(original))!;
+
+        Assert.True(restored.IsCreationDraft);
+        Assert.Equal(6, restored.CreatorStep);
+        Assert.Equal("Psion", Assert.Single(restored.ClassLevels).Name);
+        Assert.Equal("Restrained", Assert.Single(restored.Conditions).Name);
+        Assert.Equal("Mind Blade", Assert.Single(restored.Attacks).Name);
+        Assert.Equal("Crystal focus", Assert.Single(restored.Inventory).Name);
+    }
 }
