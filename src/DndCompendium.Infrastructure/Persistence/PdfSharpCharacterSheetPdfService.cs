@@ -1,3 +1,5 @@
+using System.IO.Compression;
+using System.Text.Json;
 using DndCompendium.Core.Abstractions;
 using DndCompendium.Core.Models;
 using PdfSharp.Drawing;
@@ -10,6 +12,8 @@ namespace DndCompendium.Infrastructure.Persistence;
 
 public sealed class PdfSharpCharacterSheetPdfService : ICharacterSheetPdfService
 {
+    private const string StructuredDataKey = "/DrivebrewCharacterData";
+    private const string StructuredDataPrefix = "drivebrew:v1:gzip:";
     private static readonly object FontGate = new();
 
     public async Task WriteAsync(
@@ -71,6 +75,7 @@ public sealed class PdfSharpCharacterSheetPdfService : ICharacterSheetPdfService
 
         DrawCheckedMarkers(document, data.CheckedFields);
         AppendSupplementalPages(document, data);
+        document.Info.Elements.SetString(StructuredDataKey, EncodeStructuredData(data));
         document.AcroForm.Elements.SetBoolean("/NeedAppearances", false);
         document.Save(output, closeStream: false);
         await output.FlushAsync(cancellationToken).ConfigureAwait(false);
@@ -88,7 +93,8 @@ public sealed class PdfSharpCharacterSheetPdfService : ICharacterSheetPdfService
         await input.CopyToAsync(source, cancellationToken).ConfigureAwait(false);
         source.Position = 0;
         using var document = PdfReader.Open(source, PdfDocumentOpenMode.Modify);
-        var result = new CharacterSheetData();
+        var result = DecodeStructuredData(document.Info.Elements.GetString(StructuredDataKey))
+            ?? new CharacterSheetData();
         var fields = document.AcroForm.Fields;
         foreach (var name in fields.DescendantNames)
         {
@@ -105,6 +111,33 @@ public sealed class PdfSharpCharacterSheetPdfService : ICharacterSheetPdfService
         }
         result.UpdatedAt = DateTimeOffset.UtcNow;
         return result;
+    }
+
+    private static string EncodeStructuredData(CharacterSheetData data)
+    {
+        var json = JsonSerializer.SerializeToUtf8Bytes(data);
+        using var compressed = new MemoryStream();
+        using (var gzip = new GZipStream(compressed, CompressionLevel.SmallestSize, leaveOpen: true))
+            gzip.Write(json);
+        return StructuredDataPrefix + Convert.ToBase64String(compressed.ToArray());
+    }
+
+    private static CharacterSheetData? DecodeStructuredData(string? encoded)
+    {
+        if (string.IsNullOrWhiteSpace(encoded)
+            || !encoded.StartsWith(StructuredDataPrefix, StringComparison.Ordinal)) return null;
+        try
+        {
+            var bytes = Convert.FromBase64String(encoded[StructuredDataPrefix.Length..]);
+            using var compressed = new MemoryStream(bytes, writable: false);
+            using var gzip = new GZipStream(compressed, CompressionMode.Decompress);
+            return JsonSerializer.Deserialize<CharacterSheetData>(gzip);
+        }
+        catch (Exception exception) when (exception is FormatException or InvalidDataException or JsonException)
+        {
+            // PDFs created by other editors remain importable through their AcroForm fields.
+            return null;
+        }
     }
 
     private static void DrawCheckedMarkers(PdfSharp.Pdf.PdfDocument document, IReadOnlySet<string> checkedFields)
@@ -192,6 +225,7 @@ public sealed class PdfSharpCharacterSheetPdfService : ICharacterSheetPdfService
     {
         var sections = new List<(string Heading, string Content)>();
         AddDigital("Digital.Subclass", "Subclase");
+        AddDigital("Digital.Subrace", "Subraza");
         AddDigital("Digital.ClassFeatures", "Class Features");
         AddDigital("Digital.SubclassFeatures", "Subclass Features");
         AddDigital("Digital.RacialTraits", "Racial Traits");

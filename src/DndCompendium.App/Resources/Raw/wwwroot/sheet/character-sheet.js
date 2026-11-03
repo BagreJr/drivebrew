@@ -35,6 +35,8 @@
   const fieldDefinitions = new Map();
   let modifiers = [];
   let features = [];
+  let selections = [];
+  let selectionEffects = [];
   let featureSearchResults = [];
   let identitySearchResults = [];
   let identitySearchQuery = '';
@@ -617,21 +619,112 @@
   }
 
   function applyIdentityResult(result) {
-    const kind = String(result.kind ?? '');
-    if (kind === 'Class') {
-      const currentLevel = rules.levelFromClass(values.get('ClassLevel')) ?? 1;
-      setValue('ClassLevel', `${result.name} ${currentLevel}`, true, true);
-    } else if (kind === 'Subclass') setValue('Digital.Subclass', result.name, true, false);
-    else if (kind === 'Race') setValue('Race ', result.name, true, false);
-    else if (kind === 'Background') setValue('Background', result.name, true, false);
-    scheduleSave(100);
-    renderEditSection();
+    send({ type: 'selectionApply', ...result });
+  }
+
+  function normalizeSelection(item) {
+    return {
+      id: item?.id ?? item?.Id,
+      referenceId: item?.referenceId ?? item?.ReferenceId,
+      name: item?.name ?? item?.Name,
+      kind: item?.kind ?? item?.Kind,
+      description: item?.description ?? item?.Description,
+      documentId: item?.documentId ?? item?.DocumentId,
+      target: item?.target ?? item?.Target,
+      parentClass: item?.parentClass ?? item?.ParentClass,
+      level: item?.level ?? item?.Level
+    };
+  }
+
+  function normalizeSelectionEffect(item) {
+    return {
+      id: item?.id ?? item?.Id,
+      sourceSelectionId: item?.sourceSelectionId ?? item?.SourceSelectionId,
+      sourceName: item?.sourceName ?? item?.SourceName,
+      effectKind: item?.effectKind ?? item?.EffectKind,
+      target: item?.target ?? item?.Target,
+      value: item?.value ?? item?.Value ?? 0,
+      rank: item?.rank ?? item?.Rank ?? 0,
+      activation: item?.activation ?? item?.Activation ?? 'Permanent',
+      condition: item?.condition ?? item?.Condition,
+      choiceLabel: item?.choiceLabel ?? item?.ChoiceLabel
+    };
+  }
+
+  function createSelectionEffectEditor() {
+    const card = document.createElement('section'); card.className = 'fieldCard wide modifierForm';
+    const heading = document.createElement('strong'); heading.textContent = 'Aplicar beneficio confirmado';
+    const help = document.createElement('small'); help.className = 'fieldHelp';
+    help.textContent = 'Elegí explícitamente el efecto. La app no interpreta automáticamente reglas ambiguas.';
+    const source = document.createElement('select'); source.setAttribute('aria-label', 'Opción de origen');
+    for (const selection of selections) {
+      const option = document.createElement('option'); option.value = selection.id;
+      option.textContent = `${selection.kind}: ${selection.name}`; source.appendChild(option);
+    }
+    const kind = document.createElement('select'); kind.setAttribute('aria-label', 'Tipo de efecto');
+    kind.innerHTML = '<option value="AbilityBonus">Bonificación de atributo</option><option value="NumericBonus">Bonificación numérica</option><option value="Proficiency">Competencia o expertise</option>';
+    const target = document.createElement('select'); target.setAttribute('aria-label', 'Objetivo del efecto');
+    for (const optionData of modifierTargets()) {
+      const option = document.createElement('option'); option.value = optionData.name; option.textContent = optionData.label;
+      target.appendChild(option);
+    }
+    const value = document.createElement('input'); value.type = 'number'; value.inputMode = 'decimal'; value.value = '1'; value.placeholder = 'Valor';
+    const rank = document.createElement('select'); rank.innerHTML = '<option value="1">Competencia</option><option value="2">Expertise</option>';
+    const activation = document.createElement('select');
+    activation.innerHTML = '<option value="Permanent">Permanente</option><option value="Conditional">Condicional</option><option value="Temporary">Temporal</option><option value="Activated">Requiere activación</option>';
+    const choice = document.createElement('input'); choice.type = 'text'; choice.placeholder = 'Elección realizada (si corresponde)';
+    const condition = document.createElement('input'); condition.type = 'text'; condition.placeholder = 'Condición o duración (opcional)';
+    const refresh = () => {
+      const proficiency = kind.value === 'Proficiency';
+      rank.hidden = !proficiency; value.hidden = proficiency;
+    };
+    kind.addEventListener('change', refresh); refresh();
+    const add = document.createElement('button'); add.type = 'button'; add.className = 'primaryAction'; add.textContent = 'Aplicar efecto';
+    add.addEventListener('click', () => send({
+      type: 'selectionEffectUpsert', selectionId: source.value, effectKind: kind.value, target: target.value,
+      value: Number(value.value || 0), rank: Number(rank.value || 0), activation: activation.value,
+      condition: condition.value.trim(), choiceLabel: choice.value.trim()
+    }));
+    for (const input of [source, kind, target, value, rank, activation, choice, condition]) focusBehavior(input);
+    card.append(heading, help, source, kind, target, value, rank, activation, choice, condition, add);
+    return card;
   }
 
   function createIdentityManager() {
     const panel = document.createElement('section'); panel.className = 'integrationPanel identityManager';
     const heading = document.createElement('div'); heading.className = 'integrationHeading';
     const title = document.createElement('h2'); title.textContent = 'Elegir desde el Compendium'; heading.appendChild(title); panel.appendChild(heading);
+    if (selections.length) {
+      const selectedTitle = document.createElement('h3'); selectedTitle.textContent = 'Opciones activas'; panel.appendChild(selectedTitle);
+      const selectedList = document.createElement('div'); selectedList.className = 'integrationList';
+      for (const selection of selections) {
+        const item = document.createElement('article'); item.className = 'integrationItem';
+        const open = document.createElement('button'); open.type = 'button'; open.className = 'integrationMain';
+        const name = document.createElement('strong'); name.textContent = selection.name;
+        const detail = document.createElement('span'); detail.textContent = [selection.kind, selection.parentClass].filter(Boolean).join(' · ');
+        open.append(name, detail);
+        if (selection.description) {
+          const description = document.createElement('span');
+          description.textContent = selection.description.length > 420 ? `${selection.description.slice(0, 417)}…` : selection.description;
+          open.appendChild(description);
+        }
+        open.disabled = !selection.documentId;
+        open.addEventListener('click', () => send({ type: 'openFeature', documentId: selection.documentId, target: selection.target }));
+        const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'compactDanger'; remove.textContent = 'Quitar';
+        remove.addEventListener('click', () => send({ type: 'selectionRemove', id: selection.id }));
+        item.append(open, remove); selectedList.appendChild(item);
+        for (const effect of selectionEffects.filter(candidate => candidate.sourceSelectionId === selection.id)) {
+          const effectRow = document.createElement('article'); effectRow.className = 'modifierItem';
+          const summary = document.createElement('span');
+          summary.textContent = `${labels.get(effect.target) ?? effect.target}: ${effect.effectKind === 'Proficiency' ? (effect.rank === 2 ? 'Expertise' : 'Competencia') : rules.signed(Number(effect.value) || 0)} · ${effect.activation}`;
+          const deleteEffect = document.createElement('button'); deleteEffect.type = 'button'; deleteEffect.className = 'compactDanger'; deleteEffect.textContent = 'Quitar efecto';
+          deleteEffect.addEventListener('click', () => send({ type: 'selectionEffectDelete', id: effect.id }));
+          effectRow.append(summary, deleteEffect); selectedList.appendChild(effectRow);
+        }
+      }
+      panel.appendChild(selectedList);
+      panel.appendChild(createSelectionEffectEditor());
+    }
     const search = document.createElement('div'); search.className = 'featureSearch';
     const input = document.createElement('input'); input.type = 'search'; input.placeholder = 'Clase, subclase, raza o background'; input.value = identitySearchQuery;
     const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Buscar';
@@ -650,11 +743,16 @@
         const meta = document.createElement('span'); meta.textContent = [result.kind, result.parentClass || result.parent, result.origin].filter(Boolean).join(' · ');
         const snippet = document.createElement('p'); snippet.textContent = result.snippet || '';
         const actions = document.createElement('div'); actions.className = 'resultActions';
-        const use = document.createElement('button'); use.type = 'button'; use.textContent = 'Usar'; use.addEventListener('click', () => applyIdentityResult(result));
+        const use = document.createElement('button'); use.type = 'button'; use.textContent = result.kind === 'Race' ? 'Usar como raza' : 'Usar'; use.addEventListener('click', () => applyIdentityResult(result));
         const read = document.createElement('button'); read.type = 'button'; read.className = 'secondaryAction'; read.textContent = 'Leer';
         read.disabled = !result.documentId;
         read.addEventListener('click', () => send({ type: 'openFeature', documentId: result.documentId, target: result.target }));
-        actions.append(use, read); item.append(name, meta, snippet, actions); results.appendChild(item);
+        actions.append(use);
+        if (result.kind === 'Race') {
+          const useSubrace = document.createElement('button'); useSubrace.type = 'button'; useSubrace.className = 'secondaryAction'; useSubrace.textContent = 'Usar como subraza';
+          useSubrace.addEventListener('click', () => applyIdentityResult({ ...result, kind: 'Subrace' })); actions.appendChild(useSubrace);
+        }
+        actions.append(read); item.append(name, meta, snippet, actions); results.appendChild(item);
       }
       panel.appendChild(results);
     }
@@ -678,9 +776,8 @@
       help.textContent = `Vista previa: nivel total ${previous} → ${next}. Se recalculará competencia y se conservarán HP y elecciones manuales.`;
       button.textContent = `Subir a nivel ${next}`;
       button.addEventListener('click', () => {
-        if (!globalThis.confirm(`¿Confirmar Level Up a nivel ${next}? No se elegirán feats ni features automáticamente.`)) return;
-        setValue('ClassLevel', current.replace(matches[0], String(next)), true, true);
-        scheduleSave(100); renderEditSection();
+        if (!globalThis.confirm(`¿Confirmar Level Up a nivel ${next}? Se vincularán las nuevas features disponibles; las elecciones y bonificaciones seguirán requiriendo confirmación.`)) return;
+        send({ type: 'levelUp', level: next });
       });
     }
     card.append(title, help, button); return card;
@@ -724,8 +821,10 @@
       summary.append(name, detail);
       const actions = document.createElement('div'); actions.className = 'modifierActions';
       const active = document.createElement('button'); active.type = 'button';
-      active.textContent = modifier.isActive ? 'Activo' : 'Inactivo';
+      active.textContent = modifier.effectId ? 'Confirmado' : (modifier.isActive ? 'Activo' : 'Inactivo');
+      active.disabled = Boolean(modifier.effectId);
       active.addEventListener('click', () => {
+        if (modifier.effectId) return;
         modifier.isActive = !modifier.isActive;
         sendModifier(modifier);
         renderEditSection();
@@ -733,7 +832,7 @@
       const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'danger'; remove.textContent = 'Quitar';
       remove.addEventListener('click', () => {
         modifiers = modifiers.filter(item => item.id !== modifier.id);
-        send({ type: 'modifierDelete', id: modifier.id });
+        send({ type: modifier.effectId ? 'selectionEffectDelete' : 'modifierDelete', id: modifier.effectId || modifier.id });
         state.structuredEditing = true;
         recalculateAll();
         scheduleSave(100);
@@ -798,11 +897,11 @@
   function createFeatureManager() {
     const manager = document.createElement('section'); manager.className = 'integrationPanel featureManager';
     const heading = document.createElement('div'); heading.className = 'integrationHeading';
-    const title = document.createElement('h2'); title.textContent = 'Features vinculadas al Compendium';
+    const title = document.createElement('h2'); title.textContent = 'Features, feats y equipo del Compendium';
     heading.appendChild(title); manager.appendChild(heading);
     const search = document.createElement('div'); search.className = 'featureSearch';
-    const input = document.createElement('input'); input.type = 'search'; input.placeholder = 'Nombre o texto de la feature';
-    input.setAttribute('aria-label', 'Buscar features offline');
+    const input = document.createElement('input'); input.type = 'search'; input.placeholder = 'Feature, feat, arma, armadura o equipo';
+    input.setAttribute('aria-label', 'Buscar contenido del Compendium offline');
     const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Buscar';
     const runSearch = () => { if (input.value.trim()) send({ type: 'featureSearch', query: input.value.trim() }); };
     button.addEventListener('click', runSearch);
@@ -836,11 +935,17 @@
         const meta = document.createElement('span'); meta.textContent = [result.kind, result.origin, result.level ? `Nivel ${result.level}` : null].filter(Boolean).join(' · ');
         const snippet = document.createElement('p'); snippet.textContent = result.snippet || '';
         const add = document.createElement('button'); add.type = 'button';
-        const already = features.some(feature => feature.id === result.id);
+        const selectable = result.kind === 'Feat' || result.kind === 'Equipment';
+        const already = selectable
+          ? selections.some(selection => selection.referenceId === result.id)
+          : features.some(feature => feature.id === result.id);
         add.textContent = already ? 'Agregada' : 'Agregar'; add.disabled = already;
         add.addEventListener('click', () => {
-          const feature = normalizeFeature(result); features.push(feature);
-          send({ type: 'featureAdd', ...feature }); scheduleSave(100); renderEditSection();
+          if (selectable) send({ type: 'selectionApply', ...result });
+          else {
+            const feature = normalizeFeature(result); features.push(feature);
+            send({ type: 'featureAdd', ...feature }); scheduleSave(100); renderEditSection();
+          }
         });
         item.append(name, meta, snippet, add); results.appendChild(item);
       }
@@ -1007,8 +1112,8 @@
       wrapper.appendChild(createIdentityManager());
       wrapper.appendChild(createLevelUpCard());
     }
+    if (section.id === 'features' || section.id === 'inventory') wrapper.appendChild(createFeatureManager());
     if (section.id === 'features') {
-      wrapper.appendChild(createFeatureManager());
       wrapper.appendChild(createModifierManager());
     }
     if (section.id === 'spells') wrapper.appendChild(createPreparedSpellsPanel());
@@ -1113,6 +1218,7 @@
       id: item?.id ?? item?.Id,
       sourceName: item?.sourceName ?? item?.SourceName,
       sourceId: item?.sourceId ?? item?.SourceId,
+      effectId: item?.effectId ?? item?.EffectId,
       target: item?.target ?? item?.Target,
       value: item?.value ?? item?.Value,
       bonusType: item?.bonusType ?? item?.BonusType,
@@ -1137,6 +1243,8 @@
     for (const [name, value] of Object.entries(payload?.overrides ?? {})) overrides.set(name, String(value));
     modifiers = Array.isArray(payload?.modifiers) ? payload.modifiers.map(normalizeModifier) : [];
     features = Array.isArray(payload?.features) ? payload.features.map(normalizeFeature) : [];
+    selections = Array.isArray(payload?.selections) ? payload.selections.map(normalizeSelection) : [];
+    selectionEffects = Array.isArray(payload?.effects) ? payload.effects.map(normalizeSelectionEffect) : [];
     preparedSpells = Array.isArray(payload?.preparedSpells) ? payload.preparedSpells : [];
     knownSpells = Array.isArray(payload?.knownSpells) ? payload.knownSpells : [];
     resources = Array.isArray(payload?.resources) ? payload.resources : [];
@@ -1162,7 +1270,7 @@
       if (parsed?.type === 'load') loadData(parsed.payload);
       if (parsed?.type === 'featureResults') {
         featureSearchResults = Array.isArray(parsed.results) ? parsed.results : [];
-        if (state.sectionId === 'features') renderEditSection();
+        if (state.sectionId === 'features' || state.sectionId === 'inventory') renderEditSection();
       }
       if (parsed?.type === 'identityResults') {
         identitySearchResults = Array.isArray(parsed.results) ? parsed.results : [];

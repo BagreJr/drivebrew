@@ -35,6 +35,7 @@ public static class CharacterSheetSchema
         var digital = new[]
         {
             Field("Digital.Subclass", "Subclase"),
+            Field("Digital.Subrace", "Subraza"),
             Field("Digital.ClassFeatures", "Class Features", multiline: true),
             Field("Digital.SubclassFeatures", "Subclass Features", multiline: true),
             Field("Digital.RacialTraits", "Racial Traits", multiline: true),
@@ -51,7 +52,7 @@ public static class CharacterSheetSchema
         return
         [
             new("overview", "Overview", "Identidad y estadísticas esenciales del personaje.", Pick(
-                "CharacterName", "Race ", "ClassLevel", "Digital.Subclass", "Background", "Alignment", "XP",
+                "CharacterName", "Race ", "Digital.Subrace", "ClassLevel", "Digital.Subclass", "Background", "Alignment", "XP",
                 "STR", "DEX", "CON", "INT", "WIS", "CHA")),
             new("abilities", "Abilities & Skills", "Características, salvaciones, habilidades y competencias.",
                 Pick("STR", "DEX", "CON", "INT", "WIS", "CHA", "ProfBonus")

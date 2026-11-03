@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DndCompendium.Core.Abstractions;
 using DndCompendium.Core.Models;
+using DndCompendium.Core.Services;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Storage;
@@ -285,7 +286,30 @@ public sealed class CharacterSheetService(
                 proficiencyRanks[field.FieldName] = 1;
         }
 
-        return new CharacterSheetData
+        var manualProficiencyRanks = (data.ManualProficiencyRanks ?? [])
+            .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && pair.Value is >= 0 and <= 2)
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        var manualOtherBonuses = (data.ManualOtherBonuses ?? [])
+            .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        var effects = (data.Effects ?? [])
+            .Where(item => !string.IsNullOrWhiteSpace(item.Id)
+                && !string.IsNullOrWhiteSpace(item.SourceSelectionId)
+                && !string.IsNullOrWhiteSpace(item.Target))
+            .GroupBy(item => item.Id, StringComparer.Ordinal)
+            .Select(group => group.First())
+            .ToList();
+        // v1/v2 stored the user's entries directly in the effective dictionaries.
+        // They become the manual baseline once, so later automatic effects stay reversible.
+        if (effects.Count == 0)
+        {
+            if (manualProficiencyRanks.Count == 0)
+                foreach (var pair in proficiencyRanks) manualProficiencyRanks[pair.Key] = pair.Value;
+            if (manualOtherBonuses.Count == 0)
+                foreach (var pair in data.OtherBonuses ?? []) manualOtherBonuses[pair.Key] = pair.Value;
+        }
+
+        var normalized = new CharacterSheetData
         {
             SchemaVersion = CharacterSheetData.CurrentSchemaVersion,
             RuleSet = data.RuleSet is "2024" or "Homebrew" ? data.RuleSet : "2014",
@@ -293,9 +317,11 @@ public sealed class CharacterSheetService(
             CheckedFields = checkedFields,
             AbilityBaseScores = abilityBases,
             ProficiencyRanks = proficiencyRanks,
+            ManualProficiencyRanks = manualProficiencyRanks,
             OtherBonuses = (data.OtherBonuses ?? [])
                 .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal),
+            ManualOtherBonuses = manualOtherBonuses,
             Overrides = (data.Overrides ?? [])
                 .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
                 .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal),
@@ -311,11 +337,32 @@ public sealed class CharacterSheetService(
                 .GroupBy(item => item.Id, StringComparer.Ordinal)
                 .Select(group => group.First())
                 .ToList(),
+            Selections = (data.Selections ?? [])
+                .Where(item => !string.IsNullOrWhiteSpace(item.Id)
+                    && !string.IsNullOrWhiteSpace(item.ReferenceId)
+                    && !string.IsNullOrWhiteSpace(item.Name))
+                .GroupBy(item => item.Id, StringComparer.Ordinal)
+                .Select(group => group.First())
+                .ToList(),
+            Effects = effects,
             KnownSpellIds = (data.KnownSpellIds ?? [])
                 .Where(id => !string.IsNullOrWhiteSpace(id))
                 .ToHashSet(StringComparer.Ordinal),
+            Spells = (data.Spells ?? [])
+                .Where(item => !string.IsNullOrWhiteSpace(item.Id) && !string.IsNullOrWhiteSpace(item.Name))
+                .GroupBy(item => item.Id, StringComparer.Ordinal)
+                .Select(group => group.First())
+                .ToList(),
+            GeneratedTextFields = (data.GeneratedTextFields ?? [])
+                .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
+                .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal),
+            GeneratedCheckedFields = (data.GeneratedCheckedFields ?? [])
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .ToHashSet(StringComparer.Ordinal),
             UpdatedAt = data.UpdatedAt
         };
+        CharacterSheetEffectEngine.Rebuild(normalized);
+        return normalized;
     }
 
     private static readonly string[] AbilityNames = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];

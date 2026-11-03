@@ -111,4 +111,46 @@ public sealed class PdfSharpCharacterSheetPdfServiceTests
         Assert.All(textNames, name => Assert.Equal("1", reloaded.TextFields[name]));
         Assert.All(checkNames, name => Assert.Contains(name, reloaded.CheckedFields));
     }
+
+    [Fact]
+    public async Task StructuredSelectionsAndSpellSnapshots_RoundTripInsidePdfMetadata()
+    {
+        var templatePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "character_sheet_template.pdf");
+        var data = new CharacterSheetData
+        {
+            TextFields = new Dictionary<string, string> { ["CharacterName"] = "Nyx" },
+            Selections =
+            [
+                new CharacterCompendiumSelection
+                {
+                    Id = "selection:Race:elf", ReferenceId = "race:elf", Kind = "Race", Name = "Elf",
+                    SourceKey = "document:elf", DocumentId = "elf", Target = "elf"
+                }
+            ],
+            Effects =
+            [
+                new CharacterSheetEffect
+                {
+                    Id = "elf-dex", SourceSelectionId = "selection:Race:elf", SourceName = "Elf",
+                    EffectKind = "AbilityBonus", Target = "DEX", Value = 2
+                }
+            ],
+            Spells =
+            [
+                new CharacterSpellReference { Id = "magic-missile", Name = "Magic Missile", Level = 1, IsKnown = true }
+            ]
+        };
+        var service = new PdfSharpCharacterSheetPdfService();
+
+        await using var template = File.OpenRead(templatePath);
+        await using var output = new MemoryStream();
+        await service.WriteAsync(template, output, data);
+        output.Position = 0;
+        var restored = await service.ReadAsync(output);
+
+        Assert.Equal("Nyx", restored.TextFields["CharacterName"]);
+        Assert.Equal("Elf", Assert.Single(restored.Selections).Name);
+        Assert.Equal("DEX", Assert.Single(restored.Effects).Target);
+        Assert.Equal("Magic Missile", Assert.Single(restored.Spells).Name);
+    }
 }

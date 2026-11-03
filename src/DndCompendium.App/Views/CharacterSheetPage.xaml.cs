@@ -127,6 +127,54 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
                 var identityQuery = root.TryGetProperty("query", out var identity) ? identity.GetString() ?? string.Empty : string.Empty;
                 SheetWebView.SendRawMessage(await _viewModel.SearchIdentityPayloadJsonAsync(identityQuery));
                 break;
+            case "selectionApply":
+                await _viewModel.ApplyCompendiumSelectionAsync(
+                    StringProperty(root, "id"),
+                    StringProperty(root, "name"),
+                    StringProperty(root, "kind"),
+                    NullableStringProperty(root, "description") ?? NullableStringProperty(root, "snippet"),
+                    NullableStringProperty(root, "sourceKey"),
+                    NullableStringProperty(root, "documentId"),
+                    NullableStringProperty(root, "target"),
+                    NullableStringProperty(root, "parentClass"),
+                    NullableStringProperty(root, "parent"));
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
+            case "selectionRemove":
+                _viewModel.RemoveCompendiumSelection(StringProperty(root, "id"));
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
+            case "selectionEffectUpsert":
+                _viewModel.UpsertSelectionEffect(
+                    NullableStringProperty(root, "id"),
+                    StringProperty(root, "selectionId"),
+                    StringProperty(root, "effectKind"),
+                    StringProperty(root, "target"),
+                    root.TryGetProperty("value", out var effectValue) && effectValue.TryGetDecimal(out var parsedEffectValue)
+                        ? parsedEffectValue : 0,
+                    root.TryGetProperty("rank", out var rankValue) && rankValue.TryGetInt32(out var parsedRank)
+                        ? parsedRank : 0,
+                    NullableStringProperty(root, "activation"),
+                    NullableStringProperty(root, "condition"),
+                    NullableStringProperty(root, "choiceLabel"));
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
+            case "selectionEffectDelete":
+                _viewModel.RemoveSelectionEffect(StringProperty(root, "id"));
+                await _viewModel.SaveIfNeededAsync();
+                SendSheetPayload();
+                break;
+            case "levelUp":
+                if (root.TryGetProperty("level", out var nextLevel) && nextLevel.TryGetInt32(out var parsedNextLevel))
+                {
+                    await _viewModel.LevelUpAsync(parsedNextLevel);
+                    await _viewModel.SaveIfNeededAsync();
+                    SendSheetPayload();
+                }
+                break;
             case "featureAdd":
                 _viewModel.AddFeatureReference(
                     StringProperty(root, "id"),
