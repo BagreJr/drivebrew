@@ -82,4 +82,30 @@ public sealed class CharacterSheetDataTests
         Assert.Equal("Mind Blade", Assert.Single(restored.Attacks).Name);
         Assert.Equal("Crystal focus", Assert.Single(restored.Inventory).Name);
     }
+
+    [Fact]
+    public void ManualPlayValues_RoundTripCurrentMaximumAndTemporaryHitPointsIndependently()
+    {
+        var original = new CharacterSheetData
+        {
+            TextFields = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["HPCurrent"] = "17",
+                ["HPMax"] = "31",
+                ["HPTemp"] = "6",
+                ["HD"] = "3d8",
+                ["HDTotal"] = "5d8",
+                ["Inspiration"] = "1"
+            }
+        };
+
+        var restored = JsonSerializer.Deserialize<CharacterSheetData>(JsonSerializer.Serialize(original))!;
+
+        Assert.Equal("17", restored.TextFields["HPCurrent"]);
+        Assert.Equal("31", restored.TextFields["HPMax"]);
+        Assert.Equal("6", restored.TextFields["HPTemp"]);
+        Assert.Equal("3d8", restored.TextFields["HD"]);
+        Assert.Equal("5d8", restored.TextFields["HDTotal"]);
+        Assert.Equal("1", restored.TextFields["Inspiration"]);
+    }
 }

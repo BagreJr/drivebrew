@@ -11,7 +11,7 @@
         <Grid Grid.Row="0" Margin="18,14,18,8" ColumnDefinitions="*,Auto">
             <VerticalStackLayout>
                 <Label Style="{StaticResource EyebrowLabelStyle}" Text="CAMPAÑA OFFLINE" />
-                <Label Style="{StaticResource DisplayLabelStyle}" Text="Personajes" />
+                <Label Style="{StaticResource DisplayLabelStyle}" Text="My Characters" />
                 <Label Style="{StaticResource MutedLabelStyle}" Text="{Binding ActiveSummary}" />
             </VerticalStackLayout>
             <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
@@ -20,7 +20,7 @@
         <Border Grid.Row="1" Margin="14,4,14,12" Padding="12" Style="{StaticResource ToolbarCardStyle}">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                 <Entry MaxLength="60" Placeholder="Nombre del nuevo héroe" ReturnType="Done" Text="{Binding NewCharacterName}" />
-                <Button Grid.Column="1" Command="{Binding CreateCommand}" Style="{StaticResource SmallAccentButtonStyle}" Text="Crear" />
+                <Button Grid.Column="1" Command="{Binding CreateCommand}" Style="{StaticResource SmallAccentButtonStyle}" Text="Crear personaje" />
             </Grid>
         </Border>
 

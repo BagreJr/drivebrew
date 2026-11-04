@@ -5,7 +5,8 @@
   let saveTimer = 0;
   const state = api.state = {
     loaded: false, section: 'overview', payload: {}, text: {}, checked: new Set(),
-    identityResults: [], featureResults: [], spellResults: [], saving: false
+    identityResults: [], featureResults: [], spellResults: [], saving: false,
+    identityPickerKind: 'Race', identityPickerQuery: ''
   };
 
   function bridge() {

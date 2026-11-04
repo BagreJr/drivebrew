@@ -65,7 +65,11 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
                 var kind = root.TryGetProperty("kind", out var kindElement) ? kindElement.GetString() ?? "text" : "text";
                 var value = root.TryGetProperty("value", out var valueElement) ? valueElement.GetString() : null;
                 var isChecked = root.TryGetProperty("checked", out var checkedElement) && checkedElement.GetBoolean();
-                _viewModel.ApplyEditorChange(name, kind, value, isChecked);
+                if (string.Equals(name, "CharacterName", StringComparison.Ordinal)
+                    && string.Equals(kind, "text", StringComparison.OrdinalIgnoreCase))
+                    await _viewModel.ApplyCharacterNameAsync(value);
+                else
+                    _viewModel.ApplyEditorChange(name, kind, value, isChecked);
                 break;
             case "save":
                 await _viewModel.SaveIfNeededAsync();
@@ -147,19 +151,30 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
                 if (root.TryGetProperty("id", out var resourceId)
                     && root.TryGetProperty("delta", out var delta)
                     && delta.TryGetInt32(out var resourceDelta))
+                {
                     await _viewModel.AdjustResourceAsync(resourceId.GetString() ?? string.Empty, resourceDelta);
+                    SendSheetPayload();
+                }
                 break;
             case "setPreparedSpell":
                 if (root.TryGetProperty("id", out var spellId))
+                {
                     await _viewModel.SetPreparedSpellAsync(
                         spellId.GetString() ?? string.Empty,
                         !root.TryGetProperty("prepared", out var prepared) || prepared.GetBoolean());
+                    await _viewModel.SaveIfNeededAsync();
+                    SendSheetPayload();
+                }
                 break;
             case "setKnownSpell":
                 if (root.TryGetProperty("id", out var knownSpellId))
+                {
                     _viewModel.SetKnownSpell(
                         knownSpellId.GetString() ?? string.Empty,
                         !root.TryGetProperty("known", out var known) || known.GetBoolean());
+                    await _viewModel.SaveIfNeededAsync();
+                    SendSheetPayload();
+                }
                 break;
             case "spellSearch":
                 var spellQuery = StringProperty(root, "query");

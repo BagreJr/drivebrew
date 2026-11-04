@@ -77,6 +77,39 @@ public sealed class PdfSharpCharacterSheetPdfServiceTests
     }
 
     [Fact]
+    public async Task ManualPlayValues_RoundTripThroughOriginalAcroForm()
+    {
+        var templatePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "character_sheet_template.pdf");
+        var data = new CharacterSheetData
+        {
+            TextFields = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["CharacterName"] = "Nyx",
+                ["HPCurrent"] = "17",
+                ["HPMax"] = "31",
+                ["HPTemp"] = "6",
+                ["HD"] = "3d8",
+                ["HDTotal"] = "5d8",
+                ["Inspiration"] = "1"
+            }
+        };
+        var service = new PdfSharpCharacterSheetPdfService();
+
+        await using var template = File.OpenRead(templatePath);
+        await using var output = new MemoryStream();
+        await service.WriteAsync(template, output, data);
+        output.Position = 0;
+        var restored = await service.ReadAsync(output);
+
+        Assert.Equal("17", restored.TextFields["HPCurrent"]);
+        Assert.Equal("31", restored.TextFields["HPMax"]);
+        Assert.Equal("6", restored.TextFields["HPTemp"]);
+        Assert.Equal("3d8", restored.TextFields["HD"]);
+        Assert.Equal("5d8", restored.TextFields["HDTotal"]);
+        Assert.Equal("1", restored.TextFields["Inspiration"]);
+    }
+
+    [Fact]
     public async Task SchemaCoversAndWritesEveryEditableTemplateField()
     {
         var definitions = CharacterSheetSchema.Sections.SelectMany(section => section.Fields).ToArray();

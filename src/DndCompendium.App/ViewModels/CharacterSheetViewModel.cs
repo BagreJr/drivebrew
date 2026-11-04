@@ -240,6 +240,22 @@ public partial class CharacterSheetViewModel(
         StatusText = "Cambios sin guardar";
     }
 
+    public async Task ApplyCharacterNameAsync(string? value)
+    {
+        if (_character is null) return;
+        var name = value?.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new InvalidOperationException("El personaje necesita un nombre.");
+        if (!string.Equals(name, _character.Name, StringComparison.CurrentCulture))
+        {
+            await profiles.RenameAsync(_character.Id, name);
+            _character = _character with { Name = name };
+            CharacterName = name;
+        }
+        ApplyEditorChange("CharacterName", "text", name, false);
+        _data.TextFields["CharacterName 2"] = name;
+    }
+
     public void SetPortrait(string? dataUrl)
     {
         if (_character is null) return;
