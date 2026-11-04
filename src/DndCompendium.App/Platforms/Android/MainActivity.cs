@@ -12,4 +12,11 @@ namespace DndCompendium.App;
     ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
 public class MainActivity : MauiAppCompatActivity
 {
+#if DEBUG
+    protected override void OnCreate(Bundle? savedInstanceState)
+    {
+        Android.Webkit.WebView.SetWebContentsDebuggingEnabled(true);
+        base.OnCreate(savedInstanceState);
+    }
+#endif
 }

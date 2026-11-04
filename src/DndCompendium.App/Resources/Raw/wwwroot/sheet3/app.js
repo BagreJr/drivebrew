@@ -28,6 +28,10 @@
       preparedSpells:[{id:'detect-thoughts',name:'Detect Thoughts',level:2,school:'Divination',castingTime:'1 action'}],knownSpells:[{id:'mind-sliver',name:'Mind Sliver',level:0,school:'Enchantment',castingTime:'1 action'}],resources:[{Id:'psi',Name:'Psi Points',Current:5,Maximum:7}],editSections:[]
     }});
   }
-  const announce=()=>{if(!api.send({type:'ready',editor:'character-sheet-3',version:4}))globalThis.setTimeout(announce,60);};
+  const announce=()=>{
+    if(api.state.loaded)return;
+    api.send({type:'ready',editor:'character-sheet-3',version:4});
+    globalThis.setTimeout(announce,180);
+  };
   if (!preview.has('preview')) announce();
 })();

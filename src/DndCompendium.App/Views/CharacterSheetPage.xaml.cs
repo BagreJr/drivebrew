@@ -14,6 +14,7 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
     private readonly CharacterSheetViewModel _viewModel;
     private string? _characterId;
     private bool _webViewReady;
+    private CancellationTokenSource? _payloadHandshake;
 
     public CharacterSheetPage(CharacterSheetViewModel viewModel)
     {
@@ -33,7 +34,32 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
     private async Task LoadAndSendAsync(string characterId)
     {
         await _viewModel.LoadAsync(characterId);
-        await MainThread.InvokeOnMainThreadAsync(SendSheetPayload);
+        await MainThread.InvokeOnMainThreadAsync(StartPayloadHandshake);
+    }
+
+    private void StartPayloadHandshake()
+    {
+        _payloadHandshake?.Cancel();
+        _payloadHandshake?.Dispose();
+        _payloadHandshake = new CancellationTokenSource();
+        _ = RetryPayloadHandshakeAsync(_payloadHandshake.Token);
+    }
+
+    private async Task RetryPayloadHandshakeAsync(CancellationToken cancellationToken)
+    {
+        for (var attempt = 0; attempt < 30 && !cancellationToken.IsCancellationRequested; attempt++)
+        {
+            await MainThread.InvokeOnMainThreadAsync(() => TrySendSheetPayload(allowBeforeReady: true));
+            if (_webViewReady) return;
+            try
+            {
+                await Task.Delay(attempt < 6 ? 180 : 400, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+        }
     }
 
     private async void OnRawMessageReceived(object? sender, HybridWebViewRawMessageReceivedEventArgs e)
@@ -58,7 +84,10 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
         {
             case "ready":
                 _webViewReady = true;
-                SendSheetPayload();
+                TrySendSheetPayload();
+                break;
+            case "loaded":
+                _webViewReady = true;
                 break;
             case "change":
                 var name = root.GetProperty("name").GetString() ?? string.Empty;
@@ -313,18 +342,24 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
             ? property.GetString()
             : null;
 
-    private void SendSheetPayload()
+    private bool TrySendSheetPayload(bool allowBeforeReady = false)
     {
-        if (!_webViewReady || !_viewModel.HasCharacter || SheetWebView.Handler is null) return;
+        if ((!_webViewReady && !allowBeforeReady) || !_viewModel.HasCharacter || SheetWebView.Handler is null)
+            return false;
         try
         {
             SheetWebView.SendRawMessage(_viewModel.CreateEditorPayloadJson());
+            return true;
         }
         catch (Exception exception) when (exception is InvalidOperationException or ObjectDisposedException)
         {
-            _viewModel.ReportEditorError("El editor se cerró antes de terminar de cargar.");
+            if (!allowBeforeReady)
+                _viewModel.ReportEditorError("El editor se cerró antes de terminar de cargar.");
+            return false;
         }
     }
+
+    private void SendSheetPayload() => TrySendSheetPayload();
 
     private static void OnWebResourceRequested(object? sender, WebViewWebResourceRequestedEventArgs e)
     {
@@ -338,6 +373,7 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
 
     protected override async void OnDisappearing()
     {
+        _payloadHandshake?.Cancel();
         await _viewModel.SaveIfNeededAsync();
         base.OnDisappearing();
     }
@@ -345,8 +381,8 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        if (!_webViewReady || string.IsNullOrWhiteSpace(_characterId)) return;
+        if (string.IsNullOrWhiteSpace(_characterId)) return;
         await _viewModel.RefreshSessionDataAsync();
-        SendSheetPayload();
+        StartPayloadHandshake();
     }
 }

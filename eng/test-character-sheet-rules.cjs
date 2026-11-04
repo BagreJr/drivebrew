@@ -1,8 +1,11 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
+const characterSheetHtml = fs.readFileSync(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/character-sheet.html'), 'utf8');
+assert.match(characterSheetHtml, /_framework\/hybridwebview\.js/, 'Character Sheet must load the MAUI HybridWebView bridge');
 const rules = require(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet/character-sheet-rules.js'));
 require(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet/layout.js'));
 

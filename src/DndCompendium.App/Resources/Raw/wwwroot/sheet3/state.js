@@ -16,8 +16,12 @@
   api.send = message => {
     const current = bridge();
     if (!current) return false;
-    current.SendRawMessage(JSON.stringify(message));
-    return true;
+    try {
+      current.SendRawMessage(JSON.stringify(message));
+      return true;
+    } catch {
+      return false;
+    }
   };
   api.uuid = () => globalThis.crypto?.randomUUID?.().replaceAll('-', '') || `${Date.now()}${Math.random()}`;
   api.subscribe = listener => { listeners.add(listener); return () => listeners.delete(listener); };
@@ -74,7 +78,10 @@
   api.receive = message => {
     try {
       const parsed = typeof message === 'string' ? JSON.parse(message) : message;
-      if (parsed?.type === 'load') normalizePayload(parsed.payload);
+      if (parsed?.type === 'load') {
+        normalizePayload(parsed.payload);
+        api.send({ type: 'loaded', editor: 'character-sheet-3', version: 4 });
+      }
       else if (parsed?.type === 'identityResults') state.identityResults = parsed.results || [];
       else if (parsed?.type === 'featureResults') state.featureResults = parsed.results || [];
       else if (parsed?.type === 'spellResults') state.spellResults = parsed.results || [];
