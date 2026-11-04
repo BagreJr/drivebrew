@@ -81,6 +81,14 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
                 if (root.TryGetProperty("step", out var creatorStep) && creatorStep.TryGetInt32(out var parsedCreatorStep))
                     _viewModel.SetCreatorStep(parsedCreatorStep);
                 break;
+            case "initialClassLevel":
+                if (root.TryGetProperty("level", out var initialLevel) && initialLevel.TryGetInt32(out var parsedInitialLevel))
+                {
+                    await _viewModel.SetInitialClassLevelAsync(parsedInitialLevel);
+                    await _viewModel.SaveIfNeededAsync();
+                    SendSheetPayload();
+                }
+                break;
             case "completeCreation":
                 await _viewModel.CompleteCreationAsync();
                 await _viewModel.SaveIfNeededAsync();
@@ -212,6 +220,8 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
                     NullableStringProperty(root, "target"),
                     NullableStringProperty(root, "parentClass"),
                     NullableStringProperty(root, "parent"),
+                    NullableStringProperty(root, "level"),
+                    NullableStringProperty(root, "requirements"),
                     root.TryGetProperty("multiclass", out var multiclass) && multiclass.ValueKind is JsonValueKind.True);
                 await _viewModel.SaveIfNeededAsync();
                 SendSheetPayload();

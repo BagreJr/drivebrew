@@ -101,6 +101,7 @@ public sealed class CharacterCompendiumSelection
     public string? Target { get; init; }
     public string? ParentClass { get; init; }
     public string? ParentName { get; init; }
+    public string? Requirements { get; init; }
     public int? Level { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTimeOffset SelectedAt { get; init; } = DateTimeOffset.UtcNow;

@@ -1,4 +1,4 @@
-name: Publish stable Android APK
+name: Publish Android APK
 
 on:
   workflow_dispatch:
@@ -19,6 +19,11 @@ on:
         description: Notes shown inside D&D Compendium
         required: true
         type: string
+      prerelease:
+        description: Publish as a test release without replacing the stable update
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -102,6 +107,7 @@ jobs:
           RELEASE_TAG: ${{ inputs.tag }}
           RELEASE_NOTES: ${{ inputs.release_notes }}
           REPOSITORY: ${{ github.repository }}
+          IS_PRERELEASE: ${{ inputs.prerelease }}
         run: |
           $sha = (Get-FileHash DndCompendium.apk -Algorithm SHA256).Hash.ToLowerInvariant()
           $manifest = [ordered]@{
@@ -113,8 +119,8 @@ jobs:
             releaseNotes = $env:RELEASE_NOTES
             publishedAt = (Get-Date).ToUniversalTime().ToString("O")
             minimumAndroidApi = 21
-            channel = "stable"
-            isPrerelease = $false
+            channel = if ($env:IS_PRERELEASE -eq "true") { "beta" } else { "stable" }
+            isPrerelease = $env:IS_PRERELEASE -eq "true"
           }
           $manifest | ConvertTo-Json -Depth 4 | Set-Content -Encoding utf8NoBOM app-update.json
           $env:RELEASE_NOTES | Set-Content -Encoding utf8NoBOM release-notes.md
@@ -126,8 +132,14 @@ jobs:
           RELEASE_TAG: ${{ inputs.tag }}
           VERSION_NAME: ${{ inputs.version_name }}
           TARGET_SHA: ${{ github.sha }}
+          IS_PRERELEASE: ${{ inputs.prerelease }}
         run: |
-          gh release create $env:RELEASE_TAG DndCompendium.apk app-update.json `
-            --title "D&D Compendium $env:VERSION_NAME" `
-            --notes-file release-notes.md `
-            --target $env:TARGET_SHA
+          $arguments = @(
+            "release", "create", $env:RELEASE_TAG,
+            "DndCompendium.apk", "app-update.json",
+            "--title", "D&D Compendium $env:VERSION_NAME",
+            "--notes-file", "release-notes.md",
+            "--target", $env:TARGET_SHA
+          )
+          if ($env:IS_PRERELEASE -eq "true") { $arguments += "--prerelease" }
+          & gh @arguments

@@ -111,6 +111,7 @@ public partial class CharacterSheetViewModel(
                 features = _data.Features,
                 selections = _data.Selections.Where(item => item.IsActive),
                 effects = _data.Effects,
+                ruleSuggestions = GetRuleSuggestions(),
                 classLevels = _data.ClassLevels,
                 conditions = _data.Conditions,
                 attacks = _data.Attacks,
@@ -273,6 +274,32 @@ public partial class CharacterSheetViewModel(
     {
         if (_character is null || !_data.IsCreationDraft) return;
         _data.CreatorStep = Math.Clamp(step, 1, 8);
+        MarkChanged();
+    }
+
+    public async Task SetInitialClassLevelAsync(int level)
+    {
+        if (_character is null || !_data.IsCreationDraft) return;
+        var progression = _data.ClassLevels.FirstOrDefault(item => item.IsPrimary)
+            ?? _data.ClassLevels.FirstOrDefault();
+        if (progression is null) return;
+        level = Math.Clamp(level, 1, 20);
+        var selectedClass = _data.Selections.FirstOrDefault(item => item.IsActive
+            && string.Equals(item.Id, progression.SelectionId, StringComparison.Ordinal));
+        if (selectedClass is null) return;
+
+        progression.Level = level;
+        selectedClass.Level = level;
+        var relatedSelections = new[] { selectedClass }.Concat(_data.Selections.Where(item => item.IsActive
+            && item.Kind == nameof(SearchContentKind.Subclass)
+            && string.Equals(item.ParentClass, selectedClass.Name, StringComparison.CurrentCultureIgnoreCase))).ToArray();
+        foreach (var selection in relatedSelections)
+        {
+            selection.Level = level;
+            _data.Features.RemoveAll(item => string.Equals(item.SelectionId, selection.Id, StringComparison.Ordinal));
+            await AddRelatedFeaturesAsync(selection);
+        }
+        ProjectSelectionFields();
         MarkChanged();
     }
 
@@ -473,19 +500,31 @@ public partial class CharacterSheetViewModel(
         var results = (await search.SearchAsync(query.Trim(), limit: 100))
             .Where(result => supportedKinds.Contains(result.Entry.Kind))
             .Take(30)
-            .Select(result => new
+            .Select(result =>
             {
-                id = result.Entry.Id,
-                name = result.Entry.Name,
-                kind = result.Entry.Kind.ToString(),
-                origin = result.Entry.Origin,
-                parent = result.Entry.Parent,
-                level = result.Entry.Level,
-                snippet = result.Snippet,
-                description = result.Entry.Description,
-                sourceKey = result.Entry.SourceKey,
-                documentId = result.Entry.DocumentId,
-                target = result.Entry.Target
+                var reason = CharacterSelectionRules.GetUnavailableReason(
+                    result.Entry.Kind, result.Entry.ParentClass,
+                    result.Entry.ParentSubclass ?? result.Entry.Parent,
+                    result.Entry.Level, result.Entry.Requirements, _data.Selections, TotalCharacterLevel());
+                return new
+                {
+                    id = result.Entry.Id,
+                    name = result.Entry.Name,
+                    kind = result.Entry.Kind.ToString(),
+                    origin = result.Entry.Origin,
+                    parent = result.Entry.Parent,
+                    parentClass = result.Entry.ParentClass,
+                    parentSubclass = result.Entry.ParentSubclass,
+                    level = result.Entry.Level,
+                    requirements = result.Entry.Requirements,
+                    selectable = reason is null,
+                    blockedReason = reason,
+                    snippet = result.Snippet,
+                    description = result.Entry.Description,
+                    sourceKey = result.Entry.SourceKey,
+                    documentId = result.Entry.DocumentId,
+                    target = result.Entry.Target
+                };
             });
         return JsonSerializer.Serialize(new { type = "featureResults", results });
     }
@@ -504,19 +543,29 @@ public partial class CharacterSheetViewModel(
         var results = (await search.SearchAsync(query.Trim(), limit: 100))
             .Where(result => supportedKinds.Contains(result.Entry.Kind))
             .Take(30)
-            .Select(result => new
+            .Select(result =>
             {
-                id = result.Entry.Id,
-                name = result.Entry.Name,
-                kind = result.Entry.Kind.ToString(),
-                origin = result.Entry.Origin,
-                parentClass = result.Entry.ParentClass,
-                parent = result.Entry.Parent,
-                snippet = result.Snippet,
-                description = result.Entry.Description,
-                sourceKey = result.Entry.SourceKey,
-                documentId = result.Entry.DocumentId,
-                target = result.Entry.Target
+                var reason = CharacterSelectionRules.GetUnavailableReason(
+                    result.Entry.Kind, result.Entry.ParentClass, result.Entry.Parent,
+                    result.Entry.Level, result.Entry.Requirements, _data.Selections, TotalCharacterLevel());
+                return new
+                {
+                    id = result.Entry.Id,
+                    name = result.Entry.Name,
+                    kind = result.Entry.Kind.ToString(),
+                    origin = result.Entry.Origin,
+                    parentClass = result.Entry.ParentClass,
+                    parent = result.Entry.Parent,
+                    level = result.Entry.Level,
+                    requirements = result.Entry.Requirements,
+                    selectable = reason is null,
+                    blockedReason = reason,
+                    snippet = result.Snippet,
+                    description = result.Entry.Description,
+                    sourceKey = result.Entry.SourceKey,
+                    documentId = result.Entry.DocumentId,
+                    target = result.Entry.Target
+                };
             });
         return JsonSerializer.Serialize(new { type = "identityResults", results });
     }
@@ -578,6 +627,8 @@ public partial class CharacterSheetViewModel(
         string? target,
         string? parentClass,
         string? parentName,
+        string? requiredLevel,
+        string? requirements,
         bool addAsMulticlass = false)
     {
         if (_character is null || string.IsNullOrWhiteSpace(referenceId)
@@ -590,6 +641,13 @@ public partial class CharacterSheetViewModel(
         if (string.Equals(kind, "Subrace", StringComparison.Ordinal)
             && !_data.Selections.Any(item => item.IsActive && item.Kind == nameof(SearchContentKind.Race)))
             throw new InvalidOperationException("Elegí primero la raza principal antes de agregar una subraza.");
+        if (Enum.TryParse<SearchContentKind>(kind, out var parsedKind))
+        {
+            var unavailable = CharacterSelectionRules.GetUnavailableReason(
+                parsedKind, parentClass, parentName, requiredLevel, requirements,
+                _data.Selections, TotalCharacterLevel());
+            if (unavailable is not null) throw new InvalidOperationException(unavailable);
+        }
 
         var isMulticlass = addAsMulticlass && kind == nameof(SearchContentKind.Class);
         var singleton = !isMulticlass && kind is (nameof(SearchContentKind.Class)
@@ -626,6 +684,7 @@ public partial class CharacterSheetViewModel(
             Target = target,
             ParentClass = parentClass,
             ParentName = parentName,
+            Requirements = requirements,
             Level = kind is nameof(SearchContentKind.Class) or nameof(SearchContentKind.Subclass)
                 ? isMulticlass ? 1 : LevelFromClassText(_data.TextFields.GetValueOrDefault("ClassLevel"))
                 : null,
@@ -660,7 +719,8 @@ public partial class CharacterSheetViewModel(
             }
         }
 
-        if (kind == nameof(SearchContentKind.Feat)
+        if ((kind is nameof(SearchContentKind.Feat) or nameof(SearchContentKind.ClassFeature)
+                or nameof(SearchContentKind.SubclassFeature) or nameof(SearchContentKind.RaceFeature))
             && !_data.Features.Any(item => string.Equals(item.Id, referenceId, StringComparison.Ordinal)))
         {
             _data.Features.Add(new CharacterFeatureReference
@@ -1021,6 +1081,21 @@ public partial class CharacterSheetViewModel(
                 SelectionId = selection.Id
             });
         }
+    }
+
+    private int TotalCharacterLevel()
+        => Math.Clamp(_data.ClassLevels.Sum(item => item.Level), 1, 20);
+
+    private IReadOnlyList<CharacterRuleSuggestion> GetRuleSuggestions()
+    {
+        var existing = _data.Effects.Select(item =>
+                $"{item.SourceSelectionId}|{item.EffectKind}|{item.Target}|{item.Value}|{item.Rank}")
+            .ToHashSet(StringComparer.Ordinal);
+        return _data.Selections.Where(item => item.IsActive)
+            .SelectMany(CharacterRuleSuggestionParser.Parse)
+            .Where(item => !existing.Contains(
+                $"{item.SelectionId}|{item.EffectKind}|{item.Target}|{item.Value}|{item.Rank}"))
+            .ToArray();
     }
 
     private static bool IsAvailableAtLevel(SearchIndexEntry entry, CharacterCompendiumSelection selection)
