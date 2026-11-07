@@ -109,6 +109,18 @@ public abstract partial class SpellListViewModel : ObservableObject
     partial void OnSelectedSortChanged(string value) => ApplyFilter();
 
     [RelayCommand(AllowConcurrentExecutions = false)]
+    private async Task ActivateAsync()
+    {
+        if (_allSpells.Count == 0)
+        {
+            await LoadAsync();
+            return;
+        }
+
+        await SynchronizeSavedStateAsync();
+    }
+
+    [RelayCommand(AllowConcurrentExecutions = false)]
     private async Task LoadAsync()
     {
         if (IsBusy) return;
@@ -149,6 +161,37 @@ public abstract partial class SpellListViewModel : ObservableObject
     {
         IsRefreshing = true;
         await LoadAsync();
+    }
+
+    private async Task SynchronizeSavedStateAsync()
+    {
+        if (IsBusy) return;
+        IsBusy = true;
+        ErrorMessage = null;
+        try
+        {
+            _activeCharacterName = (await _profileStore.GetActiveAsync()).Name;
+            var preparedIds = await _repository.GetPreparedIdsAsync();
+            var favoriteIds = await _repository.GetFavoriteIdsAsync();
+
+            foreach (var spell in _allSpells)
+            {
+                spell.IsPrepared = preparedIds.Contains(spell.Id);
+                spell.IsFavorite = favoriteIds.Contains(spell.Id);
+            }
+
+            OnPropertyChanged(nameof(PageSubtitle));
+            OnPropertyChanged(nameof(ActiveCharacterText));
+        }
+        catch (Exception exception)
+        {
+            ErrorMessage = $"No se pudo actualizar el estado de los spells: {exception.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+            OnPropertyChanged(nameof(IsEmpty));
+        }
     }
 
     [RelayCommand(AllowConcurrentExecutions = false)]

@@ -15,6 +15,6 @@ public partial class SpellsPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await _viewModel.LoadCommand.ExecuteAsync(null);
+        await _viewModel.ActivateCommand.ExecuteAsync(null);
     }
 }
