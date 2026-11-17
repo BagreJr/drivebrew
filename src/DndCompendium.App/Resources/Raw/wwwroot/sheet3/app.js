@@ -1,24 +1,22 @@
 (() => {
   'use strict';
   const api=globalThis.DrivebrewSheet3,h=(...args)=>api.h(...args),root=document.getElementById('app');
-  function portrait(){const source=api.state.payload.portraitDataUrl,name=api.state.text.CharacterName||api.state.payload.characterName||'?';return h('div',{class:'portrait'},source?h('img',{src:source,alt:''}):name.slice(0,1).toUpperCase());}
   function header(){
-    const values=api.calculated();
-    return h('header',{class:'topbar'},
-      h('div',{class:'toprow'},
-        portrait(),
-        h('div',{class:'identity'},
-          h('span',{class:'eyebrow',text:[values['Race '],values.ClassLevel].filter(Boolean).join(' · ')||'CHARACTER SHEET'}),
-          h('h1',{text:values.CharacterName||api.state.payload.characterName||'Personaje'})),
-        h('div',{class:'headerActions'},
-          h('span',{class:`saveState${api.state.saving?' saving':''}`,text:api.state.saving?'Guardando…':'✓ Offline'}),
-          h('button',{type:'button',class:'headerEdit','aria-label':'Editar personaje',text:'✎',onclick:()=>api.changeSection('details')}))));
+    const values=api.calculated(),name=values.CharacterName||api.state.payload.characterName||'Personaje';
+    return h('header',{class:'topbar referenceTopbar'},
+      h('button',{type:'button',class:'topIcon','aria-label':'Volver',text:'‹',onclick:()=>api.send({type:'closeSheet'})}),
+      h('div',{class:'topIdentity'},h('strong',{text:name}),h('span',{text:values['Spellcasting Class 2']?'CON MAGIA':'HOJA DE PERSONAJE'})),
+      h('span',{class:`saveState${api.state.saving?' saving':''}`,text:api.state.saving?'Guardando…':'Guardado'}),
+      h('button',{type:'button',class:'topIcon','aria-label':'Abrir PDF',text:'▣',onclick:()=>api.send({type:'openPdf'})}),
+      h('button',{type:'button',class:'topIcon','aria-label':'Exportar PDF',text:'⇩',onclick:()=>api.send({type:'sharePdf'})}),
+      h('button',{type:'button',class:'topIcon','aria-label':'Cambiar tema',text:'◐',onclick:()=>api.toggleSheetTheme?.()}),
+      h('button',{type:'button',class:'topIcon toolIcon','aria-label':'Herramientas',text:'⬡',onclick:()=>api.openSheetTools?.()}));
   }
-  function render(){if(!api.state.loaded)return;root.replaceChildren();if(api.state.payload.isCreationDraft){root.append(api.renderCreator());return;}root.append(header(),api.renderCharacter(),api.renderNav());}
+  function render(){if(!api.state.loaded)return;root.replaceChildren();if(api.state.payload.isCreationDraft){root.append(api.renderCreator());return;}root.append(header(),api.renderNav(),api.renderCharacter());}
   api.subscribe(render);
   const preview = new URLSearchParams(globalThis.location.search);
   if (preview.has('preview')) {
-    api.state.section = preview.get('section') || 'overview';
+    api.state.section = preview.get('section') || 'front';
     api.receive({type:'load',payload:{
       characterName:'Nyx Veyra',isCreationDraft:preview.get('mode')==='creator',creatorStep:Number(preview.get('step')||1),
       portraitDataUrl:null,textFields:{CharacterName:'Nyx Veyra','Race ':'Aasimar',ClassLevel:'Psion 7','Digital.Subclass':'Awakened Mind',Background:'Sage',HPCurrent:'43',HPMax:'52',HPTemp:'6',AC:'17',Speed:'30 ft',HD:'5d8',HDTotal:'7d8',Inspiration:'1',STR:'8',DEX:'16',CON:'14',INT:'19',WIS:'13',CHA:'12','SpellcastingAbility 2':'INT',Backstory:'Nyx escucha pensamientos como ecos en una biblioteca sin puertas.','PersonalityTraits ':'Observadora y paciente.','Digital.Notes':'Juró encontrar el origen de la voz que la acompaña.'},

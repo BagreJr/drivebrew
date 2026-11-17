@@ -6,6 +6,12 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const characterSheetHtml = fs.readFileSync(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/character-sheet.html'), 'utf8');
 assert.match(characterSheetHtml, /_framework\/hybridwebview\.js/, 'Character Sheet must load the MAUI HybridWebView bridge');
+assert.match(characterSheetHtml, /sheet3\/reference-sheet\.css/, 'Character Sheet must load the supplied three-page visual system');
+assert.match(characterSheetHtml, /sheet3\/reference-sheet\.js/, 'Character Sheet must load the supplied sheet navigation');
+const referenceSheetScript = fs.readFileSync(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet3/reference-sheet.js'), 'utf8');
+const referenceSheetStyles = fs.readFileSync(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet3/reference-sheet.css'), 'utf8');
+for (const page of ['front', 'details', 'spells']) assert.match(referenceSheetScript, new RegExp(`['\"]${page}['\"]`), `Missing ${page} sheet page`);
+for (const selector of ['.sheetTabs', '.identitySheet', '.abilityClassic']) assert.match(referenceSheetStyles, new RegExp(selector.replace('.', '\\.')), `Missing reference style ${selector}`);
 const rules = require(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet/character-sheet-rules.js'));
 require(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet/layout.js'));
 

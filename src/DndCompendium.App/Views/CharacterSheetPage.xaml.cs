@@ -82,6 +82,9 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
         if (!root.TryGetProperty("type", out var typeElement)) return;
         switch (typeElement.GetString())
         {
+            case "closeSheet":
+                await Shell.Current.GoToAsync("..");
+                break;
             case "ready":
                 _webViewReady = true;
                 TrySendSheetPayload();

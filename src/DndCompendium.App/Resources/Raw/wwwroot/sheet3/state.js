@@ -4,7 +4,7 @@
   const listeners = new Set();
   let saveTimer = 0;
   const state = api.state = {
-    loaded: false, section: 'overview', payload: {}, text: {}, checked: new Set(),
+    loaded: false, section: 'front', payload: {}, text: {}, checked: new Set(),
     identityResults: [], featureResults: [], spellResults: [], saving: false,
     identityPickerKind: 'Race', identityPickerQuery: ''
   };
@@ -59,7 +59,7 @@
     checked ? state.checked.add(name) : state.checked.delete(name);
     api.send({ type: 'change', name, kind: 'checkbox', value: '', checked }); api.scheduleSave();
   };
-  api.changeSection = section => { state.section = section; api.notify(); globalThis.scrollTo({ top: 0, behavior: 'smooth' }); };
+  api.changeSection = section => { state.section = section; api.notify(); globalThis.scrollTo({ top: 0, behavior: 'instant' }); };
   api.openReference = item => item?.documentId && api.send({ type: 'openFeature', documentId: item.documentId, target: item.target });
   api.toast = message => {
     const region = document.getElementById('toast-region');
