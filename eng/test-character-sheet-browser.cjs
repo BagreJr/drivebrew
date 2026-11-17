@@ -35,7 +35,7 @@ async function main() {
     for (let attempt = 0; attempt < 50; attempt += 1) {
       try {
         const targets = await fetch(`http://127.0.0.1:${debugPort}/json/list`).then(result => result.json());
-        target = targets.find(item => item.type === 'page');
+        target = targets.find(item => item.type === 'page' && item.url.includes(`127.0.0.1:${port}`));
         if (target) break;
       } catch { /* Chrome is starting. */ }
       await delay(100);
@@ -62,7 +62,13 @@ async function main() {
     };
     await send('Runtime.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
-    await delay(300);
+    let applicationReady = false;
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      applicationReady = await evaluate(`typeof Store !== 'undefined' && typeof App !== 'undefined'`);
+      if (applicationReady) break;
+      await delay(100);
+    }
+    assert.equal(applicationReady, true, 'The character sheet application did not finish loading');
     await evaluate(`(() => { const ch=Store.create('caster',{name:'Prueba móvil',classId:'wizard'}); App.open(ch.id); return ch.id; })()`);
     await delay(150);
     const first = await evaluate(`(() => ({
