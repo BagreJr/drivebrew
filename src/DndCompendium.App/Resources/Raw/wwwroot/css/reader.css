@@ -76,12 +76,45 @@ body {
   width: 100%;
 }
 
-/* Book mode intentionally leaves Homebrewery's theme rules intact. CSS zoom is
-   also the mechanism used by Homebrewery and keeps page parity selectors valid. */
+/* Book mode keeps the authored Homebrewery layout. Pages whose prose genuinely
+   escapes the paper are marked by reader.js and allowed to grow instead of
+   silently clipping a third column or the final lines. */
+.mode-book.readerShell {
+  min-width: max(100%, var(--scaled-page-width));
+  overflow-x: auto;
+}
+
+.mode-book .documentPages {
+  width: max(100%, var(--scaled-page-width));
+}
+
 .mode-book .page {
   flex: 0 0 auto;
   zoom: var(--reader-zoom);
   box-shadow: 0 18px 45px rgb(0 0 0 / 45%);
+}
+
+.mode-book .page.readerTextOverflow {
+  height: auto !important;
+  min-height: 279.4mm;
+  contain: none !important;
+  content-visibility: visible !important;
+  overflow: visible !important;
+  column-fill: balance !important;
+}
+
+.mode-book .page.readerTextOverflow .columnWrapper {
+  max-height: none !important;
+  column-fill: balance !important;
+  overflow: visible !important;
+}
+
+.mode-book .page table th,
+.mode-book .page table td {
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+  -webkit-hyphens: none;
 }
 
 .renderError {
@@ -130,7 +163,7 @@ body {
   padding: 38px clamp(18px, 5vw, 44px) 42px !important;
   contain: none !important;
   content-visibility: visible !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   columns: 1 !important;
   column-width: auto !important;
   column-count: 1 !important;
@@ -164,15 +197,14 @@ body {
   hyphens: none;
 }
 
-/* Homebrewery documents deliberately position artwork over a fixed paper canvas.
-   In mobile mode every authored element returns to normal flow so illustrations can
-   never cover prose on a narrow screen. Book mode remains pixel-faithful. */
+/* Homebrewery documents position artwork over a fixed paper canvas. In mobile
+   mode those authored layers return to normal flow, while their images keep their
+   intrinsic ratio and remain fully visible. */
 .mode-mobile .page * {
   position: static !important;
   inset: auto !important;
   float: none !important;
   z-index: auto !important;
-  max-width: 100% !important;
   transform: none !important;
 }
 
@@ -183,10 +215,29 @@ body {
   width: auto !important;
   height: auto !important;
   max-width: 100% !important;
-  max-height: min(62vh, 34rem) !important;
+  max-height: none !important;
   margin: 1rem auto !important;
   object-fit: contain !important;
+  object-position: center !important;
   mix-blend-mode: normal !important;
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
+}
+
+.mode-mobile .page .readerArtwork {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.mode-mobile .page .readerArtworkFrame {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 1rem 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
 }
 
 .mode-mobile .page [class*="imageMask"],
@@ -201,6 +252,7 @@ body {
   -webkit-mask-image: none !important;
   mask-image: none !important;
   clip-path: none !important;
+  -webkit-clip-path: none !important;
 }
 
 .mode-mobile .page [class*="watercolor"],

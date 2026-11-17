@@ -2,7 +2,7 @@
   'use strict';
 
   const PROTOCOL_VERSION = 2;
-  const RENDERER_VERSION = '1.0.1';
+  const RENDERER_VERSION = '1.1.0';
   const PAGE_WIDTH = 816;
   const PAGE_HEIGHT = 1056;
   const MAX_DOCUMENT_BYTES = 8 * 1024 * 1024;
@@ -301,6 +301,7 @@
     shell.style.setProperty('--reader-font-scale', String(state.fontScale));
     shell.style.setProperty('--scaled-page-width', `${PAGE_WIDTH * state.zoom}px`);
     shell.style.setProperty('--scaled-page-height', `${PAGE_HEIGHT * state.zoom}px`);
+    if (state.mode === 'book' && state.pageCount > 0) queueBookOverflowRepair();
     if (notify) sendToHost({ type: 'modeChanged', mode: state.mode, zoom: state.zoom, fontScale: state.fontScale, documentId: state.documentId });
     return { mode: state.mode, zoom: state.zoom, fontScale: state.fontScale };
   }
@@ -329,6 +330,61 @@
   }
 
   function nextFrame() { return new Promise((resolve) => globalThis.requestAnimationFrame(() => resolve())); }
+
+  function prepareResponsiveMedia(page) {
+    for (const media of page.querySelectorAll('img, svg, video')) {
+      if (media instanceof HTMLImageElement) {
+        media.loading = 'lazy';
+        media.decoding = 'async';
+      }
+      const inlineStyle = String(media.getAttribute('style') || '').toLowerCase();
+      const mask = media.closest('[class*="imageMask"], [class*="image-mask"]');
+      const authoredArtwork = Boolean(mask)
+        || /(?:position\s*:\s*absolute|(?:top|right|bottom|left)\s*:)/u.test(inlineStyle)
+        || /(?:width|height)\s*:\s*(?:100%|[4-9]\d%|\d{3,}px)/u.test(inlineStyle);
+      if (authoredArtwork) media.classList.add('readerArtwork');
+      if (mask) mask.classList.add('readerArtworkFrame');
+    }
+  }
+
+  function hasClippedBookText(page) {
+    const pageRect = page.getBoundingClientRect();
+    const ignored = '.artist, .footnote, .pageNumber, .watermark, [class*="watercolor"], [class*="stain"]';
+    const walker = document.createTreeWalker(page, NodeFilter.SHOW_TEXT);
+    let textNode = walker.nextNode();
+    while (textNode) {
+      const parent = textNode.parentElement;
+      if (parent && textNode.textContent.trim() && !parent.closest(ignored)) {
+        const range = document.createRange();
+        range.selectNodeContents(textNode);
+        for (const rect of range.getClientRects()) {
+          if (rect.width > 0 && rect.height > 0
+            && (rect.left < pageRect.left - 1 || rect.right > pageRect.right + 1
+              || rect.top < pageRect.top - 1 || rect.bottom > pageRect.bottom + 1)) return true;
+        }
+      }
+      textNode = walker.nextNode();
+    }
+    return false;
+  }
+
+  async function repairBookOverflow() {
+    if (state.mode !== 'book') return [];
+    const pages = [...documentRoot.querySelectorAll('.page')];
+    for (const page of pages) page.classList.remove('readerTextOverflow');
+    await nextFrame();
+    const repairedPages = [];
+    for (const page of pages) {
+      if (!hasClippedBookText(page)) continue;
+      page.classList.add('readerTextOverflow');
+      repairedPages.push(Number(page.dataset.pageNumber));
+    }
+    return repairedPages;
+  }
+
+  function queueBookOverflowRepair() {
+    globalThis.requestAnimationFrame(() => { void repairBookOverflow(); });
+  }
 
   async function renderDocument(input) {
     const generation = ++state.renderGeneration;
@@ -398,6 +454,7 @@
       const model = pageModels[index];
       try {
         model.columns.append(sanitizeHtml(renderer.render(model.source, index), resourceMap));
+        prepareResponsiveMedia(model.page);
       } catch (error) {
         const renderError = document.createElement('div');
         renderError.className = 'renderError';
@@ -413,12 +470,16 @@
     }
 
     if (generation !== state.renderGeneration) return null;
+    if (document.fonts?.ready) await document.fonts.ready;
+    const repairedPages = await repairBookOverflow();
+    if (generation !== state.renderGeneration) return null;
     shell.dataset.readerState = pageErrors.length === pageSources.length ? 'error' : 'ready';
     documentRoot.scrollIntoView({ block: 'start' });
     hideStatus();
     const result = {
       type: 'rendered', documentId: state.documentId, pageCount: state.pageCount, currentPage: 1,
       validationErrors, pageErrors, diagnostics: parsed.diagnostics, resourceIssues: [...state.resourceIssues],
+      repairedPages,
       metadata: { title: documentTitle, renderer: parsed.metadata.renderer || 'V3', theme: appliedTheme, lang: parsed.metadata.lang || 'es' },
       mode: state.mode, zoom: state.zoom, fontScale: state.fontScale
     };

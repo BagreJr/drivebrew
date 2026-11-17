@@ -123,7 +123,7 @@
 
   api.openSheetTools = () => {
     const body = h('div', { class: 'toolMenu' });
-    const items = [['front', 'Hoja principal'], ['abilities', 'Características y skills'], ['combat', 'Combate'], ['features', 'Features y progresión'], ['inventory', 'Inventario'], ['details', 'Historia y Compendium'], ['spells', 'Conjuros']];
+    const items = [['front', 'Hoja principal'], ['combat', 'Combate'], ['features', 'Features y progresión'], ['inventory', 'Inventario'], ['details', 'Historia y Compendium'], ['spells', 'Conjuros']];
     for (const [id, label] of items) body.append(api.button(label, () => { body.closest('.modalBackdrop')?.remove(); api.changeSection(id); }, id === api.state.section ? 'primary' : 'ghost'));
     api.modal('Herramientas de la hoja', body);
   };

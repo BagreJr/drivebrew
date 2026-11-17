@@ -10,9 +10,13 @@ assert.match(characterSheetHtml, /sheet3\/reference-sheet\.css/, 'Character Shee
 assert.match(characterSheetHtml, /sheet3\/reference-sheet\.js/, 'Character Sheet must load the supplied sheet navigation');
 const referenceSheetScript = fs.readFileSync(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet3/reference-sheet.js'), 'utf8');
 const referenceSheetStyles = fs.readFileSync(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet3/reference-sheet.css'), 'utf8');
+const sheetSectionsScript = fs.readFileSync(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet3/sections.js'), 'utf8');
 for (const page of ['front', 'details', 'spells']) assert.match(referenceSheetScript, new RegExp(`['\"]${page}['\"]`), `Missing ${page} sheet page`);
 for (const selector of ['.sheetTabs', '.identitySheet', '.abilityClassic']) assert.match(referenceSheetStyles, new RegExp(selector.replace('.', '\\.')), `Missing reference style ${selector}`);
 const rules = require(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet/character-sheet-rules.js'));
+assert.match(referenceSheetScript, /abilitySheet\(values\)/, 'Abilities and skills must remain integrated into the main sheet');
+assert.doesNotMatch(referenceSheetScript, /Características y skills|abilities.*Características/, 'The duplicate abilities page must not be exposed');
+assert.doesNotMatch(sheetSectionsScript, /function abilities\(\)|Abilities & Skills|overview,abilities,/, 'The unused duplicate abilities renderer must be removed');
 require(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet/layout.js'));
 
 const values = new Map(Object.entries({
