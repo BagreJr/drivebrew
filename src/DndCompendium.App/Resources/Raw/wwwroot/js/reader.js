@@ -344,6 +344,68 @@
         || /(?:width|height)\s*:\s*(?:100%|[4-9]\d%|\d{3,}px)/u.test(inlineStyle);
       if (authoredArtwork) media.classList.add('readerArtwork');
       if (mask) mask.classList.add('readerArtworkFrame');
+      if (media instanceof HTMLImageElement && authoredArtwork && !media.complete) {
+        media.addEventListener('load', () => {
+          if (state.mode === 'book') queueBookOverflowRepair();
+        }, { once: true });
+      }
+      if (media instanceof HTMLImageElement && !authoredArtwork) {
+        const markContentImage = () => {
+          const authoredWidth = Number.parseFloat(media.getAttribute('width') || '0');
+          if (media.naturalWidth >= 128 || authoredWidth >= 128) media.classList.add('readerContentImage');
+        };
+        markContentImage();
+        if (!media.complete) media.addEventListener('load', markContentImage, { once: true });
+      }
+    }
+  }
+
+  async function waitForMediaGeometry(pages) {
+    const pending = pages.flatMap(page => [...page.querySelectorAll('img')])
+      .filter(image => !image.complete)
+      .map(image => new Promise(resolve => {
+        image.addEventListener('load', resolve, { once: true });
+        image.addEventListener('error', resolve, { once: true });
+      }));
+    if (!pending.length) return;
+    await Promise.race([
+      Promise.allSettled(pending),
+      new Promise(resolve => globalThis.setTimeout(resolve, 800))
+    ]);
+  }
+
+  // A page may grow vertically so prose is not clipped. Artwork that was sized
+  // with percentages must keep the geometry of the original Homebrewery paper;
+  // otherwise height:100% grows together with the repaired page.
+  function captureBookArtworkGeometry(page) {
+    const pageRect = page.getBoundingClientRect();
+    const scale = page.offsetWidth > 0 ? pageRect.width / page.offsetWidth : state.zoom;
+    if (!(pageRect.width > 0) || !(scale > 0)) return;
+    const frames = [...page.querySelectorAll('.readerArtworkFrame')]
+      .filter(frame => !frame.parentElement?.closest('.readerArtworkFrame'));
+    const standalone = [...page.querySelectorAll('.readerArtwork')]
+      .filter(media => !media.closest('.readerArtworkFrame'));
+    for (const element of [...frames, ...standalone]) {
+      const rect = element.getBoundingClientRect();
+      if (!(rect.width > 0) || !(rect.height > 0)) continue;
+      let left = (rect.left - pageRect.left) / scale;
+      let top = (rect.top - pageRect.top) / scale;
+      let width = rect.width / scale;
+      let height = rect.height / scale;
+      const fit = Math.min(1, PAGE_WIDTH / width, PAGE_HEIGHT / height);
+      if (fit < 1) {
+        left *= fit;
+        top *= fit;
+        width *= fit;
+        height *= fit;
+        left = Math.max(0, Math.min(PAGE_WIDTH - width, left));
+        top = Math.max(0, Math.min(PAGE_HEIGHT - height, top));
+      }
+      element.classList.add('readerBookGeometry');
+      element.style.setProperty('--reader-book-left', `${left}px`);
+      element.style.setProperty('--reader-book-top', `${top}px`);
+      element.style.setProperty('--reader-book-width', `${width}px`);
+      element.style.setProperty('--reader-book-height', `${height}px`);
     }
   }
 
@@ -373,6 +435,7 @@
     const pages = [...documentRoot.querySelectorAll('.page')];
     for (const page of pages) page.classList.remove('readerTextOverflow');
     await nextFrame();
+    for (const page of pages) captureBookArtworkGeometry(page);
     const repairedPages = [];
     for (const page of pages) {
       if (!hasClippedBookText(page)) continue;
@@ -471,6 +534,7 @@
 
     if (generation !== state.renderGeneration) return null;
     if (document.fonts?.ready) await document.fonts.ready;
+    await waitForMediaGeometry(pageModels.map(model => model.page));
     const repairedPages = await repairBookOverflow();
     if (generation !== state.renderGeneration) return null;
     shell.dataset.readerState = pageErrors.length === pageSources.length ? 'error' : 'ready';

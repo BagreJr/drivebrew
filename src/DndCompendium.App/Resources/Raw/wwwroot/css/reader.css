@@ -109,6 +109,19 @@ body {
   overflow: visible !important;
 }
 
+/* Keep artwork anchored to the original 8.5 × 11 inch paper even when prose
+   makes a repaired page taller. The values are captured before the repair. */
+.mode-book .page.readerTextOverflow .readerBookGeometry {
+  position: absolute !important;
+  inset: auto !important;
+  left: var(--reader-book-left) !important;
+  top: var(--reader-book-top) !important;
+  width: var(--reader-book-width) !important;
+  height: var(--reader-book-height) !important;
+  max-width: 100% !important;
+  max-height: 279.4mm !important;
+}
+
 .mode-book .page table th,
 .mode-book .page table td {
   word-break: normal;
@@ -156,6 +169,7 @@ body {
 }
 
 .mode-mobile .page {
+  --reader-media-bleed: clamp(16px, 6vw, 44px);
   width: 100% !important;
   max-width: 52rem !important;
   height: auto !important;
@@ -225,29 +239,52 @@ body {
 }
 
 .mode-mobile .page .readerArtwork {
+  width: calc(100% + var(--reader-media-bleed)) !important;
+  max-width: calc(100% + var(--reader-media-bleed)) !important;
+  margin-right: calc(var(--reader-media-bleed) / -2) !important;
+  margin-left: calc(var(--reader-media-bleed) / -2) !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgb(67 45 25 / 20%);
+}
+
+.mode-mobile .page .readerContentImage {
   width: 100% !important;
   max-width: 100% !important;
+  height: auto !important;
+  border-radius: 7px;
 }
 
 .mode-mobile .page .readerArtworkFrame {
   display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
+  width: calc(100% + var(--reader-media-bleed)) !important;
+  max-width: calc(100% + var(--reader-media-bleed)) !important;
   height: auto !important;
   min-height: 0 !important;
-  margin: 1rem 0 !important;
+  margin: 1.1rem calc(var(--reader-media-bleed) / -2) !important;
   padding: 0 !important;
-  overflow: visible !important;
+  overflow: hidden !important;
+  border-radius: 9px;
+  box-shadow: 0 5px 18px rgb(67 45 25 / 24%);
+}
+
+.mode-mobile .page .readerArtworkFrame .readerArtwork {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  border-radius: inherit;
+  box-shadow: none;
+}
+
+.mode-mobile .page .readerArtworkFrame > * {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
 }
 
 .mode-mobile .page [class*="imageMask"],
 .mode-mobile .page [class*="image-mask"] {
   display: block !important;
-  width: 100% !important;
-  height: auto !important;
-  min-height: 0 !important;
-  margin: 1rem 0 !important;
-  padding: 0 !important;
   background: none !important;
   -webkit-mask-image: none !important;
   mask-image: none !important;

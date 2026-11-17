@@ -32,7 +32,7 @@ async function main() {
     for (let attempt = 0; attempt < 40; attempt += 1) {
       try {
         const targets = await fetch(`http://127.0.0.1:${debugPort}/json/list`).then(result => result.json());
-        target = targets.find(item => item.type === 'page');
+        target = targets.find(item => item.type === 'page' && item.url.includes(`127.0.0.1:${appPort}`));
         if (target) break;
       } catch { /* Chrome is still starting. */ }
       await delay(100);
@@ -60,12 +60,12 @@ async function main() {
 
     const pixel = 'iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAYAAAB/qH1jAAAAFUlEQVR42mNkYPj/n4GBgYGJAQoAHg4CAZnfB5QAAAAASUVORK5CYII=';
     const paragraphs = Array.from({ length: 150 }, (_, index) => `Paragraph ${index + 1}. This deliberately long line verifies that readable prose is never clipped outside the book page.`).join('\n\n');
-    const source = `# Reader regression\n\n${paragraphs}\n\n\\page\n# Mobile artwork\n\nBefore the illustration.\n\n![Wide illustration](data:image/png;base64,${pixel}){position:absolute,bottom:0,left:0,width:900px,height:420px}\n\nAfter the illustration.`;
+    const source = `# Reader regression\n\n![Book background](data:image/png;base64,${pixel}){position:absolute,top:0,left:0,height:100%}\n\n${paragraphs}\n\n\\page\n# Mobile artwork\n\nBefore the illustration.\n\n![Wide illustration](data:image/png;base64,${pixel}){position:absolute,bottom:0,left:0,width:900px,height:420px}\n\nAfter the illustration.`;
     const encoded = Buffer.from(source, 'utf8').toString('base64');
     const renderExpression = `DndReader.renderDocument({title:'Reader regression',mode:'book',content:new TextDecoder().decode(Uint8Array.from(atob('${encoded}'),c=>c.charCodeAt(0)))})`;
     const rendered = await send('Runtime.evaluate', { expression: renderExpression, awaitPromise: true, returnByValue: true });
     if (rendered.exceptionDetails) throw new Error(rendered.exceptionDetails.text);
-    const book = await send('Runtime.evaluate', { expression: `(() => { const p=document.querySelector('.page'); const r=p.getBoundingClientRect(); return {repaired:p.classList.contains('readerTextOverflow'), height:r.height, textOutside:[...p.querySelectorAll('p')].some(x=>{const q=x.getBoundingClientRect();return q.right>r.right+1||q.bottom>r.bottom+1;})}; })()`, returnByValue: true });
+    const book = await send('Runtime.evaluate', { expression: `(() => { const p=document.querySelector('.page'); const r=p.getBoundingClientRect(),i=p.querySelector('img'),ir=i.getBoundingClientRect(),s=getComputedStyle(i); return {repaired:p.classList.contains('readerTextOverflow'), height:r.height, pageWidth:r.width, imageWidth:ir.width, imageHeight:ir.height,imageClass:i.className,parent:i.parentElement.outerHTML.slice(0,240),frame:i.closest('.readerArtworkFrame')?.className||'',bookWidth:i.style.getPropertyValue('--reader-book-width'),computedWidth:s.width,computedHeight:s.height,position:s.position, textOutside:[...p.querySelectorAll('p')].some(x=>{const q=x.getBoundingClientRect();return q.right>r.right+1||q.bottom>r.bottom+1;})}; })()`, returnByValue: true });
     await send('Runtime.evaluate', { expression: `DndReader.setMode('mobile')`, returnByValue: true });
     await delay(250);
     const mobile = await send('Runtime.evaluate', { expression: `(() => { const p=document.querySelectorAll('.page')[1]; const i=p.querySelector('img'); const pr=p.getBoundingClientRect(),ir=i.getBoundingClientRect(); return {artwork:i.classList.contains('readerArtwork'), width:ir.width, height:ir.height, inside:ir.left>=pr.left-1&&ir.right<=pr.right+1, pageWidth:pr.width}; })()`, returnByValue: true });
@@ -76,10 +76,10 @@ async function main() {
       awaitPromise: true,
       returnByValue: true
     });
-    const fixtureBook = await send('Runtime.evaluate', { expression: `(() => [...document.querySelectorAll('.page')].filter(p=>p.classList.contains('readerTextOverflow')).map(p=>({page:Number(p.dataset.pageNumber),height:Math.round(p.getBoundingClientRect().height)})))()`, returnByValue: true });
+    const fixtureBook = await send('Runtime.evaluate', { expression: `(() => [...document.querySelectorAll('.page')].filter(p=>p.classList.contains('readerTextOverflow')).map(p=>({page:Number(p.dataset.pageNumber),height:Math.round(p.getBoundingClientRect().height),oversize:[...p.querySelectorAll('.readerBookGeometry')].filter(x=>{const r=x.getBoundingClientRect();return r.width>816.5||r.height>1056.5;}).length})))()`, returnByValue: true });
     await send('Runtime.evaluate', { expression: `DndReader.setMode('mobile')`, returnByValue: true });
     await delay(300);
-    const fixtureMobile = await send('Runtime.evaluate', { expression: `(() => { const images=[...document.querySelectorAll('.page img')]; return {images:images.length,artwork:images.filter(i=>i.classList.contains('readerArtwork')).length,outside:images.filter(i=>{const p=i.closest('.page').getBoundingClientRect(),r=i.getBoundingClientRect();return r.width>0&&(r.left<p.left-1||r.right>p.right+1);}).length}; })()`, returnByValue: true });
+    const fixtureMobile = await send('Runtime.evaluate', { expression: `(() => { const images=[...document.querySelectorAll('.page img')]; const metrics=images.filter(i=>i.classList.contains('readerArtwork')).map(i=>{const page=i.closest('.page'),p=page.getBoundingClientRect(),r=i.getBoundingClientRect(),f=i.closest('.readerArtworkFrame'),fr=f?.getBoundingClientRect();return {ratio:r.width/p.width,frameRatio:fr?fr.width/p.width:0,page:page.dataset.pageNumber,parent:i.parentElement.className||i.parentElement.tagName,frame:f?.className||''};}).sort((a,b)=>a.ratio-b.ratio); const ratios=metrics.map(x=>x.ratio); return {images:images.length,artwork:ratios.length,outside:images.filter(i=>{const p=i.closest('.page').getBoundingClientRect(),r=i.getBoundingClientRect();return r.width>0&&(r.left<p.left-1||r.right>p.right+1);}).length,metrics,medianArtworkWidth:ratios.length?ratios[Math.floor(ratios.length/2)]:0}; })()`, returnByValue: true });
     const result = {
       render: rendered.result.value,
       book: book.result.value,
@@ -87,18 +87,27 @@ async function main() {
       fixture: { render: fixtureRender.result.value, repaired: fixtureBook.result.value, mobile: fixtureMobile.result.value }
     };
     if (!result.book.repaired || result.book.textOutside) throw new Error(`Book overflow repair failed: ${JSON.stringify(result.book)}`);
-    if (!result.mobile.artwork || !result.mobile.inside || result.mobile.width <= 0 || result.mobile.height <= 0) throw new Error(`Mobile artwork repair failed: ${JSON.stringify(result.mobile)}`);
-    if (result.fixture.render.pageCount < 20 || result.fixture.render.pageErrors.length > 0 || result.fixture.mobile.outside > 0) throw new Error(`Real Homebrewery fixture failed: ${JSON.stringify(result.fixture)}`);
+    if (result.book.imageWidth > result.book.pageWidth + 1 || result.book.imageHeight > 1057) throw new Error(`Book artwork escaped its original paper: ${JSON.stringify(result.book)}`);
+    if (!result.mobile.artwork || !result.mobile.inside || result.mobile.width < result.mobile.pageWidth * .9 || result.mobile.height <= 0) throw new Error(`Mobile artwork repair failed: ${JSON.stringify(result.mobile)}`);
+    if (result.fixture.render.pageCount < 20 || result.fixture.render.pageErrors.length > 0 || result.fixture.mobile.outside > 0
+      || result.fixture.repaired.some(page => page.oversize > 0) || result.fixture.mobile.medianArtworkWidth < .9)
+      throw new Error(`Real Homebrewery fixture failed: ${JSON.stringify(result.fixture)}`);
     console.log(JSON.stringify(result, null, 2));
     await send('Browser.close');
     await Promise.race([new Promise(resolve => browser.once('exit', resolve)), delay(1500)]);
     socket.close();
   } finally {
-    if (browser.exitCode === null) browser.kill();
+    if (browser.exitCode === null) {
+      browser.kill();
+      await Promise.race([new Promise(resolve => browser.once('exit', resolve)), delay(1500)]);
+    }
     server.close();
     const resolvedProfile = path.resolve(profile);
     const temporaryRoot = `${path.resolve(os.tmpdir())}${path.sep}`;
-    if (resolvedProfile.startsWith(temporaryRoot)) fs.rmSync(resolvedProfile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    if (resolvedProfile.startsWith(temporaryRoot)) {
+      try { fs.rmSync(resolvedProfile, { recursive: true, force: true, maxRetries: 8, retryDelay: 150 }); }
+      catch (error) { console.warn(`Temporary browser profile could not be removed: ${error.code}`); }
+    }
   }
 }
 
