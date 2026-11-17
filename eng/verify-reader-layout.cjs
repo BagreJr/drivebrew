@@ -56,7 +56,17 @@ async function main() {
     });
     await send('Runtime.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
-    await delay(350);
+    let readerReady = false;
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      const readiness = await send('Runtime.evaluate', {
+        expression: `typeof DndReader !== 'undefined' && typeof DndReader.renderDocument === 'function'`,
+        returnByValue: true
+      });
+      readerReady = readiness.result.value === true;
+      if (readerReady) break;
+      await delay(100);
+    }
+    if (!readerReady) throw new Error('The offline reader did not finish loading.');
 
     const pixel = 'iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAYAAAB/qH1jAAAAFUlEQVR42mNkYPj/n4GBgYGJAQoAHg4CAZnfB5QAAAAASUVORK5CYII=';
     const paragraphs = Array.from({ length: 150 }, (_, index) => `Paragraph ${index + 1}. This deliberately long line verifies that readable prose is never clipped outside the book page.`).join('\n\n');
