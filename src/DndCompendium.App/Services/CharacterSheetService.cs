@@ -53,7 +53,7 @@ public sealed class CharacterSheetService(
             CharacterSheetData data;
             if (File.Exists(dataPath))
             {
-                await BackupBeforeV4MigrationAsync(character.Id, dataPath, pdfPath, cancellationToken).ConfigureAwait(false);
+                await BackupBeforeV5MigrationAsync(character.Id, dataPath, pdfPath, cancellationToken).ConfigureAwait(false);
                 data = await ReadDataAsync(dataPath, cancellationToken).ConfigureAwait(false);
             }
             else if (File.Exists(pdfPath))
@@ -70,7 +70,7 @@ public sealed class CharacterSheetService(
             // Writing the normalized JSON also performs additive schema migration.
             // The original values and PDF fields are never removed by this step.
             await WriteDataAtomicallyAsync(dataPath, data, cancellationToken).ConfigureAwait(false);
-            MarkV4MigrationComplete(character.Id);
+            MarkV5MigrationComplete(character.Id);
             if (!File.Exists(pdfPath) || changed)
                 await GeneratePdfAtomicallyAsync(pdfPath, data, cancellationToken).ConfigureAwait(false);
         }
@@ -332,6 +332,7 @@ public sealed class CharacterSheetService(
             IsCreationDraft = data.IsCreationDraft,
             CreatorStep = Math.Clamp(data.CreatorStep, 1, 8),
             PortraitDataUrl = IsSafePortrait(data.PortraitDataUrl) ? data.PortraitDataUrl : null,
+            HtmlSheetJson = IsSafeHtmlSheet(data.HtmlSheetJson) ? data.HtmlSheetJson : null,
             TextFields = textFields,
             CheckedFields = checkedFields,
             AbilityBaseScores = abilityBases,
@@ -430,7 +431,7 @@ public sealed class CharacterSheetService(
         });
     }
 
-    private async Task BackupBeforeV4MigrationAsync(
+    private async Task BackupBeforeV5MigrationAsync(
         string characterId,
         string dataPath,
         string pdfPath,
@@ -441,7 +442,7 @@ public sealed class CharacterSheetService(
         var schemaVersion = await ReadStoredSchemaVersionAsync(dataPath, cancellationToken).ConfigureAwait(false);
         if (schemaVersion >= CharacterSheetData.CurrentSchemaVersion)
         {
-            MarkV4MigrationComplete(characterId);
+            MarkV5MigrationComplete(characterId);
             return;
         }
 
@@ -468,7 +469,7 @@ public sealed class CharacterSheetService(
         }
     }
 
-    private void MarkV4MigrationComplete(string characterId)
+    private void MarkV5MigrationComplete(string characterId)
     {
         var marker = MigrationMarkerPath(characterId);
         Directory.CreateDirectory(Path.GetDirectoryName(marker)!);
@@ -488,7 +489,7 @@ public sealed class CharacterSheetService(
     }
 
     private string MigrationMarkerPath(string characterId)
-        => Path.Combine(_sheetDirectory, "backups", SafeCharacterId(characterId), "v4.complete");
+        => Path.Combine(_sheetDirectory, "backups", SafeCharacterId(characterId), "v5.complete");
 
     private static bool IsSafePortrait(string? value)
         => string.IsNullOrWhiteSpace(value)
@@ -496,6 +497,21 @@ public sealed class CharacterSheetService(
             && (value.StartsWith("data:image/jpeg;base64,", StringComparison.Ordinal)
                 || value.StartsWith("data:image/png;base64,", StringComparison.Ordinal)
                 || value.StartsWith("data:image/webp;base64,", StringComparison.Ordinal));
+
+    private static bool IsSafeHtmlSheet(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return true;
+        if (value.Length > 2_000_000) return false;
+        try
+        {
+            using var document = JsonDocument.Parse(value);
+            return document.RootElement.ValueKind == JsonValueKind.Object;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
 
     private static readonly string[] AbilityNames = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
 

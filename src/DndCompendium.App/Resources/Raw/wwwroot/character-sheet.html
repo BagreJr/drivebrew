@@ -1,31 +1,2677 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="color-scheme" content="dark">
-  <title>Drivebrew Character</title>
-  <link rel="stylesheet" href="sheet3/tokens.css">
-  <link rel="stylesheet" href="sheet3/app.css">
-  <link rel="stylesheet" href="sheet3/reference-sheet.css">
-  <script defer src="_framework/hybridwebview.js"></script>
-  <script defer src="sheet/character-sheet-rules.js"></script>
-  <script defer src="sheet3/state.js"></script>
-  <script defer src="sheet3/calculations.js"></script>
-  <script defer src="sheet3/components.js"></script>
-  <script defer src="sheet3/creator.js"></script>
-  <script defer src="sheet3/sections.js"></script>
-  <script defer src="sheet3/reference-sheet.js"></script>
-  <script defer src="sheet3/app.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hojas de personaje · D&amp;D 5e</title>
+<!-- La hoja es completamente offline dentro de Drivebrew. -->
+<script src="_framework/hybridwebview.js"></script>
+<style>
+/* ============================================================
+   00-base.css — colores, tipografía, botones y campos
+   Para cambiar el aspecto de toda la hoja, empieza por las variables de :root
+   ============================================================ */
+:root {
+  --font: "Alegreya Sans", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --font-caps: "Alegreya Sans SC", "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+
+  /* Claro: piedra fría, papel casi blanco */
+  --bg: #c8cdd3;
+  --paper: #f6f7f8;
+  --grey: #dde0e5;
+  --ink: #1b1f27;
+  --ink-2: #4a5160;
+  --line: #2a303b;       /* trazo de los marcos */
+  --rule: #b4bac4;       /* renglones y subrayados */
+  --accent-caster: #4b3fb8;   /* índigo: hoja con magia */
+  --accent-martial: #1b7660;  /* verdín: hoja sin magia */
+  --accent-ink: #ffffff;
+  --good: #1d7a4a; --bad: #b3261e; --warn: #8f6200;
+  --shadow: 0 1px 2px rgba(20, 24, 32, .14), 0 10px 30px rgba(20, 24, 32, .12);
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #11141a; --paper: #1c2029; --grey: #272c37; --ink: #e8eaef; --ink-2: #a4acbc;
+  --line: #8d96a8; --rule: #434a59;
+  --accent-caster: #a79dff; --accent-martial: #52cfae; --accent-ink: #0f1218;
+  --good: #58d08b; --bad: #ff7a70; --warn: #e5b04a;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 30px rgba(0, 0, 0, .4);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11141a; --paper: #1c2029; --grey: #272c37; --ink: #e8eaef; --ink-2: #a4acbc;
+    --line: #8d96a8; --rule: #434a59;
+    --accent-caster: #a79dff; --accent-martial: #52cfae; --accent-ink: #0f1218;
+    --good: #58d08b; --bad: #ff7a70; --warn: #e5b04a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 10px 30px rgba(0, 0, 0, .4);
+    color-scheme: dark;
+  }
+}
+
+body { --accent: var(--accent-caster); }
+body[data-type="martial"] { --accent: var(--accent-martial); }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 17px/1.3 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, p { margin: 0; }
+[hidden] { display: none !important; }
+
+/* Iconos del sprite */
+.ic { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColor;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Campos ---------- */
+input, textarea, select, button { font: inherit; color: inherit; }
+input, textarea, select {
+  width: 100%; min-width: 0; background: transparent; border: 0; border-radius: 3px; padding: 0;
+}
+input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offset: 1px; background: color-mix(in srgb, var(--accent) 8%, transparent); }
+input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--ink-2) 55%, transparent); }
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+textarea { resize: none; display: block; }
+select { appearance: none; cursor: pointer; }
+input[readonly] { cursor: default; }
+
+/* Etiquetas pequeñas en versalitas, como en la hoja impresa */
+.cap { font-family: var(--font-caps); font-size: .78rem; letter-spacing: .05em; color: var(--ink-2); font-weight: 600; line-height: 1.1; }
+
+/* ---------- Botones ---------- */
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+  padding: .5rem .95rem; border: 1.5px solid var(--line); border-radius: 7px;
+  background: var(--paper); color: var(--ink); font-weight: 700; line-height: 1.1;
+  transition: background .12s, transform .08s;
+}
+.btn:hover:not(:disabled) { background: var(--grey); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 86%, #000); }
+.btn-ghost { border-color: transparent; background: transparent; }
+.btn-danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+.btn-sm { padding: .3rem .65rem; font-size: .9rem; }
+.icon-only { padding: .5rem; }
+
+.mini {
+  display: inline-grid; place-items: center; width: 24px; height: 24px; flex: none;
+  border-radius: 5px; color: var(--ink-2); font-weight: 800; font-size: .78rem;
+}
+.mini:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+.mini.rm:hover { background: color-mix(in srgb, var(--bad) 16%, transparent); color: var(--bad); }
+.mini .ic { width: 15px; height: 15px; }
+
+.btn-add {
+  display: inline-flex; align-items: center; gap: .3rem; margin-top: .35rem; padding: .15rem .4rem;
+  font-size: .86rem; font-weight: 700; color: var(--accent); border-radius: 5px;
+}
+.btn-add:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.btn-mini {
+  padding: .1rem .5rem; border: 1.5px solid var(--line); border-radius: 5px; font-size: .78rem; font-weight: 700;
+  background: var(--paper);
+}
+.btn-mini:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+.print-only { display: none; }
+.empty { font-size: .85rem; color: var(--ink-2); padding: .2rem .1rem; }
+.hint { font-size: .88rem; color: var(--ink-2); }
+
+/* ============================================================
+   01-sheet.css — la hoja principal (página 1)
+   Los marcos con esquinas cortadas se dibujan con dos capas: el elemento pinta el
+   trazo (--line) y ::before pinta el relleno (--fill), un poco más chico.
+   ============================================================ */
+.frame, .octa, .ribbon, .shield, .ab-box, .prof-bar {
+  --cut: 11px; --bw: 2px; --fill: var(--paper);
+  --ci: calc(var(--cut) - var(--bw) * .586);
+  --shape: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)),
+                   calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+  --shape-in: polygon(var(--ci) 0, calc(100% - var(--ci)) 0, 100% var(--ci), 100% calc(100% - var(--ci)),
+                      calc(100% - var(--ci)) 100%, var(--ci) 100%, 0 calc(100% - var(--ci)), 0 var(--ci));
+  position: relative; isolation: isolate; background: var(--line); clip-path: var(--shape);
+}
+.frame::before, .octa::before, .ribbon::before, .shield::before, .ab-box::before, .prof-bar::before {
+  content: ""; position: absolute; inset: var(--bw); z-index: -1; background: var(--fill); clip-path: var(--shape-in);
+}
+.octa { --shape: polygon(16% 0, 84% 0, 100% 50%, 84% 100%, 16% 100%, 0 50%); --shape-in: var(--shape);
+        display: grid; place-items: center; width: 3.7rem; height: 2.7rem; font-size: 1.4rem; font-weight: 800; }
+.shield { --shape: polygon(0 0, 100% 0, 100% 56%, 50% 100%, 0 56%); --shape-in: var(--shape); }
+.ribbon { --fill: var(--grey); --shape: polygon(0 0, 100% 0, 100% 100%, 0 100%, 16px 50%); --shape-in: var(--shape); }
+.ab-box { --cut: 14px; }
+.prof-bar { --cut: 12px; }
+
+.panel-grey { background: var(--grey); border-radius: 10px; padding: 8px; }
+.panel-grey .frame, .panel-grey .octa, .panel-grey .shield, .panel-grey .prof-bar, .panel-grey .ab-box { --fill: var(--paper); }
+
+/* ---------- Páginas ---------- */
+.stage { display: block; }
+.pages { max-width: 900px; margin: 0 auto; padding: 14px 12px 60px; }
+.page { display: none; background: var(--paper); box-shadow: var(--shadow); border-radius: 4px; padding: 16px; margin-bottom: 24px; }
+.page.is-active { display: block; }
+
+.p-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 12px; margin-bottom: 12px; }
+.ribbon { display: flex; flex-direction: column; justify-content: flex-end; padding: 8px 14px 8px 28px; min-height: 80px; gap: 2px; }
+.name-input, .class-input { font-size: 1.7rem; font-weight: 800; line-height: 1.1; border-bottom: 1px solid var(--rule); border-radius: 0; padding: 0 2px; }
+.class-input { font-size: 1.35rem; }
+.name-mirror { font-size: 1.7rem; font-weight: 800; line-height: 1.15; border-bottom: 1px solid var(--rule); padding: 0 2px; min-height: 1.3em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+.head-box { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 6px 16px; padding: 10px 18px; align-content: center; }
+.hf { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.hf > input, .hf-in input { border-bottom: 1px solid var(--rule); border-radius: 0; font-weight: 600; font-size: 1.02rem; padding: 0 2px; }
+.hf-in { display: flex; gap: 6px; }
+.hf-in .lvl-in { width: 2.8rem; flex: none; text-align: center; }
+
+.p-body { display: grid; grid-template-columns: 1.12fr 1fr 1fr; gap: 10px; align-items: stretch; }
+.col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.col-left { gap: 4px; }
+
+/* ---------- Columna izquierda ---------- */
+.prof-bar { display: flex; align-items: center; gap: 8px; padding: 5px 12px; margin-bottom: 4px; }
+.prof-bar .octa { width: 3.4rem; height: 2.4rem; font-size: 1.3rem; }
+.prof-bar .octa input { text-align: center; font-weight: 800; font-size: 1.3rem; width: 100%; }
+.prof-label { flex: 1; text-align: center; font-family: var(--font-caps); font-weight: 700; letter-spacing: .04em; font-size: .86rem; line-height: 1.05; }
+.insp { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--ink-2); }
+.insp .ic { width: 20px; height: 20px; }
+.insp[data-state="1"] { color: var(--accent); }
+.insp[data-state="1"] .ic { fill: currentColor; }
+.insp:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+
+/* Botón para volver al valor automático (aparece solo si se escribió un valor a mano) */
+.ovr { position: relative; }
+.ovr-reset { position: absolute; right: -2px; top: -4px; width: 17px; height: 17px; display: none; place-items: center;
+             border-radius: 50%; background: var(--accent); color: var(--accent-ink); z-index: 5; }
+.ovr-reset .ic { width: 11px; height: 11px; }
+.ovr.is-ovr .ovr-reset { display: grid; }
+
+.ability { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; align-items: start; padding: 4px 0 5px; }
+.ab-box { width: 92px; min-height: 90px; display: grid; grid-template-rows: auto 1fr auto; justify-items: center; padding: 6px 4px 6px; }
+.ab-score { width: 48px; height: 24px; text-align: center; font-weight: 800; font-size: .98rem; border: 1.5px solid var(--line); border-radius: 12px; background: var(--grey); }
+.ab-mod { font-size: 2.2rem; font-weight: 800; line-height: 1; align-self: center; padding: 0 6px; border-radius: 8px; }
+.ab-mod:hover { color: var(--accent); }
+.ab-name { font-family: var(--font-caps); font-size: .72rem; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
+
+.rrows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.rrow { display: flex; align-items: center; gap: 7px; }
+.rroll { display: flex; align-items: baseline; gap: 6px; flex: 1; min-width: 0; text-align: left; padding: 1px 5px; border-radius: 4px; }
+.rroll:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.rroll b { min-width: 2.2ch; text-align: center; border-bottom: 1px solid var(--line); font-size: .98rem; }
+.rroll span { font-family: var(--font-caps); font-size: .86rem; font-weight: 600; letter-spacing: .03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.mk, .mk-o { flex: none; width: 13px; height: 13px; border: 1.6px solid var(--line); background: transparent; position: relative; }
+.mk::after, .mk-o::after, .pip::after { content: ""; position: absolute; inset: -6px; }   /* zona de toque más grande */
+.mk-save { transform: rotate(45deg) scale(.8); border-radius: 1px; }
+.mk-skill, .mk-o { border-radius: 50%; }
+.mk[data-state="1"], .mk-o[data-state="1"] { background: var(--ink); }
+.mk-skill[data-state="2"] { background: var(--ink); outline: 1.5px solid var(--ink); outline-offset: 1.5px; }
+.mk-skill[data-state="3"] { background: linear-gradient(90deg, var(--ink) 50%, transparent 50%); }
+
+.passives { display: flex; flex-direction: column; gap: 1px; margin-top: 2px; padding: 5px 6px 2px; border-top: 1.5px solid var(--line); font-size: .88rem; }
+.passives span { display: flex; justify-content: space-between; }
+
+/* Recursos propios (Furia, Ki, Inspiración…) */
+.resources { margin-top: 4px; }
+.res-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; grid-template-areas: "name name rm" "total state rech";
+           gap: 3px 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--rule); }
+.res-name { grid-area: name; border-bottom: 1px solid var(--line); border-radius: 0; font-weight: 700; }
+.res-row > .rm { grid-area: rm; }
+.res-total { grid-area: total; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.res-total input { width: 38px; height: 28px; text-align: center; font-weight: 800; border: 1.6px solid var(--line); border-radius: 6px; background: var(--paper); }
+.res-total .cap { font-size: .66rem; }
+.res-state { grid-area: state; min-width: 0; }
+.res-used { width: 3.4rem; text-align: center; border: 1.5px solid var(--line); border-radius: 5px; background: var(--paper); }
+.res-rech { grid-area: rech; width: auto; font-size: .78rem; padding: 2px 4px; border: 1px solid var(--rule); border-radius: 5px; background: var(--paper); font-family: var(--font-caps); font-weight: 600; }
+
+.pips { display: inline-flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.pip { position: relative; width: 16px; height: 16px; border: 1.6px solid var(--line); border-radius: 50%; background: var(--paper); transition: background .1s; }
+.pip.on { background: var(--ink); }
+.pip:hover { border-color: var(--accent); }
+.slot-pips .pip { width: 19px; height: 19px; }
+.slot-pips .pip.on { background: color-mix(in srgb, var(--ink) 20%, var(--paper)); border-style: dashed; }   /* espacio gastado */
+.death-ok .pip.on { background: var(--good); border-color: var(--good); }
+.death-ko .pip.on { background: var(--bad); border-color: var(--bad); }
+
+/* ---------- Columna central ---------- */
+.hp-wrap { display: flex; flex-direction: column; gap: 6px; }
+.hp-frame { --cut: 14px; padding: 6px 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 160px; }
+.hp-max { display: flex; align-items: baseline; gap: 6px; width: 100%; font-size: .78rem; color: var(--ink-2); font-family: var(--font-caps); font-weight: 600; letter-spacing: .04em; }
+.hp-max input { width: 4ch; flex: 1; font-weight: 800; font-size: 1.05rem; color: var(--ink); border-bottom: 1px solid var(--rule); border-radius: 0; font-family: var(--font); }
+.hp-big { font-size: 3.1rem; font-weight: 800; text-align: center; line-height: 1; width: 100%; padding: 2px 0; }
+.hp-bar { width: 100%; height: 7px; border-radius: 4px; background: var(--rule); overflow: hidden; }
+.hp-bar i { display: block; height: 100%; width: 0; background: var(--good); transition: width .25s, background .25s; }
+.hp-bar[data-level="mid"] i { background: var(--warn); }
+.hp-bar[data-level="low"] i { background: var(--bad); }
+.hp-tools { display: flex; gap: 4px; width: 100%; }
+.hp-tools input { width: 3.3rem; border: 1.5px solid var(--line); border-radius: 5px; text-align: center; font-weight: 700; background: var(--paper); }
+.hp-tools .btn-dmg, .hp-tools .btn-heal { flex: 1; border-radius: 5px; font-weight: 800; font-size: .86rem; padding: 2px 4px; border: 1.5px solid var(--line); background: var(--paper); }
+.btn-dmg:hover { background: var(--bad); color: #fff; border-color: var(--bad); }
+.btn-heal:hover { background: var(--good); color: #fff; border-color: var(--good); }
+
+.temp-frame { --cut: 14px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 6px 12px 8px; min-height: 84px; }
+.temp-frame input { font-size: 2rem; font-weight: 800; text-align: center; width: 100%; }
+.hp-frame .cap, .temp-frame .cap, .hd-frame .cap, .death-frame .cap { margin-top: auto; text-align: center; }
+
+.hd-death { display: grid; grid-template-columns: 1fr 1.15fr; gap: 6px; }
+.hd-frame, .death-frame { padding: 6px 8px 8px; min-height: 106px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.hd-total { font-size: .8rem; color: var(--ink-2); align-self: flex-start; }
+.hd-total b { color: var(--ink); }
+.hd-left { font-size: 2.1rem; font-weight: 800; line-height: 1; }
+.death-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; font-size: .78rem; font-family: var(--font-caps); font-weight: 600; letter-spacing: .03em; }
+.death-row .pip { width: 17px; height: 17px; }
+
+.spell-band, .spell-band-head { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 6px 6px; }
+.octa-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
+.octa-cell .cap { font-size: .68rem; line-height: 1.05; }
+.octa select { width: 100%; text-align: center; text-align-last: center; font-weight: 800; font-size: 1.15rem; }
+.octa-btn { cursor: pointer; }
+.octa-btn:hover { --fill: color-mix(in srgb, var(--accent) 16%, var(--paper)); }
+.panel-grey .octa-btn:hover { --fill: color-mix(in srgb, var(--accent) 16%, var(--paper)); }
+
+.attacks { flex: 1; min-height: 300px; display: flex; flex-direction: column; padding: 8px 12px 8px; gap: 3px; --cut: 14px; }
+.attacks .cap:last-child { margin-top: auto; text-align: center; padding-top: 6px; }
+.atk-head { display: flex; justify-content: space-between; font-family: var(--font-caps); font-size: .68rem; color: var(--ink-2); font-weight: 600; letter-spacing: .04em; }
+.atk-row { position: relative; display: grid; grid-template-columns: 5.4rem minmax(0, 1fr); gap: 2px 6px; padding: 4px 0 5px; border-bottom: 1px solid var(--rule); }
+.atk-name { grid-column: 1 / -1; font-weight: 700; padding-right: 26px; }
+.atk-row > .rm { position: absolute; right: 0; top: 3px; }
+.atk-b, .atk-d { display: flex; align-items: center; gap: 2px; background: var(--grey); border-radius: 5px; padding: 1px 2px 1px 6px; min-width: 0; }
+.atk-b input { text-align: center; }
+.atk-notes { flex: 1; margin-top: 6px; min-height: 110px; }
+.attacks-caster .atk-row:nth-child(n) { }
+
+/* ---------- Columna derecha ---------- */
+.top3 { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 6px; align-items: end; }
+.shield { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 8px 4px 0; min-height: 100px; text-align: center; --fill: var(--paper); }
+.shield input { font-size: 2rem; font-weight: 800; text-align: center; width: 100%; padding: 0; }
+.shield .cap { font-size: .66rem; line-height: 1; text-align: center; max-width: 5.2em; margin-top: -2px; }
+.init, .speed { --cut: 11px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px 6px 6px; min-height: 100px; }
+.init input, .speed input { font-size: 1.7rem; font-weight: 800; text-align: center; width: 100%; padding: 0; }
+.speed input { font-size: 1.35rem; }
+.roll-corner { position: absolute; right: 4px; top: 4px; width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; color: var(--ink-2); }
+.roll-corner:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.init .ovr-reset { right: 3px; top: auto; bottom: 22px; }
+.features { flex: 1; min-height: 420px; display: flex; flex-direction: column; padding: 10px 12px 8px; --cut: 14px; }
+.features textarea { flex: 1; width: 100%; }
+.features .cap, .equip-foot .cap, .profs > .cap, .dbox > .cap { text-align: center; }
+
+/* ---------- Pie: competencias y equipo ---------- */
+.p-foot { display: grid; grid-template-columns: 1.12fr 2fr; gap: 10px; margin-top: 10px; }
+.profs { --cut: 14px; padding: 10px 12px 8px; display: flex; flex-direction: column; gap: 5px; }
+.pf-line { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 3px 12px; font-size: .92rem; }
+.pf-line b { flex-basis: 100%; text-align: center; font-family: var(--font-caps); letter-spacing: .05em; font-size: .86rem; }
+.chk { display: inline-flex; align-items: center; gap: 5px; }
+.pf-field { background: var(--grey); border-radius: 5px; padding: 3px 8px; }
+.pf-title { text-align: center; font-family: var(--font-caps); font-weight: 700; letter-spacing: .05em; font-size: .86rem; margin-top: 3px; }
+.pf-area { min-height: 3.1em; }
+
+.equip { --cut: 16px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "coins cols potions" "foot foot foot";
+         gap: 6px 12px; padding: 12px 14px 8px; min-height: 330px; }
+.coins { grid-area: coins; display: flex; flex-direction: column; gap: 6px; }
+.coin { display: flex; align-items: center; gap: 5px; }
+.coin-l { width: 1.6rem; font-family: var(--font-caps); font-size: .8rem; font-weight: 700; color: var(--ink-2); text-align: right; }
+.coin input { width: 3.7rem; height: 2rem; text-align: center; font-weight: 800; border: 1.8px solid var(--line); border-radius: 9px; background: var(--grey); }
+.equip-cols { grid-area: cols; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; min-height: 0; }
+.equip-cols textarea { height: 100%; }
+.potions { grid-area: potions; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; }
+.potion { display: grid; justify-items: center; gap: 2px; }
+.potion .ic, .potion-btn .ic { width: 34px; height: 34px; stroke-width: 1.6; }
+.potion-btn { border-radius: 8px; padding: 2px; color: var(--ink); }
+.potion-btn:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.potion-n { width: 2.7rem; height: 1.6rem; text-align: center; font-weight: 800; border: 1.5px solid var(--line); border-radius: 12px; background: var(--grey); }
+.potion-d { font-size: .74rem; color: var(--ink-2); font-weight: 600; }
+.equip-foot { grid-area: foot; position: relative; display: flex; justify-content: center; align-items: center; min-height: 1.3em; }
+.carry { position: absolute; left: 0; font-size: .8rem; color: var(--ink-2); }
+.carry b { color: var(--ink); }
+
+/* Renglones (hoja sin magia): líneas de cuaderno detrás del texto */
+.lined { --lh: 1.75rem; line-height: var(--lh); background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--lh) - 1px), var(--rule) calc(var(--lh) - 1px), var(--rule) var(--lh));
+         background-attachment: local; background-color: transparent; }
+textarea { line-height: 1.45; width: 100%; height: 100%; }
+textarea.lined { line-height: var(--lh); }
+
+textarea:hover:not(:focus) { background-color: color-mix(in srgb, var(--accent) 5%, transparent); }
+.init-row { display: flex; align-items: center; gap: 1px; width: 100%; }
+.init-row input { min-width: 0; }
+.init .mini { flex: none; }
+
+/* ============================================================
+   02-pages.css — página 2 (detalles) y página 3 (conjuros)
+   ============================================================ */
+
+/* ---------- Detalles ---------- */
+.d-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+          grid-template-areas: "allies traits side" "story stowed stowed"; }
+.d-allies { grid-area: allies; }
+.d-traits { grid-area: traits; display: flex; flex-direction: column; gap: 6px; }
+.d-side   { grid-area: side; display: flex; flex-direction: column; gap: 10px; }
+.d-story  { grid-area: story; }
+.d-stowed { grid-area: stowed; }
+
+.dbox { display: flex; flex-direction: column; padding: 10px 12px 8px; --cut: 13px; min-height: 120px; }
+.dbox textarea { flex: 1; width: 100%; }
+.dbox > .cap { padding-top: 4px; }
+.d-allies { min-height: 380px; }
+.d-traits .dbox { flex: 1; }
+.d-bg { min-height: 110px; }
+.d-prof { flex: 1; }
+.d-story, .d-stowed { min-height: 440px; }
+.panel-grey.d-traits { padding: 8px; }
+
+/* ---------- Conjuros ---------- */
+.sp-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin-bottom: 12px; padding: 8px 12px;
+              background: var(--grey); border-radius: 9px; font-size: .92rem; }
+.tg { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; }
+.tg input { width: auto; accent-color: var(--accent); }
+.sp-conc { display: flex; align-items: center; gap: 6px; font-family: var(--font-caps); font-weight: 700; letter-spacing: .04em; }
+.sp-conc input { width: 11rem; border-bottom: 1px solid var(--line); border-radius: 0; font-family: var(--font); font-weight: 600; }
+.sp-filter input { width: 11rem; border: 1.5px solid var(--line); border-radius: 7px; padding: 3px 9px; background: var(--paper); }
+
+.sp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: start; }
+.sp-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.lvl { border: 1.5px solid var(--rule); border-radius: 12px; padding: 7px 9px 8px; }
+.lvl-head { display: flex; align-items: center; gap: 10px; min-height: 40px; margin-bottom: 4px; }
+.lvl-n { flex: none; width: 38px; height: 34px; display: grid; place-items: center; background: var(--line); color: var(--paper);
+         font-size: 1.3rem; font-weight: 800; clip-path: polygon(26% 0, 100% 0, 100% 100%, 26% 100%, 0 50%); padding-left: 6px; }
+.lvl-title { flex: 1; font-family: var(--font-caps); font-weight: 700; letter-spacing: .08em; font-size: 1.1rem; }
+.lvl-slots { display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap; }
+.sl-total { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.sl-total input { width: 2.6rem; height: 1.7rem; text-align: center; font-weight: 800; border: 1.6px solid var(--line); border-radius: 6px; background: var(--paper); }
+.sl-total input[readonly] { background: var(--grey); border-style: dashed; }
+.sl-total .cap, .sl-used .cap { font-size: .66rem; }
+.sl-used { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sl-none { font-size: .8rem; color: var(--ink-2); }
+
+.spell-list { list-style: none; margin: 0; padding: 0; }
+.spell { display: flex; align-items: center; gap: 7px; min-height: 1.95rem; border-bottom: 1px solid var(--rule); }
+.sp-name { flex: 1; padding: 2px 2px; font-size: 1rem; }
+.sp-tools { display: inline-flex; gap: 1px; opacity: 0; transition: opacity .1s; }
+.spell:hover .sp-tools, .spell:focus-within .sp-tools { opacity: 1; }
+.spell.is-blank .sp-tools { display: none; }
+.conc[data-state="1"] { background: var(--accent); color: var(--accent-ink); }
+.spell:has(.conc[data-state="1"]) .sp-name { font-style: italic; }
+@media (hover: none) { .spell:not(.is-blank) .sp-tools { opacity: 1; } }
+
+/* ============================================================
+   03-ui.css — barra superior, estado, herramientas, avisos, ventanas y menú inicial
+   ============================================================ */
+
+/* ---------- Barra superior y estado ---------- */
+.topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+          background: var(--paper); border-bottom: 1.5px solid var(--line); }
+.tb-id { display: flex; flex-direction: column; min-width: 0; line-height: 1.1; }
+.tb-name { font-size: 1.15rem; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-type { font-family: var(--font-caps); font-size: .76rem; font-weight: 700; color: var(--accent); letter-spacing: .06em; }
+.tabs { display: flex; gap: 3px; padding: 3px; background: var(--grey); border-radius: 10px; margin-left: 8px; }
+.tabs button { padding: 5px 15px; border-radius: 7px; font-weight: 700; }
+.tabs button:hover:not(.on) { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.tabs button.on { background: var(--accent); color: var(--accent-ink); }
+.tb-tools { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.save-state { font-size: .8rem; color: var(--ink-2); margin-right: 6px; }
+.save-state.bad { color: var(--bad); font-weight: 700; }
+
+.hud { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px; padding: 7px 14px; background: var(--grey); }
+.hud-k { font-family: var(--font-caps); font-size: .8rem; color: var(--ink-2); font-weight: 700; letter-spacing: .05em; }
+.hud-hp { position: relative; display: flex; align-items: baseline; gap: 5px; min-width: 170px; padding-bottom: 7px; }
+.hud-hp b { font-size: 1.35rem; font-weight: 800; line-height: 1; }
+.hud-of, .hud-temp { color: var(--ink-2); font-size: .92rem; }
+.hud-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; border-radius: 2px; background: var(--rule); overflow: hidden; }
+.hud-bar i { display: block; height: 100%; background: var(--good); transition: width .25s; }
+.hud-hp.mid .hud-bar i { background: var(--warn); }
+.hud-hp.low .hud-bar i { background: var(--bad); }
+.hud-ac { display: flex; align-items: baseline; gap: 5px; }
+.hud-ac b { font-size: 1.35rem; font-weight: 800; line-height: 1; }
+.hud-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+.pill { padding: 1px 10px; border-radius: 99px; background: var(--paper); border: 1.5px solid var(--line); font-size: .82rem; font-weight: 700; }
+.pill-bad { background: var(--bad); border-color: var(--bad); color: #fff; }
+.pill-conc { border-color: var(--accent); color: var(--accent); }
+
+/* ---------- Panel de herramientas ---------- */
+.tools { position: fixed; right: 0; top: var(--tb-h, 52px); bottom: 0; width: 340px; max-width: 94vw; z-index: 40; overflow-y: auto;
+         background: var(--paper); border-left: 1.5px solid var(--line); box-shadow: var(--shadow); padding: 6px 16px 24px;
+         transform: translateX(105%); visibility: hidden; transition: transform .2s ease, visibility 0s .2s; }
+body[data-tools="open"] .tools { transform: none; visibility: visible; transition-delay: 0s; }
+@media (min-width: 1240px) { body[data-tools="open"] .stage { padding-right: 340px; } .tools { box-shadow: none; } }
+.tools-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 4px; }
+.tools-head h2 { font-size: 1.25rem; }
+.tl { border-top: 1px solid var(--rule); padding: 9px 0; }
+.tl:first-of-type { border-top: 0; }
+.tl summary { cursor: pointer; font-family: var(--font-caps); font-weight: 700; font-size: 1.05rem; letter-spacing: .05em; padding: 2px 0; }
+.adv { display: grid; grid-template-columns: repeat(3, 1fr); margin: 9px 0; border: 1.5px solid var(--line); border-radius: 9px; overflow: hidden; }
+.adv button { padding: 6px 2px; font-size: .86rem; font-weight: 700; border-left: 1px solid var(--line); }
+.adv button:first-child { border-left: 0; }
+.adv button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.dice-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.die { padding: 9px 0; border: 1.5px solid var(--line); border-radius: 9px; font-weight: 800; background: var(--paper); }
+.die:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.expr { display: flex; gap: 6px; margin-top: 9px; }
+.expr input { border: 1.5px solid var(--line); border-radius: 7px; padding: 4px 9px; background: var(--paper); }
+
+.history { list-style: none; margin: 8px 0; padding: 0; display: flex; flex-direction: column; gap: 2px; max-height: 330px; overflow: auto; }
+.h-entry { display: grid; grid-template-columns: 2.7rem minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 8px; }
+.h-entry:first-child { background: var(--grey); }
+.h-total { font-size: 1.3rem; text-align: center; }
+.h-label { display: block; font-weight: 700; font-size: .92rem; }
+.h-detail { display: block; font-size: .76rem; color: var(--ink-2); overflow-wrap: anywhere; }
+.h-entry time { font-size: .72rem; color: var(--ink-2); }
+.h-empty { color: var(--ink-2); font-size: .9rem; padding: 4px 2px; }
+.flag-crit .h-total, .k-heal .h-total { color: var(--good); }
+.flag-fumble .h-total, .k-dmg .h-total { color: var(--bad); }
+.k-note .h-total { font-size: 1rem; color: var(--accent); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 9px 0; }
+.chip { padding: 3px 11px; border: 1.5px solid var(--rule); border-radius: 99px; font-size: .86rem; font-weight: 600; }
+.chip:hover { border-color: var(--accent); }
+.chip[data-state="1"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.exh { display: flex; flex-direction: column; gap: 3px; font-size: .86rem; font-family: var(--font-caps); font-weight: 700; }
+.exh select, .session-notes { border: 1.5px solid var(--line); border-radius: 7px; padding: 5px 8px; background: var(--paper); font-family: var(--font); font-weight: 500; width: 100%; }
+.session-notes { margin-top: 8px; height: auto; line-height: 1.4; }
+.rest-btns { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+
+/* ---------- Resultado de tirada ---------- */
+#roll-toast { position: fixed; left: 50%; bottom: 22px; z-index: 60; display: flex; align-items: center; gap: 14px; max-width: min(94vw, 540px);
+              padding: 10px 20px 10px 16px; background: var(--ink); color: var(--paper); border-radius: 16px; box-shadow: var(--shadow);
+              opacity: 0; transform: translate(-50%, 26px); pointer-events: none; transition: opacity .18s, transform .18s; }
+#roll-toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+#roll-toast.flag-crit { box-shadow: 0 0 0 3px var(--good), var(--shadow); }
+#roll-toast.flag-fumble { box-shadow: 0 0 0 3px var(--bad), var(--shadow); }
+.rt-total { font-size: 2.7rem; font-weight: 800; line-height: 1; min-width: 2ch; text-align: center; }
+.pop .rt-total { animation: pop .32s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes pop { from { transform: scale(.5) rotate(-12deg); } to { transform: none; } }
+.rt-txt { display: flex; flex-direction: column; min-width: 0; }
+.rt-label { font-weight: 800; font-size: 1.05rem; }
+.rt-detail { font-size: .84rem; opacity: .8; overflow-wrap: anywhere; }
+.rt-flag { padding: 2px 10px; border-radius: 99px; background: var(--paper); color: var(--ink); font-weight: 800; font-size: .8rem; }
+#roll-toast .btn { background: var(--paper); color: var(--ink); }
+
+/* ---------- Avisos ---------- */
+#toasts { position: fixed; top: 66px; left: 50%; transform: translateX(-50%); z-index: 70; display: flex; flex-direction: column; gap: 8px; width: min(94vw, 430px); }
+.toast { display: flex; align-items: center; gap: 10px; padding: 9px 8px 9px 14px; background: var(--paper); border: 1.5px solid var(--line);
+         border-left-width: 6px; border-radius: 10px; box-shadow: var(--shadow); font-size: .96rem; }
+.toast > span { flex: 1; }
+.toast-good { border-left-color: var(--good); } .toast-bad { border-left-color: var(--bad); } .toast-warn { border-left-color: var(--warn); }
+.toast-x { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 5px; color: var(--ink-2); flex: none; }
+.toast-x:hover { background: var(--grey); }
+
+/* ---------- Ventana modal ---------- */
+dialog#modal { border: 2px solid var(--line); border-radius: 16px; padding: 0; background: var(--paper); color: var(--ink); box-shadow: var(--shadow); width: min(94vw, 520px); }
+dialog#modal.wide { width: min(94vw, 780px); }
+dialog#modal::backdrop { background: rgba(10, 12, 18, .6); }
+.m-box { padding: 20px 22px 18px; }
+.m-title { font-size: 1.5rem; margin-bottom: 12px; }
+.m-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.plain { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 4px; }
+
+.type-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.type-card { position: relative; display: block; cursor: pointer; }
+.type-card:first-child { --accent: var(--accent-caster); }
+.type-card:last-child { --accent: var(--accent-martial); }
+.type-card input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tc-body { display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 12px 14px 14px; border: 2px solid var(--rule); border-radius: 14px; background: var(--paper); }
+.type-card:hover .tc-body { border-color: var(--accent); }
+.type-card input:checked + .tc-body { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--paper)); box-shadow: 0 0 0 1.5px var(--accent); }
+.type-card input:focus-visible + .tc-body { outline: 2px solid var(--accent); outline-offset: 3px; }
+.tc-art { width: 100%; height: auto; margin-bottom: 4px; }
+.pg { fill: var(--paper); stroke: var(--line); stroke-width: 1.2; }
+.pg-off { fill: none; stroke-dasharray: 3 3; opacity: .5; }
+.bx { fill: var(--grey); } .hl { fill: var(--accent); } .ln { stroke: var(--line); stroke-width: .8; opacity: .55; }
+.tc-title { font-size: 1.3rem; color: var(--accent); }
+.tc-who { font-size: .9rem; color: var(--ink-2); }
+.type-card ul { margin: 4px 0 0; padding-left: 1.1rem; font-size: .92rem; display: flex; flex-direction: column; gap: 2px; }
+.new-fields { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; margin: 16px 0 8px; }
+.new-fields label { display: flex; flex-direction: column; gap: 3px; font-family: var(--font-caps); font-weight: 700; letter-spacing: .04em; font-size: .9rem; }
+.new-fields input, .new-fields select { border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 10px; background: var(--paper); font-family: var(--font); font-weight: 500; font-size: 1rem; }
+
+/* ---------- Menú inicial ---------- */
+.home { max-width: 980px; margin: 0 auto; padding: 34px 16px 70px; }
+.home-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; margin-bottom: 24px; }
+.home-head h1 { font-size: 2.4rem; font-weight: 800; line-height: 1; }
+.home-head p { color: var(--ink-2); margin-top: 6px; }
+.home-tools { display: flex; gap: 4px; }
+.warn-bar { background: color-mix(in srgb, var(--warn) 18%, var(--paper)); border: 1.5px solid var(--warn); border-radius: 9px; padding: 8px 12px; margin-bottom: 16px; }
+.chars { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.char-new { min-height: 176px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 16px;
+            border: 2px dashed var(--line); border-radius: 16px; text-align: center; transition: background .12s; }
+.char-new:hover { background: var(--paper); }
+.char-new b { font-size: 1.25rem; }
+.char-new span:last-child { color: var(--ink-2); font-size: .92rem; }
+.cn-plus { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--accent-caster); color: var(--accent-ink); margin-bottom: 6px; }
+.cn-plus .ic { width: 24px; height: 24px; }
+.char-card { position: relative; background: var(--paper); border-radius: 16px; box-shadow: var(--shadow); border-top: 6px solid var(--accent); }
+.char-card[data-type="martial"] { --accent: var(--accent-martial); }
+.char-card[data-type="caster"] { --accent: var(--accent-caster); }
+.cc-main { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: 100%; height: 100%; min-height: 170px; padding: 16px 16px 14px; text-align: left; border-radius: 10px 10px 16px 16px; }
+.cc-main:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.cc-badge { font-family: var(--font-caps); font-weight: 700; font-size: .78rem; letter-spacing: .06em; color: var(--accent); }
+.cc-name { font-size: 1.45rem; font-weight: 800; line-height: 1.08; overflow-wrap: anywhere; }
+.cc-sub { color: var(--ink-2); }
+.cc-hp { width: 100%; height: 6px; background: var(--rule); border-radius: 3px; overflow: hidden; margin-top: auto; }
+.cc-hp i { display: block; height: 100%; background: var(--good); }
+.cc-meta { font-size: .82rem; color: var(--ink-2); }
+.cc-tools { position: absolute; top: 12px; right: 8px; display: flex; opacity: 0; transition: opacity .12s; }
+.char-card:hover .cc-tools, .char-card:focus-within .cc-tools { opacity: 1; }
+@media (hover: none) { .cc-tools { opacity: 1; } }
+.home-empty { margin-top: 20px; color: var(--ink-2); }
+
+/* ---------- Pantallas chicas ---------- */
+@media screen and (max-width: 860px) {
+  .p-head, .p-body, .p-foot, .sp-grid { grid-template-columns: minmax(0, 1fr); }
+  .d-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: none; }
+  .d-grid > * { grid-area: auto !important; }
+  .d-allies, .d-story, .d-stowed { min-height: 240px; }
+  .equip { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "coins cols" "potions potions" "foot foot"; }
+  .potions { flex-direction: row; justify-content: space-around; }
+  .features, .attacks { min-height: 260px; }
+  .topbar { flex-wrap: wrap; }
+  .tabs { order: 5; width: 100%; margin-left: 0; }
+  .tabs button { flex: 1; }
+  .tb-hide { display: none; }
+  .tb-id { flex: 1; }
+  .pages { padding: 8px 6px 60px; }
+  .page { padding: 10px; }
+  .type-pick, .new-fields { grid-template-columns: 1fr; }
+  .home-head h1 { font-size: 2rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ============================================================
+   04-print.css — «Imprimir» / «Guardar como PDF» (A4, colores claros siempre)
+   ============================================================ */
+@page { size: A4; margin: 7mm; }
+
+@media print {
+  :root, :root[data-theme="dark"], :root:not([data-theme="light"]) {
+    --bg: #fff; --paper: #fff; --grey: #e4e6ea; --ink: #111; --ink-2: #444; --line: #1d222b; --rule: #b9bec8;
+    --accent-caster: #3c3299; --accent-martial: #17624f; --accent-ink: #fff;
+    color-scheme: light;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { background: #fff !important; font-size: 12.5px; }
+
+  .topbar, .hud, .tools, #toasts, #roll-toast, .no-print, .sp-toolbar, .ovr-reset { display: none !important; }
+  .print-only { display: inline !important; }
+
+  .stage, body[data-tools="open"] .stage { padding: 0 !important; }
+  .pages { max-width: none; margin: 0; padding: 0; }
+  .page { display: block !important; box-shadow: none; border-radius: 0; padding: 0; margin: 0; width: 900px; zoom: .823;
+          break-after: page; break-inside: avoid; }
+  .page:last-child { break-after: auto; }
+
+  /* Los resultados de cálculo se ven igual; los campos no muestran subrayados de edición */
+  .lvl, .spell { break-inside: avoid; }
+  .sp-tools { display: none !important; }
+  .spell.is-blank { display: flex; }
+  .attacks, .features { min-height: 0; }
+
+  /* Sin textos de ejemplo ni marcas de foco en el papel */
+  ::placeholder { color: transparent !important; }
+  input:focus-visible, textarea:focus-visible, select:focus-visible { outline: none !important; background-color: transparent !important; }
+  textarea:hover { background-color: transparent !important; }
+
+  /* Listas de conjuros con renglones vacíos para completar a mano (cantidad parecida a la hoja del PDF) */
+  .spell-list { background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.95rem - 1px), var(--rule) calc(1.95rem - 1px), var(--rule) 1.95rem); }
+  .spell-list[data-list="0"] { min-height: calc(1.95rem * 8); }
+  .spell-list[data-list="1"], .spell-list[data-list="2"], .spell-list[data-list="3"] { min-height: calc(1.95rem * 12); }
+  .spell-list[data-list="4"], .spell-list[data-list="5"] { min-height: calc(1.95rem * 9); }
+  .spell-list[data-list="6"], .spell-list[data-list="7"], .spell-list[data-list="8"], .spell-list[data-list="9"] { min-height: calc(1.95rem * 6); }
+}
+
+</style>
 </head>
 <body>
-  <div id="app" class="appShell" aria-live="polite">
-    <main class="loadingScreen">
-      <div class="sigil">D20</div>
-      <strong>Preparando tu personaje</strong>
-      <span>Todo se carga desde el almacenamiento offline.</span>
-    </main>
-  </div>
-  <div id="toast-region" class="toastRegion" aria-live="assertive"></div>
+
+<!-- Íconos (se usan con <svg><use href="#i-nombre"/></svg>) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-d20" viewBox="0 0 24 24"><path d="M12 2.5 20.5 7.5v9L12 21.5 3.5 16.5v-9z"/><path d="M12 2.5 7 16h10zM3.5 7.5 7 16M20.5 7.5 17 16M7 16l5 5.5M17 16l-5 5.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3L7 14.2 2 9.3l6.9-1z"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2c1 4 6 6 6 11a6 6 0 0 1-12 0c0-2 1-3.2 2-4.2.5 2 1.5 3 2.5 3C11 9 10 5 12 2z"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14M5 2h14M17 22v-4.2a2 2 0 0 0-.6-1.4L12 12l-4.4 4.4A2 2 0 0 0 7 17.8V22M7 2v4.2a2 2 0 0 0 .6 1.4L12 12l4.4-4.4A2 2 0 0 0 17 6.2V2"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></symbol>
+  <symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" style="fill:currentColor"/></symbol>
+  <symbol id="i-flask-minor" viewBox="0 0 24 24"><path d="M9 3h6M10 3v4M14 3v4M10 7a6 6 0 1 0 4 0"/></symbol>
+  <symbol id="i-flask-greater" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/></symbol>
+  <symbol id="i-flask-superior" viewBox="0 0 24 24"><path d="M9 3h6M10 3v4M14 3v4M10 7c-3 1-5 4-5 7a7 7 0 0 0 14 0c0-3-2-6-5-7"/></symbol>
+</svg>
+
+<div id="app"></div>
+<noscript>Esta hoja de personaje necesita JavaScript activado.</noscript>
+
+<script>
+/* ============================================================
+   01-data.js — Datos fijos de D&D 5e que usa la hoja
+   (características, habilidades, clases, estados, tablas de espacios)
+   ============================================================ */
+const DATA = {
+  abilities: [
+    { k: 'str', name: 'Fuerza',       abbr: 'FUE' },
+    { k: 'dex', name: 'Destreza',     abbr: 'DES' },
+    { k: 'con', name: 'Constitución', abbr: 'CON' },
+    { k: 'int', name: 'Inteligencia', abbr: 'INT' },
+    { k: 'wis', name: 'Sabiduría',    abbr: 'SAB' },
+    { k: 'cha', name: 'Carisma',      abbr: 'CAR' },
+  ],
+
+  // Mismo orden que la hoja impresa
+  skills: [
+    { k: 'athletics',      name: 'Atletismo',          ab: 'str' },
+    { k: 'acrobatics',     name: 'Acrobacias',         ab: 'dex' },
+    { k: 'sleight',        name: 'Juego de manos',     ab: 'dex' },
+    { k: 'stealth',        name: 'Sigilo',             ab: 'dex' },
+    { k: 'arcana',         name: 'Arcanos',            ab: 'int' },
+    { k: 'history',        name: 'Historia',           ab: 'int' },
+    { k: 'investigation',  name: 'Investigación',      ab: 'int' },
+    { k: 'nature',         name: 'Naturaleza',         ab: 'int' },
+    { k: 'religion',       name: 'Religión',           ab: 'int' },
+    { k: 'animal',         name: 'Trato con animales', ab: 'wis' },
+    { k: 'insight',        name: 'Perspicacia',        ab: 'wis' },
+    { k: 'medicine',       name: 'Medicina',           ab: 'wis' },
+    { k: 'perception',     name: 'Percepción',         ab: 'wis' },
+    { k: 'survival',       name: 'Supervivencia',      ab: 'wis' },
+    { k: 'deception',      name: 'Engaño',             ab: 'cha' },
+    { k: 'intimidation',   name: 'Intimidación',       ab: 'cha' },
+    { k: 'performance',    name: 'Interpretación',     ab: 'cha' },
+    { k: 'persuasion',     name: 'Persuasión',         ab: 'cha' },
+  ],
+
+  // Clases: dado de golpe, salvaciones, característica de conjuro y tipo de lanzador.
+  // sheet: en qué hoja aparece ('both' = en las dos).
+  classes: [
+    { id: 'barbarian', name: 'Bárbaro',   hd: 12, saves: ['str', 'con'], caster: 'none',  sheet: 'martial' },
+    { id: 'fighter',   name: 'Guerrero',  hd: 10, saves: ['str', 'con'], caster: 'none',  sheet: 'martial' },
+    { id: 'monk',      name: 'Monje',     hd: 8,  saves: ['str', 'dex'], caster: 'none',  sheet: 'martial' },
+    { id: 'rogue',     name: 'Pícaro',    hd: 8,  saves: ['dex', 'int'], caster: 'none',  sheet: 'martial' },
+    { id: 'bard',      name: 'Bardo',     hd: 8,  saves: ['dex', 'cha'], caster: 'full',  ability: 'cha', sheet: 'caster' },
+    { id: 'cleric',    name: 'Clérigo',   hd: 8,  saves: ['wis', 'cha'], caster: 'full',  ability: 'wis', sheet: 'caster' },
+    { id: 'druid',     name: 'Druida',    hd: 8,  saves: ['int', 'wis'], caster: 'full',  ability: 'wis', sheet: 'caster' },
+    { id: 'sorcerer',  name: 'Hechicero', hd: 6,  saves: ['con', 'cha'], caster: 'full',  ability: 'cha', sheet: 'caster' },
+    { id: 'wizard',    name: 'Mago',      hd: 6,  saves: ['int', 'wis'], caster: 'full',  ability: 'int', sheet: 'caster' },
+    { id: 'warlock',   name: 'Brujo',     hd: 8,  saves: ['wis', 'cha'], caster: 'pact',  ability: 'cha', sheet: 'caster' },
+    { id: 'paladin',   name: 'Paladín',   hd: 10, saves: ['wis', 'cha'], caster: 'half',  ability: 'cha', sheet: 'caster' },
+    { id: 'ranger',    name: 'Explorador', hd: 10, saves: ['str', 'dex'], caster: 'half', ability: 'wis', sheet: 'caster' },
+    { id: 'eldritch',  name: 'Guerrero (Caballero arcano)', short: 'Guerrero', hd: 10, saves: ['str', 'con'], caster: 'third', ability: 'int', sheet: 'caster' },
+    { id: 'trickster', name: 'Pícaro (Embaucador arcano)',  short: 'Pícaro',   hd: 8,  saves: ['dex', 'int'], caster: 'third', ability: 'int', sheet: 'caster' },
+    { id: 'custom',    name: 'Otra / personalizada', hd: 8, saves: [], caster: 'none', ability: 'int', sheet: 'both' },
+  ],
+
+  // Espacios de conjuro por nivel de personaje (índice 0 = nivel 1). Cada array = espacios de nivel 1..9.
+  slotTables: {
+    full: [[2],[3],[4,2],[4,3],[4,3,2],[4,3,3],[4,3,3,1],[4,3,3,2],[4,3,3,3,1],[4,3,3,3,2],
+           [4,3,3,3,2,1],[4,3,3,3,2,1],[4,3,3,3,2,1,1],[4,3,3,3,2,1,1],[4,3,3,3,2,1,1,1],[4,3,3,3,2,1,1,1],
+           [4,3,3,3,2,1,1,1,1],[4,3,3,3,3,1,1,1,1],[4,3,3,3,3,2,1,1,1],[4,3,3,3,3,2,2,1,1]],
+    half: [[],[2],[3],[3],[4,2],[4,2],[4,3],[4,3],[4,3,2],[4,3,2],[4,3,3],[4,3,3],
+           [4,3,3,1],[4,3,3,1],[4,3,3,2],[4,3,3,2],[4,3,3,3,1],[4,3,3,3,1],[4,3,3,3,2],[4,3,3,3,2]],
+    third: [[],[],[2],[3],[3],[3],[4,2],[4,2],[4,2],[4,3],[4,3],[4,3],
+            [4,3,2],[4,3,2],[4,3,2],[4,3,3],[4,3,3],[4,3,3],[4,3,3,1],[4,3,3,1]],
+    // Brujo (magia de pacto): [cantidad de espacios, nivel de esos espacios]
+    pact: [[1,1],[2,1],[2,2],[2,2],[2,3],[2,3],[2,4],[2,4],[2,5],[2,5],
+           [3,5],[3,5],[3,5],[3,5],[3,5],[3,5],[4,5],[4,5],[4,5],[4,5]],
+  },
+
+  conditions: [
+    { k: 'grappled',     name: 'Agarrado',     tip: 'Velocidad 0. Termina si el agarrador queda incapacitado.' },
+    { k: 'restrained',   name: 'Apresado',     tip: 'Velocidad 0. Desventaja en ataques y en salvaciones de Destreza; los ataques contra ti tienen ventaja.' },
+    { k: 'frightened',   name: 'Asustado',     tip: 'Desventaja en pruebas y ataques mientras veas la fuente del miedo. No puedes acercarte a ella.' },
+    { k: 'stunned',      name: 'Aturdido',     tip: 'Incapacitado, no puedes moverte y hablas con dificultad. Fallas salvaciones de Fuerza y Destreza.' },
+    { k: 'blinded',      name: 'Cegado',       tip: 'No ves. Fallas pruebas que requieren vista. Desventaja en ataques; ventaja contra ti.' },
+    { k: 'prone',        name: 'Derribado',    tip: 'Solo puedes arrastrarte. Desventaja en tus ataques. Cuerpo a cuerpo contra ti: ventaja; a distancia: desventaja.' },
+    { k: 'deafened',     name: 'Ensordecido',  tip: 'No oyes. Fallas pruebas que requieren oído.' },
+    { k: 'poisoned',     name: 'Envenenado',   tip: 'Desventaja en tiradas de ataque y pruebas de característica.' },
+    { k: 'charmed',      name: 'Hechizado',    tip: 'No puedes atacar a quien te hechizó. Esa criatura tiene ventaja en interacciones sociales contigo.' },
+    { k: 'incapacitated',name: 'Incapacitado', tip: 'No puedes realizar acciones ni reacciones.' },
+    { k: 'unconscious',  name: 'Inconsciente', tip: 'Incapacitado, caído y sin enterarte. Ataques cuerpo a cuerpo contra ti: ventaja y crítico automático.' },
+    { k: 'invisible',    name: 'Invisible',    tip: 'Ventaja en tus ataques; desventaja en los ataques contra ti.' },
+    { k: 'paralyzed',    name: 'Paralizado',   tip: 'Incapacitado y sin moverte ni hablar. Ataques cuerpo a cuerpo contra ti: ventaja y crítico.' },
+    { k: 'petrified',    name: 'Petrificado',  tip: 'Convertido en piedra. Incapacitado, peso x10, resistencia a todo el daño.' },
+  ],
+
+  exhaustion: [
+    'Sin agotamiento',
+    'Nivel 1: desventaja en pruebas de característica',
+    'Nivel 2: velocidad a la mitad',
+    'Nivel 3: desventaja en ataques y salvaciones',
+    'Nivel 4: puntos de golpe máximos a la mitad',
+    'Nivel 5: velocidad 0',
+    'Nivel 6: muerte',
+  ],
+
+  alignments: ['Legal bueno', 'Neutral bueno', 'Caótico bueno', 'Legal neutral', 'Neutral', 'Caótico neutral',
+               'Legal malvado', 'Neutral malvado', 'Caótico malvado'],
+
+  // Las tres pociones del recuadro de equipo y el dado que curan
+  potions: [
+    { k: 'minor',    name: 'Poción de curación',          dice: '2d4+2' },
+    { k: 'greater',  name: 'Poción de curación mayor',    dice: '4d4+4' },
+    { k: 'superior', name: 'Poción de curación superior', dice: '8d4+8' },
+  ],
+
+  coins: [
+    { k: 'cp', label: 'CP', name: 'Monedas de cobre' },
+    { k: 'sp', label: 'SP', name: 'Monedas de plata' },
+    { k: 'ep', label: 'EP', name: 'Monedas de electro' },
+    { k: 'gp', label: 'GP', name: 'Monedas de oro' },
+    { k: 'pp', label: 'PP', name: 'Monedas de platino' },
+    { k: 'ra', label: 'RA', name: 'Raciones' },
+  ],
+};
+
+DATA.classById = id => DATA.classes.find(c => c.id === id);
+DATA.abilityByKey = k => DATA.abilities.find(a => a.k === k);
+
+/* ============================================================
+   02-util.js — utilidades pequeñas
+   ============================================================ */
+const $  = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+const clamp  = (n, a, b) => Math.min(b, Math.max(a, n));
+const signed = n => (n >= 0 ? '+' : '-') + Math.abs(n);
+const uid    = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const deepClone = o => JSON.parse(JSON.stringify(o));
+
+function toInt(v, fallback = 0) {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+// Escapa texto para meterlo en HTML sin que se interprete como etiquetas
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// Leer / escribir con rutas tipo "spell.slots.1.used"
+function getPath(obj, path) {
+  return path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
+}
+function setPath(obj, path, val) {
+  const keys = path.split('.');
+  const last = keys.pop();
+  let o = obj;
+  for (const k of keys) {
+    if (o[k] == null || typeof o[k] !== 'object') o[k] = {};
+    o = o[k];
+  }
+  o[last] = val;
+}
+
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+function download(filename, text, mime = 'application/json') {
+  const url = URL.createObjectURL(new Blob([text], { type: mime }));
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Ícono del sprite SVG definido en el HTML (<symbol id="i-nombre">)
+const icon = name => `<svg class="ic" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+
+// Pastillas clicables (círculos de espacios, salvaciones de muerte, etc.)
+// El estado es un contador en `path`: las primeras `count` pastillas están encendidas.
+function pipsHTML(path, max, cls = '') {
+  let out = `<span class="pips ${cls}" data-pips="${path}">`;
+  for (let i = 0; i < max; i++) {
+    out += `<button type="button" class="pip" data-pip="${path}" data-i="${i}" aria-label="Marcar ${i + 1}"></button>`;
+  }
+  return out + '</span>';
+}
+
+/* ============================================================
+   03-dice.js — tiradas de dados, ventaja/desventaja e historial
+   ============================================================ */
+const Dice = (() => {
+  const history = [];          // entradas más nuevas primero
+  const listeners = new Set(); // funciones que quieren enterarse de cada tirada
+  let mode = 'normal';         // 'normal' | 'adv' | 'dis'
+
+  // Un dado de `sides` caras. Usa crypto si existe (sin sesgo), si no Math.random.
+  function die(sides) {
+    if (window.crypto && crypto.getRandomValues) {
+      const buf = new Uint32Array(1);
+      const limit = Math.floor(0x100000000 / sides) * sides;
+      let x;
+      do { crypto.getRandomValues(buf); x = buf[0]; } while (x >= limit);
+      return (x % sides) + 1;
+    }
+    return 1 + Math.floor(Math.random() * sides);
+  }
+
+  // "2d6+3-1" -> [{sign,n,sides}, {sign,c}, ...]  (null si no se entiende)
+  function parse(expr) {
+    const s = String(expr).replace(/\s+/g, '').replace(/−/g, '-').toLowerCase();
+    if (!s) return null;
+    const re = /([+-]?)(?:(\d*)d(\d+)|(\d+))/y;
+    const terms = [];
+    let i = 0;
+    while (i < s.length) {
+      re.lastIndex = i;
+      const m = re.exec(s);
+      if (!m) return null;
+      if (terms.length && !m[1]) return null;           // después del primer término hace falta + o -
+      const sign = m[1] === '-' ? -1 : 1;
+      if (m[3]) {
+        const n = m[2] === '' ? 1 : +m[2];
+        const sides = +m[3];
+        if (n < 1 || n > 100 || sides < 2 || sides > 1000) return null;
+        terms.push({ sign, n, sides });
+      } else {
+        terms.push({ sign, c: +m[4] });
+      }
+      i = re.lastIndex;
+    }
+    return terms;
+  }
+
+  // Busca la primera expresión de dados dentro de un texto: "1d8+3 cortante" -> "1d8+3"
+  function extract(text) {
+    const m = String(text || '').replace(/−/g, '-')
+      .match(/(?:\d*d\d+|\d+)(?:\s*[+-]\s*(?:\d*d\d+|\d+))*/i);
+    return m ? m[0].replace(/\s+/g, '') : null;
+  }
+
+  // Tira una expresión. crit=true duplica la cantidad de dados (daño crítico).
+  function rollExpr(expr, { crit = false } = {}) {
+    const terms = parse(expr);
+    if (!terms) return null;
+    let total = 0;
+    const parts = [];
+    for (const t of terms) {
+      if (t.sides) {
+        const n = crit ? t.n * 2 : t.n;
+        const rolls = Array.from({ length: n }, () => die(t.sides));
+        total += t.sign * rolls.reduce((a, b) => a + b, 0);
+        parts.push(`${t.sign < 0 ? '-' : ''}[${rolls.join(', ')}]`);
+      } else {
+        total += t.sign * t.c;
+        parts.push(`${t.sign < 0 ? '-' : '+'}${t.c}`);
+      }
+    }
+    return { total, detail: parts.join(' ').replace(/ \+/g, ' + ').replace(/ -/g, ' - ') };
+  }
+
+  function push(entry) {
+    entry.id = Date.now() + Math.random();
+    entry.time = new Date();
+    history.unshift(entry);
+    if (history.length > 80) history.pop();
+    listeners.forEach(fn => fn(entry));
+    return entry;
+  }
+
+  // Prueba / salvación / ataque: d20 + bonificador, con ventaja o desventaja
+  function check(label, bonus = 0, opts = {}) {
+    const m = opts.mode || mode;
+    const a = die(20);
+    const b = m === 'normal' ? null : die(20);
+    const used = b == null ? a : (m === 'adv' ? Math.max(a, b) : Math.min(a, b));
+    const dice = b == null ? `[${a}]` : `[${a}, ${b}]`;
+    const modeTxt = m === 'adv' ? ' (ventaja)' : m === 'dis' ? ' (desventaja)' : '';
+    return push({
+      ...(opts.meta || {}),     // datos extra (p. ej. qué ataque fue) para que la interfaz los use
+      kind: 'd20', label, nat: used,
+      formula: `d20${bonus ? signed(bonus) : ''}${modeTxt}`,
+      detail: `${dice}${bonus ? ' ' + signed(bonus) : ''}`,
+      total: used + bonus,
+      flag: used === 20 ? 'crit' : used === 1 ? 'fumble' : null,
+    });
+  }
+
+  // Daño, curación o cualquier expresión (se registra en el historial)
+  function expression(label, expr, opts = {}) {
+    const r = rollExpr(expr, opts);
+    if (!r) return null;
+    return push({
+      kind: opts.kind || 'free', label,
+      formula: opts.crit ? `${expr} (crítico)` : expr,
+      detail: r.detail, total: r.total, flag: opts.crit ? 'crit' : null,
+    });
+  }
+
+  return {
+    history, die, parse, extract, rollExpr, check, expression, push,
+    setMode(m) { mode = m; listeners.forEach(fn => fn(null)); },
+    getMode: () => mode,
+    clear() { history.length = 0; listeners.forEach(fn => fn(null)); },
+    onRoll(fn) { listeners.add(fn); },
+  };
+})();
+
+/* ============================================================
+   04-store.js — personajes: crear, guardar (localStorage), importar/exportar
+   ============================================================ */
+const Store = (() => {
+  const KEY = 'hoja5e.v1';
+  let db = { chars: {}, order: [], settings: { theme: 'auto' } };
+  let storageOk = true;
+  const savedListeners = new Set();
+
+  // ---------- Personaje en blanco ----------
+  function blank(type) {
+    const abil = {}, saves = {}, skills = {}, coins = {}, slots = {}, lists = {};
+    DATA.abilities.forEach(a => { abil[a.k] = 10; saves[a.k] = 0; });
+    DATA.skills.forEach(s => { skills[s.k] = 0; });
+    DATA.coins.forEach(c => { coins[c.k] = 0; });
+    for (let l = 1; l <= 9; l++) slots[l] = { total: 0, used: 0 };
+    for (let l = 0; l <= 9; l++) lists[l] = [];
+    const attackRows = type === 'caster' ? 3 : 4;   // igual que en los PDF
+
+    return {
+      id: uid(), v: 1, type, created: Date.now(), updated: Date.now(),
+      info: { name: '', class: '', classId: 'custom', level: 1, background: '', player: '', race: '', alignment: '', xp: '' },
+      abilities: abil, saves, skills,
+      profOverride: null,           // null = se calcula según el nivel
+      inspiration: 0,
+      ac: 10, speed: '9 m',
+      initOverride: null,           // null = Destreza; si el usuario escribe un valor, queda fijo
+      hp: { max: 0, current: 0, temp: 0 },
+      hdDie: 8, hdSpent: 0,
+      death: { s: 0, f: 0 },
+      attacks: Array.from({ length: attackRows }, () => ({ name: '', bonus: '', damage: '' })),
+      attackNotes: '', features: '', equipment: '', equipment2: '',
+      coins, potions: { minor: 0, greater: 0, superior: 0 },
+      profs: {
+        armor: { light: 0, medium: 0, heavy: 0, shields: 0 },
+        weapons: { simple: 0, martial: 0, other: 0 },
+        otherWeapons: '', languages: '', tools: '',
+      },
+      resources: [],                // {name,total,used,recharge:'long'|'short'|'none'}
+      conditions: {}, exhaustion: 0,
+      notes: '',
+      details: {
+        age: '', height: '', weight: '', eyes: '', skin: '', hair: '',
+        allies: '', personality: '', ideals: '', bonds: '', flaws: '',
+        background: '', otherProf: '', backstory: '', stowed: '',
+      },
+      spell: type === 'caster' ? {
+        class: '', ability: 'int', auto: false, casterType: 'none', slotsRecharge: 'long',
+        slots, lists, concentration: '',
+      } : null,
+    };
+  }
+
+  // Rellena lo que falte (por si un archivo viejo o importado no trae todos los campos)
+  function mergeDefaults(target, defaults) {
+    for (const k of Object.keys(defaults)) {
+      const d = defaults[k];
+      if (target[k] === undefined || target[k] === null) {
+        if (!(k === 'profOverride' || k === 'spell')) target[k] = deepClone(d);
+        else if (k === 'profOverride') target[k] = null;
+      } else if (d && typeof d === 'object' && !Array.isArray(d) && typeof target[k] === 'object') {
+        mergeDefaults(target[k], d);
+      }
+    }
+    return target;
+  }
+  function normalize(ch) {
+    const type = ch.type === 'caster' ? 'caster' : 'martial';
+    ch.type = type;
+    const base = blank(type);
+    if (type === 'caster' && !ch.spell) ch.spell = deepClone(base.spell);
+    mergeDefaults(ch, base);
+    if (type === 'martial') ch.spell = null;
+    if (!ch.id) ch.id = uid();
+    return ch;
+  }
+
+  // Aplica una clase: dado de golpe, salvaciones con competencia, característica de conjuro
+  function applyClass(ch, classId) {
+    const c = DATA.classById(classId);
+    if (!c) return;
+    ch.info.classId = c.id;
+    if (c.id !== 'custom') {
+      ch.info.class = c.short || c.name;
+      ch.hdDie = c.hd;
+      DATA.abilities.forEach(a => { ch.saves[a.k] = c.saves.includes(a.k) ? 1 : 0; });
+    }
+    if (ch.spell) {
+      ch.spell.casterType = c.caster;
+      ch.spell.auto = c.caster !== 'none';
+      ch.spell.slotsRecharge = c.caster === 'pact' ? 'short' : 'long';
+      if (c.ability) ch.spell.ability = c.ability;
+      ch.spell.class = c.short || c.name;
+      if (c.id === 'custom') ch.spell.class = '';
+    }
+  }
+
+  // ---------- Persistencia ----------
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        db.chars = {};
+        Object.values(p.chars || {}).forEach(c => { db.chars[c.id] = normalize(c); });
+        db.order = (p.order || []).filter(id => db.chars[id]);
+        Object.keys(db.chars).forEach(id => { if (!db.order.includes(id)) db.order.push(id); });
+        db.settings = { theme: 'auto', ...(p.settings || {}) };
+      }
+      localStorage.setItem(KEY + '.test', '1'); localStorage.removeItem(KEY + '.test');
+      storageOk = true;
+    } catch (e) { storageOk = false; }
+  }
+
+  function persistNow() {
+    try { localStorage.setItem(KEY, JSON.stringify(db)); storageOk = true; }
+    catch (e) { storageOk = false; }
+    savedListeners.forEach(fn => fn(storageOk));
+  }
+  const persist = debounce(persistNow, 250);
+
+  // ---------- API ----------
+  return {
+    load,
+    all: () => db.order.map(id => db.chars[id]),
+    get: id => db.chars[id],
+    make: type => blank(type === 'caster' ? 'caster' : 'martial'),
+    isStorageOk: () => storageOk,
+    onSaved: fn => savedListeners.add(fn),
+    flush: persistNow,
+
+    // La app nativa administra los perfiles. Dentro del editor se mantiene
+    // exactamente un personaje y se persiste el documento completo.
+    replaceSingle(raw, type = 'martial') {
+      const source = raw && typeof raw === 'object' ? deepClone(raw) : blank(type);
+      const ch = normalize(source);
+      db.chars = { [ch.id]: ch };
+      db.order = [ch.id];
+      persistNow();
+      return ch;
+    },
+
+    create(type, { name = '', classId = 'custom' } = {}) {
+      const ch = blank(type);
+      ch.info.name = name;
+      applyClass(ch, classId);
+      db.chars[ch.id] = ch;
+      db.order.unshift(ch.id);
+      persistNow();
+      return ch;
+    },
+    applyClass,
+    touch(ch) { ch.updated = Date.now(); persist(); },
+    duplicate(id) {
+      const src = db.chars[id]; if (!src) return null;
+      const ch = deepClone(src);
+      ch.id = uid(); ch.created = ch.updated = Date.now();
+      ch.info.name = (src.info.name || 'Sin nombre') + ' (copia)';
+      db.chars[ch.id] = ch; db.order.unshift(ch.id);
+      persistNow();
+      return ch;
+    },
+    remove(id) {
+      delete db.chars[id];
+      db.order = db.order.filter(x => x !== id);
+      persistNow();
+    },
+
+    settings: () => db.settings,
+    setSetting(k, v) { db.settings[k] = v; persistNow(); },
+
+    // ---------- Importar / exportar ----------
+    exportOne(id) {
+      return JSON.stringify({ app: 'hoja5e', v: 1, chars: [db.chars[id]] }, null, 2);
+    },
+    exportAll() {
+      return JSON.stringify({ app: 'hoja5e', v: 1, chars: db.order.map(id => db.chars[id]) }, null, 2);
+    },
+    // Devuelve cuántos personajes importó. Siempre crea copias nuevas (no pisa nada).
+    importText(text) {
+      const data = JSON.parse(text);
+      const list = Array.isArray(data.chars) ? data.chars : (data.info ? [data] : []);
+      let n = 0;
+      for (const raw of list) {
+        if (!raw || !raw.info) continue;
+        const ch = normalize(raw);
+        ch.id = uid(); ch.updated = Date.now();
+        db.chars[ch.id] = ch; db.order.unshift(ch.id);
+        n++;
+      }
+      if (n) persistNow();
+      return n;
+    },
+  };
+})();
+
+/* ============================================================
+   05-calc.js — todo lo que se calcula a partir de los datos del personaje
+   ============================================================ */
+const Calc = (() => {
+  // Modificador de una puntuación: 10-11 → 0, 12-13 → +1, 8-9 → -1 ...
+  const mod = score => Math.floor((toInt(score, 10) - 10) / 2);
+
+  const level   = ch => clamp(toInt(ch.info.level, 1), 1, 20);
+  const prof    = ch => (ch.profOverride != null && ch.profOverride !== '')
+                          ? toInt(ch.profOverride, 2)
+                          : Math.ceil(level(ch) / 4) + 1;
+  const abilMod = (ch, k) => mod(ch.abilities[k]);
+  const saveBonus = (ch, k) => abilMod(ch, k) + (ch.saves[k] ? prof(ch) : 0);
+
+  // Habilidad (el clic cicla en este orden): 0 sin competencia · 1 competente · 2 pericia (doble) · 3 mitad (p. ej. Bardo)
+  function skillBonus(ch, skill) {
+    const st = ch.skills[skill.k] || 0;
+    const p = prof(ch);
+    const extra = st === 1 ? p : st === 2 ? 2 * p : st === 3 ? Math.floor(p / 2) : 0;
+    return abilMod(ch, skill.ab) + extra;
+  }
+  const skillByKey = k => DATA.skills.find(s => s.k === k);
+
+  const initiative = ch => (ch.initOverride != null && ch.initOverride !== '')
+                             ? toInt(ch.initOverride, 0) : abilMod(ch, 'dex');
+  const passive = (ch, k) => 10 + skillBonus(ch, skillByKey(k));
+
+  const hdTotal = ch => level(ch);
+  const hdLeft  = ch => Math.max(0, hdTotal(ch) - toInt(ch.hdSpent, 0));
+
+  // Conjuros
+  const spellMod = ch => (ch.spell ? abilMod(ch, ch.spell.ability) : 0);
+  const spellDC  = ch => 8 + prof(ch) + spellMod(ch);
+  const spellAtk = ch => prof(ch) + spellMod(ch);
+
+  // Espacios que corresponden por clase y nivel → { 1: n, 2: n, ... 9: n }
+  function autoSlots(ch) {
+    const out = {};
+    for (let l = 1; l <= 9; l++) out[l] = 0;
+    const t = ch.spell && ch.spell.casterType;
+    const lv = level(ch);
+    if (t === 'pact') {
+      const [n, l] = DATA.slotTables.pact[lv - 1];
+      out[l] = n;
+    } else if (DATA.slotTables[t]) {
+      DATA.slotTables[t][lv - 1].forEach((n, i) => { out[i + 1] = n; });
+    }
+    return out;
+  }
+  // Si "automático" está activo, copia los totales calculados al personaje. Devuelve true si algo cambió.
+  function syncSlots(ch) {
+    if (!ch.spell || !ch.spell.auto) return false;
+    const t = autoSlots(ch);
+    let changed = false;
+    for (let l = 1; l <= 9; l++) {
+      const s = ch.spell.slots[l];
+      if (s.total !== t[l]) { s.total = t[l]; changed = true; }
+      if (s.used > s.total) { s.used = s.total; changed = true; }
+    }
+    return changed;
+  }
+
+  // Capacidad de carga: Fuerza × 15 lb (la mitad en kg, como en la edición en español)
+  const carry = ch => toInt(ch.abilities.str, 10) * 15;
+
+  // Mapa plano "clave → texto" para los elementos con data-out="clave"
+  function outputs(ch) {
+    const o = {};
+    DATA.abilities.forEach(a => {
+      o['mod.' + a.k] = signed(abilMod(ch, a.k));
+      o['save.' + a.k] = signed(saveBonus(ch, a.k));
+    });
+    DATA.skills.forEach(s => { o['skill.' + s.k] = signed(skillBonus(ch, s)); });
+    o.prof = signed(prof(ch));
+    o.init = signed(initiative(ch));
+    o['passive.perception'] = passive(ch, 'perception');
+    o['passive.insight'] = passive(ch, 'insight');
+    o['passive.investigation'] = passive(ch, 'investigation');
+    o.hdTotal = `${hdTotal(ch)}d${ch.hdDie}`;
+    o.hdLeft = hdLeft(ch);
+    o.carry = `${carry(ch)} lb (${carry(ch) / 2} kg)`;
+    if (ch.spell) {
+      o.spellDC = spellDC(ch);
+      o.spellAtk = signed(spellAtk(ch));
+      o.spellAbilityMod = signed(spellMod(ch));
+    }
+    return o;
+  }
+
+  return { mod, level, prof, abilMod, saveBonus, skillBonus, skillByKey, initiative, passive,
+           hdTotal, hdLeft, spellMod, spellDC, spellAtk, autoSlots, syncSlots, carry, outputs };
+})();
+
+/* ============================================================
+   06-sheet-front.js — Página 1: la hoja principal
+   Convenciones del HTML (las usa 11-app.js):
+     data-bind="ruta"   campo ↔ dato del personaje
+     data-out="clave"   texto calculado (ver Calc.outputs)
+     data-st="ruta"     botón que cicla un estado (data-max = cantidad de estados)
+     data-pips="ruta"   pastillas con contador
+     data-act="accion"  botón que ejecuta una acción (ver Actions en 11-app.js)
+   ============================================================ */
+const Front = {};
+
+Front.cap = text => `<span class="cap">${text}</span>`;
+
+// Fila de una salvación o habilidad: marcador de competencia + valor + nombre (todo tirable)
+Front.rollRow = (kind, key, label, stMax) => {
+  const path = kind === 'save' ? `saves.${key}` : `skills.${key}`;
+  const cls = kind === 'save' ? 'mk mk-save' : 'mk mk-skill';
+  const tip = kind === 'save' ? 'Competencia en la salvación' : 'Competencia (clic: competente → pericia → mitad)';
+  return `<li class="rrow">
+    <button type="button" class="${cls}" data-st="${path}" data-max="${stMax}" title="${tip}" aria-label="${tip}"></button>
+    <button type="button" class="rroll" data-act="roll" data-arg="${kind}:${key}" title="Tirar ${label}">
+      <b data-out="${kind}.${key}"></b><span>${label}</span>
+    </button>
+  </li>`;
+};
+
+Front.ability = a => {
+  const skills = DATA.skills.filter(s => s.ab === a.k);
+  return `<section class="ability" aria-label="${a.name}">
+    <div class="ab-box">
+      <input class="ab-score" type="number" data-bind="abilities.${a.k}" data-type="int" min="1" max="30"
+             aria-label="Puntuación de ${a.name}" title="Puntuación">
+      <button type="button" class="ab-mod" data-act="roll" data-arg="check:${a.k}" data-out="mod.${a.k}"
+              title="Prueba de ${a.name}"></button>
+      <span class="ab-name">${a.name}</span>
+    </div>
+    <ul class="rrows">
+      ${Front.rollRow('save', a.k, 'Salvaciones', 2)}
+      ${skills.map(s => Front.rollRow('skill', s.k, s.name, 4)).join('')}
+    </ul>
+  </section>`;
+};
+
+Front.resources = ch => {
+  const rows = ch.resources.map((r, i) => {
+    const total = toInt(r.total, 0);
+    const used = total > 12
+      ? `<input class="res-used" type="number" min="0" max="${total}" data-bind="resources.${i}.used" data-type="int" aria-label="Gastados">`
+      : pipsHTML(`resources.${i}.used`, total, 'res-pips');
+    return `<div class="res-row">
+      <input class="res-name" data-bind="resources.${i}.name" placeholder="Recurso (Furia, Ki…)" aria-label="Nombre del recurso">
+      <label class="res-total"><input type="number" min="0" max="99" data-bind="resources.${i}.total" data-type="int"
+             data-rerender="resources" aria-label="Total">${Front.cap('Total')}</label>
+      <div class="res-state">${used}</div>
+      <select class="res-rech" data-bind="resources.${i}.recharge" aria-label="Se recupera con">
+        <option value="long">Desc. largo</option><option value="short">Desc. corto</option><option value="none">Manual</option>
+      </select>
+      <button type="button" class="mini rm no-print" data-act="res-del" data-arg="${i}" aria-label="Quitar recurso">${icon('x')}</button>
+    </div>`;
+  }).join('');
+  return rows || `<p class="empty no-print">Sin recursos. Sirven para Furia, Ki, Inspiración de bardo, usos de rasgos…</p>`;
+};
+
+Front.attacks = ch => ch.attacks.map((a, i) => `
+  <div class="atk-row">
+    <input class="atk-name" data-bind="attacks.${i}.name" placeholder="Nombre" aria-label="Nombre del ataque">
+    <button type="button" class="mini rm no-print" data-act="atk-del" data-arg="${i}" aria-label="Quitar ataque">${icon('x')}</button>
+    <span class="atk-b"><input data-bind="attacks.${i}.bonus" placeholder="+0" aria-label="Bonificador de ataque">
+      <button type="button" class="mini no-print" data-act="atk" data-arg="${i}" title="Tirar ataque (d20 + bonificador)" aria-label="Tirar ataque">${icon('d20')}</button></span>
+    <span class="atk-d"><input data-bind="attacks.${i}.damage" placeholder="1d8+3 cortante" aria-label="Daño y tipo">
+      <button type="button" class="mini no-print" data-act="dmg" data-arg="${i}" title="Tirar daño (Mayús + clic: crítico)" aria-label="Tirar daño">${icon('flame')}</button></span>
+  </div>`).join('');
+
+Front.html = ch => {
+  const caster = ch.type === 'caster';
+  const lined = caster ? '' : ' lined';
+  const abilityOptions = DATA.abilities.map(a => `<option value="${a.k}">${a.abbr}</option>`).join('');
+
+  const spellBand = !caster ? '' : `
+    <div class="spell-band frame">
+      <label class="octa-cell"><span class="octa"><select data-bind="spell.ability" aria-label="Característica de lanzamiento">${abilityOptions}</select></span>${Front.cap('Característica de lanzamiento')}</label>
+      <div class="octa-cell"><span class="octa"><b data-out="spellDC"></b></span>${Front.cap('CD de salvación de conjuros')}</div>
+      <div class="octa-cell"><button type="button" class="octa octa-btn" data-act="roll" data-arg="spellatk" title="Tirar ataque de conjuro"><b data-out="spellAtk"></b></button>${Front.cap('Bonif. de ataque de conjuros')}</div>
+    </div>`;
+
+  const potions = DATA.potions.map(p => `
+    <div class="potion">
+      <button type="button" class="potion-btn no-print" data-act="potion" data-arg="${p.k}" title="Beber ${p.name} (${p.dice})">${icon('flask-' + p.k)}</button>
+      <span class="potion-ic print-only">${icon('flask-' + p.k)}</span>
+      <input class="potion-n" type="number" min="0" data-bind="potions.${p.k}" data-type="int" aria-label="Cantidad de ${p.name}">
+      <span class="potion-d">${p.dice}</span>
+    </div>`).join('');
+
+  const coins = DATA.coins.map(c => `
+    <label class="coin" title="${c.name}">
+      <span class="coin-l">${c.label}</span><input type="number" min="0" data-bind="coins.${c.k}" data-type="int" aria-label="${c.name}">
+    </label>`).join('');
+
+  return `
+  <section class="page page-front" data-page="front" aria-label="Hoja principal">
+    <header class="p-head">
+      <div class="ribbon">
+        <input class="name-input" data-bind="info.name" placeholder="Nombre del personaje" aria-label="Nombre del personaje">
+        ${Front.cap('Nombre del personaje')}
+      </div>
+      <div class="head-box frame">
+        <label class="hf hf-class"><span class="hf-in"><input data-bind="info.class" aria-label="Clase"><input class="lvl-in" type="number" min="1" max="20"
+           data-bind="info.level" data-type="int" aria-label="Nivel" title="Nivel (1–20)"></span>${Front.cap('Clase y nivel')}</label>
+        <label class="hf"><input data-bind="info.background">${Front.cap('Trasfondo')}</label>
+        <label class="hf"><input data-bind="info.player">${Front.cap('Nombre del jugador')}</label>
+        <label class="hf"><input data-bind="info.race">${Front.cap('Especie / raza')}</label>
+        <label class="hf"><input data-bind="info.alignment" list="dl-align">${Front.cap('Alineamiento')}</label>
+        <label class="hf"><input data-bind="info.xp">${Front.cap('Puntos de experiencia')}</label>
+        <datalist id="dl-align">${DATA.alignments.map(a => `<option value="${a}">`).join('')}</datalist>
+      </div>
+    </header>
+
+    <div class="p-body">
+      <!-- ===== Columna izquierda: características ===== -->
+      <div class="col col-left panel-grey">
+        <div class="prof-bar">
+          <label class="octa ovr" title="Se calcula por nivel. Escribe otro valor para fijarlo a mano.">
+            <input type="number" data-ovr="profOverride" data-calc="prof" aria-label="Bonificador de competencia">
+            <button type="button" class="ovr-reset no-print" data-act="ovr-reset" data-arg="profOverride" aria-label="Volver al valor automático">${icon('undo')}</button>
+          </label>
+          <span class="prof-label">Bonificador de competencia</span>
+          <button type="button" class="insp no-print" data-st="inspiration" data-max="2" title="Inspiración" aria-label="Inspiración">${icon('star')}</button>
+        </div>
+        ${DATA.abilities.map(Front.ability).join('')}
+        <div class="passives" title="10 + bonificador de la habilidad">
+          <span>Percepción pasiva <b data-out="passive.perception"></b></span>
+          <span>Perspicacia pasiva <b data-out="passive.insight"></b></span>
+          <span>Investigación pasiva <b data-out="passive.investigation"></b></span>
+        </div>
+        <div class="resources">
+          <div class="res-list" id="res-list">${Front.resources(ch)}</div>
+          <button type="button" class="btn-add no-print" data-act="res-add">${icon('plus')} Añadir recurso</button>
+        </div>
+      </div>
+
+      <!-- ===== Columna central: vida y ataques ===== -->
+      <div class="col col-mid">
+        <div class="panel-grey hp-wrap">
+          <div class="frame hp-frame">
+            <label class="hp-max"><span>Puntos de golpe máximos</span><input type="number" min="0" data-bind="hp.max" data-type="int"></label>
+            <input class="hp-big" type="number" data-bind="hp.current" data-type="int" aria-label="Puntos de golpe actuales">
+            <div class="hp-bar" aria-hidden="true"><i></i></div>
+            <div class="hp-tools no-print">
+              <input id="hp-amt" type="number" min="0" placeholder="0" aria-label="Cantidad de daño o curación">
+              <button type="button" class="btn-dmg" data-act="damage">Daño</button>
+              <button type="button" class="btn-heal" data-act="heal">Curar</button>
+            </div>
+            ${Front.cap('Puntos de golpe actuales')}
+          </div>
+          <div class="frame temp-frame">
+            <input type="number" min="0" data-bind="hp.temp" data-type="int" aria-label="Puntos de golpe temporales">
+            ${Front.cap('Puntos de golpe temporales')}
+          </div>
+          <div class="hd-death">
+            <div class="frame hd-frame">
+              <span class="hd-total">Total <b data-out="hdTotal"></b></span>
+              <b class="hd-left" data-out="hdLeft"></b>
+              <button type="button" class="btn-mini no-print" data-act="hd-spend" title="Gastar un dado de golpe: tira el dado + Constitución y cura">Gastar</button>
+              ${Front.cap('Dados de golpe')}
+            </div>
+            <div class="frame death-frame">
+              <div class="death-row"><span>Éxitos</span>${pipsHTML('death.s', 3, 'death-ok')}</div>
+              <div class="death-row"><span>Fallos</span>${pipsHTML('death.f', 3, 'death-ko')}</div>
+              <button type="button" class="btn-mini no-print" data-act="death-roll" title="Tirar salvación de muerte">Tirar</button>
+              ${Front.cap('Salvaciones de muerte')}
+            </div>
+          </div>
+        </div>
+
+        ${spellBand}
+
+        <div class="frame attacks${caster ? ' attacks-caster' : ''}">
+          <div class="atk-head"><span>Nombre</span><span>Bonif. ataque</span><span>Daño / tipo</span></div>
+          <div id="atk-list">${Front.attacks(ch)}</div>
+          <button type="button" class="btn-add no-print" data-act="atk-add">${icon('plus')} Añadir ataque</button>
+          ${caster ? '' : `<textarea class="lined atk-notes" data-bind="attackNotes" aria-label="Notas de ataques"></textarea>`}
+          ${Front.cap('Ataques y lanzamiento de conjuros')}
+        </div>
+      </div>
+
+      <!-- ===== Columna derecha: CA, iniciativa, rasgos ===== -->
+      <div class="col col-right">
+        <div class="panel-grey top3">
+          <label class="shield"><input type="number" data-bind="ac" data-type="int" aria-label="Clase de armadura">${Front.cap('Clase de armadura')}</label>
+          <div class="frame init ovr">
+            <span class="init-row">
+              <input type="text" inputmode="numeric" data-ovr="initOverride" data-calc="init" data-signed="1" aria-label="Iniciativa">
+              <button type="button" class="mini no-print" data-act="roll" data-arg="init" title="Tirar iniciativa" aria-label="Tirar iniciativa">${icon('d20')}</button>
+            </span>
+            <button type="button" class="ovr-reset no-print" data-act="ovr-reset" data-arg="initOverride" aria-label="Volver al valor automático">${icon('undo')}</button>
+            ${Front.cap('Iniciativa')}
+          </div>
+          <label class="frame speed"><input data-bind="speed" aria-label="Velocidad">${Front.cap('Velocidad')}</label>
+        </div>
+        <div class="frame features">
+          <textarea class="${lined.trim()}" data-bind="features" aria-label="Rasgos y atributos"></textarea>
+          ${Front.cap('Rasgos y atributos')}
+        </div>
+      </div>
+    </div>
+
+    <div class="p-foot">
+      <div class="frame profs">
+        <div class="pf-line"><b>Armadura</b>
+          ${[['light', 'Ligera'], ['medium', 'Media'], ['heavy', 'Pesada'], ['shields', 'Escudos']].map(([k, l]) =>
+            `<label class="chk"><button type="button" class="mk-o" data-st="profs.armor.${k}" data-max="2" aria-label="${l}"></button>${l}</label>`).join('')}
+        </div>
+        <div class="pf-line"><b>Armas</b>
+          ${[['simple', 'Simples'], ['martial', 'Marciales'], ['other', 'Otras']].map(([k, l]) =>
+            `<label class="chk"><button type="button" class="mk-o" data-st="profs.weapons.${k}" data-max="2" aria-label="${l}"></button>${l}</label>`).join('')}
+        </div>
+        <input class="pf-field" data-bind="profs.otherWeapons" placeholder="Otras armas" aria-label="Otras armas">
+        <div class="pf-title">Idiomas</div>
+        <textarea class="pf-field pf-area${lined ? ' lined' : ''}" data-bind="profs.languages" rows="2" aria-label="Idiomas"></textarea>
+        <div class="pf-title">Herramientas y otros</div>
+        <textarea class="pf-field pf-area${lined ? ' lined' : ''}" data-bind="profs.tools" rows="2" aria-label="Herramientas y otros"></textarea>
+        ${Front.cap('Competencias')}
+      </div>
+
+      <div class="frame equip">
+        <div class="coins" role="group" aria-label="Monedas y raciones">${coins}</div>
+        <div class="equip-cols">
+          <textarea class="${lined.trim()}" data-bind="equipment" aria-label="Equipo"></textarea>
+          <textarea class="${lined.trim()}" data-bind="equipment2" aria-label="Equipo (continuación)"></textarea>
+        </div>
+        <div class="potions" role="group" aria-label="Pociones de curación">${potions}</div>
+        <div class="equip-foot">
+          <span class="carry" title="Fuerza × 15">Carga máxima: <b data-out="carry"></b></span>
+          ${Front.cap('Equipo')}
+        </div>
+      </div>
+    </div>
+  </section>`;
+};
+
+/* ============================================================
+   07-sheet-details.js — Página 2: aspecto, personalidad, trasfondo e historia
+   (esta página existe en el PDF con magia; la dejo disponible en las dos hojas)
+   ============================================================ */
+const Details = {};
+
+Details.box = (path, title, cls = '', rows = '') =>
+  `<div class="frame dbox ${cls}">
+     <textarea data-bind="details.${path}" ${rows} aria-label="${title}"></textarea>
+     <span class="cap">${title}</span>
+   </div>`;
+
+Details.html = ch => `
+  <section class="page page-details" data-page="details" aria-label="Detalles del personaje">
+    <header class="p-head">
+      <div class="ribbon">
+        <span class="name-mirror" data-mirror="info.name"></span>
+        <span class="cap">Nombre del personaje</span>
+      </div>
+      <div class="head-box frame">
+        <label class="hf"><input data-bind="details.age"><span class="cap">Edad</span></label>
+        <label class="hf"><input data-bind="details.height"><span class="cap">Altura</span></label>
+        <label class="hf"><input data-bind="details.weight"><span class="cap">Peso</span></label>
+        <label class="hf"><input data-bind="details.eyes"><span class="cap">Ojos</span></label>
+        <label class="hf"><input data-bind="details.skin"><span class="cap">Piel</span></label>
+        <label class="hf"><input data-bind="details.hair"><span class="cap">Cabello</span></label>
+      </div>
+    </header>
+
+    <div class="d-grid">
+      ${Details.box('allies', 'Aliados y organizaciones', 'd-allies')}
+      <div class="panel-grey d-traits">
+        ${Details.box('personality', 'Rasgos de personalidad')}
+        ${Details.box('ideals', 'Ideales')}
+        ${Details.box('bonds', 'Vínculos')}
+        ${Details.box('flaws', 'Defectos')}
+      </div>
+      <div class="d-side">
+        ${Details.box('background', 'Trasfondo', 'd-bg')}
+        ${Details.box('otherProf', 'Otras competencias e idiomas', 'd-prof')}
+      </div>
+      ${Details.box('backstory', 'Historia del personaje', 'd-story')}
+      ${Details.box('stowed', 'Objetos guardados', 'd-stowed')}
+    </div>
+  </section>`;
+
+/* ============================================================
+   08-sheet-spells.js — Página 3: conjuros (solo en la hoja con magia)
+   Cada nivel tiene espacios (total + gastados) y una lista de conjuros.
+   La lista siempre termina con una fila vacía: al escribir en ella aparece otra nueva.
+   ============================================================ */
+const Spells = {};
+
+// Columnas como en el PDF: [trucos,1,2] [3,4,5] [6,7,8,9]
+Spells.columns = [[0, 1, 2], [3, 4, 5], [6, 7, 8, 9]];
+
+Spells.slotsHTML = (ch, l) => {
+  const s = ch.spell.slots[l];
+  const auto = ch.spell.auto;
+  return `<label class="sl-total"><span class="cap">Total</span>
+      <input type="number" min="0" max="9" data-bind="spell.slots.${l}.total" data-type="int" data-rerender="slots"
+             ${auto ? 'readonly tabindex="-1" title="Automático según clase y nivel"' : ''} aria-label="Espacios de nivel ${l}"></label>
+    <span class="sl-used"><span class="cap">Gastados</span>${s.total ? pipsHTML(`spell.slots.${l}.used`, s.total, 'slot-pips') : '<span class="sl-none">sin espacios</span>'}</span>`;
+};
+
+Spells.rowHTML = (ch, l, i, entry) => {
+  const e = entry || {};
+  const name = esc(e.name || '');
+  const blank = !entry;
+  return `<li class="spell${blank ? ' is-blank' : ''}" data-l="${l}" data-i="${i}">
+    ${l > 0 ? `<button type="button" class="mk-o prep" data-st="spell.lists.${l}.${i}.prep" data-max="2" title="Preparado" aria-label="Preparado"></button>` : ''}
+    <input class="sp-name" data-bind="spell.lists.${l}.${i}.name" placeholder="${l === 0 ? 'Truco' : 'Conjuro'}" aria-label="Nombre del conjuro de nivel ${l}">
+    <span class="sp-tools no-print">
+      ${l > 0 ? `<button type="button" class="mini conc" data-st="spell.lists.${l}.${i}.conc" data-max="2" title="Requiere concentración" aria-label="Concentración">C</button>` : ''}
+      <button type="button" class="mini" data-act="cast" data-arg="${l}:${i}" title="${l === 0 ? 'Lanzar truco' : 'Lanzar (gasta un espacio)'}" aria-label="Lanzar">${icon('bolt')}</button>
+      <button type="button" class="mini rm" data-act="spell-del" data-arg="${l}:${i}" title="Quitar conjuro" aria-label="Quitar">${icon('x')}</button>
+    </span>
+  </li>`;
+};
+
+Spells.listHTML = (ch, l) => {
+  // Limpia filas vacías que quedaron de antes
+  const list = (ch.spell.lists[l] = (ch.spell.lists[l] || []).filter(e => e && String(e.name || '').trim()));
+  return list.map((e, i) => Spells.rowHTML(ch, l, i, e)).join('') + Spells.rowHTML(ch, l, list.length, null);
+};
+
+Spells.level = (ch, l) => `
+  <section class="lvl" data-lvl="${l}">
+    <header class="lvl-head">
+      <span class="lvl-n" aria-label="${l === 0 ? 'Trucos' : 'Nivel ' + l}">${l}</span>
+      ${l === 0 ? '<span class="lvl-title">Trucos</span>' : `<div class="lvl-slots" data-slots="${l}">${Spells.slotsHTML(ch, l)}</div>`}
+    </header>
+    <ul class="spell-list" data-list="${l}">${Spells.listHTML(ch, l)}</ul>
+  </section>`;
+
+Spells.html = ch => {
+  const abilityOptions = DATA.abilities.map(a => `<option value="${a.k}">${a.abbr}</option>`).join('');
+  return `
+  <section class="page page-spells" data-page="spells" aria-label="Conjuros">
+    <header class="p-head">
+      <div class="ribbon">
+        <input class="class-input" data-bind="spell.class" placeholder="Clase de lanzador" aria-label="Clase de lanzador">
+        <span class="cap">Clase de lanzador</span>
+      </div>
+      <div class="head-box frame spell-band-head">
+        <label class="octa-cell"><span class="octa"><select data-bind="spell.ability" aria-label="Característica de lanzamiento">${abilityOptions}</select></span><span class="cap">Característica de lanzamiento</span></label>
+        <div class="octa-cell"><span class="octa"><b data-out="spellDC"></b></span><span class="cap">CD de salvación de conjuros</span></div>
+        <div class="octa-cell"><button type="button" class="octa octa-btn" data-act="roll" data-arg="spellatk" title="Tirar ataque de conjuro"><b data-out="spellAtk"></b></button><span class="cap">Bonif. de ataque de conjuros</span></div>
+      </div>
+    </header>
+
+    <div class="sp-toolbar no-print">
+      <label class="tg"><input type="checkbox" id="sp-auto" ${ch.spell.auto ? 'checked' : ''}>
+        <span>Espacios automáticos según clase y nivel</span></label>
+      <label class="sp-conc">Concentración
+        <input data-bind="spell.concentration" placeholder="Ningún conjuro" aria-label="Conjuro en concentración">
+        <button type="button" class="mini" data-act="conc-end" title="Terminar concentración" aria-label="Terminar concentración">${icon('x')}</button></label>
+      <label class="sp-filter"><input id="sp-filter" type="search" placeholder="Buscar conjuro…" aria-label="Buscar conjuro"></label>
+      <label class="tg"><input type="checkbox" id="sp-prep"><span>Solo preparados</span></label>
+    </div>
+
+    <div class="sp-grid">
+      ${Spells.columns.map(col => `<div class="sp-col">${col.map(l => Spells.level(ch, l)).join('')}</div>`).join('')}
+    </div>
+  </section>`;
+};
+
+// Vuelve a dibujar solo los espacios (cuando cambian los totales o el modo automático)
+Spells.renderSlots = ch => {
+  $$('[data-slots]').forEach(el => { el.innerHTML = Spells.slotsHTML(ch, +el.dataset.slots); });
+};
+
+// Filtro por texto y "solo preparados" (no se guarda: es solo de vista)
+Spells.filter = ch => {
+  const q = ($('#sp-filter') || {}).value ? $('#sp-filter').value.trim().toLowerCase() : '';
+  const onlyPrep = !!($('#sp-prep') && $('#sp-prep').checked);
+  const filtering = !!q || onlyPrep;
+  $$('.spell').forEach(li => {
+    const l = +li.dataset.l, i = +li.dataset.i;
+    const e = (ch.spell.lists[l] || [])[i];
+    let show = true;
+    if (filtering) {
+      if (!e) show = false;
+      else {
+        if (q && !String(e.name).toLowerCase().includes(q)) show = false;
+        if (onlyPrep && l > 0 && !(e.prep > 0)) show = false;
+      }
+    }
+    li.hidden = !show;
+  });
+};
+
+/* ============================================================
+   09-game.js — reglas del juego: daño, curación, salvaciones de muerte,
+   dados de golpe, pociones, lanzar conjuros y descansos.
+   Cada función modifica el personaje y avisa con Toast / historial de dados.
+   (La pantalla se actualiza después con App.refresh().)
+   ============================================================ */
+const Game = {
+  // ---------- Tiradas pedidas desde la hoja ----------
+  roll(ch, arg) {
+    const [kind, key] = String(arg).split(':');
+    if (kind === 'check') {
+      const a = DATA.abilityByKey(key);
+      return Dice.check(`Prueba de ${a.name}`, Calc.abilMod(ch, key));
+    }
+    if (kind === 'save') {
+      const a = DATA.abilityByKey(key);
+      return Dice.check(`Salvación de ${a.name}`, Calc.saveBonus(ch, key));
+    }
+    if (kind === 'skill') {
+      const s = Calc.skillByKey(key);
+      return Dice.check(s.name, Calc.skillBonus(ch, s));
+    }
+    if (kind === 'init') return Dice.check('Iniciativa', Calc.initiative(ch));
+    if (kind === 'spellatk') return Dice.check('Ataque de conjuro', Calc.spellAtk(ch));
+  },
+
+  attack(ch, i) {
+    const a = ch.attacks[i]; if (!a) return;
+    return Dice.check(`${a.name || 'Ataque'}`, toInt(a.bonus, 0), { meta: { atk: i } });
+  },
+  attackDamage(ch, i, crit = false) {
+    const a = ch.attacks[i]; if (!a) return;
+    const expr = Dice.extract(a.damage);
+    if (!expr) { Toast.show('Escribe el daño con dados, por ejemplo 1d8+3 cortante.', { kind: 'warn' }); return; }
+    return Dice.expression(`${a.name || 'Ataque'} (daño)`, expr, { crit, kind: 'dmg' });
+  },
+
+  // ---------- Vida ----------
+  damage(ch, amount) {
+    let n = Math.max(0, toInt(amount, 0));
+    if (!n) return;
+    if (toInt(ch.hp.max, 0) <= 0 && ch.hp.current <= 0) {
+      Toast.show('Primero escribe tus PG máximos en el recuadro de vida (los actuales se completan solos).', { kind: 'warn' });
+      return;
+    }
+    const total = n;
+    if (ch.hp.temp > 0) { const t = Math.min(ch.hp.temp, n); ch.hp.temp -= t; n -= t; }
+    const before = ch.hp.current;
+    ch.hp.current = Math.max(0, before - n);
+
+    if (before > 0 && ch.hp.current === 0) {
+      if (n - before >= ch.hp.max && ch.hp.max > 0) {
+        Toast.show('El daño sobrante iguala o supera tus PG máximos: muerte instantánea.', { kind: 'bad' });
+      } else {
+        Toast.show('Caes a 0 PG: inconsciente. Empiezan las salvaciones de muerte.', { kind: 'bad' });
+      }
+      ch.conditions.unconscious = 1;
+    } else if (before === 0 && n > 0) {
+      ch.death.f = Math.min(3, (ch.death.f || 0) + 1);       // daño estando a 0 PG = fallo
+      Toast.show('Daño a 0 PG: suma un fallo de salvación de muerte.', { kind: 'bad' });
+    }
+
+    Toast.show(`Recibes ${total} de daño. PG: ${ch.hp.current}${ch.hp.max > 0 ? ' de ' + ch.hp.max : ''}.`, { kind: 'bad' });
+
+    // Concentración: CD 10 o la mitad del daño, lo que sea mayor
+    if (ch.spell && ch.spell.concentration && ch.hp.current > 0) {
+      const dc = Math.max(10, Math.floor(total / 2));
+      Toast.show(`Concentración en ${ch.spell.concentration}: salvación de Constitución CD ${dc}.`, {
+        kind: 'warn', sticky: true,
+        actions: [{ label: 'Tirar', fn: () => { Dice.check(`Concentración (CD ${dc})`, Calc.saveBonus(ch, 'con')); } }],
+      });
+    }
+  },
+
+  heal(ch, amount) {
+    const n = Math.max(0, toInt(amount, 0));
+    if (!n) return 0;
+    const was = ch.hp.current;
+    const cap = ch.hp.max > 0 ? ch.hp.max : Infinity;
+    ch.hp.current = Math.min(cap, was + n);
+    if (was === 0 && ch.hp.current > 0) { ch.death.s = 0; ch.death.f = 0; ch.conditions.unconscious = 0; }
+    return ch.hp.current - was;
+  },
+
+  deathRoll(ch) {
+    if (ch.hp.current > 0) { Toast.show('Solo se tira con 0 PG.', { kind: 'warn' }); return; }
+    if (ch.death.f >= 3) { Toast.show('El personaje ya murió (tres fallos). Reinicia los fallos si fue un error.', { kind: 'warn' }); return; }
+    if (ch.death.s >= 3) { Toast.show('Ya estás estable (tres éxitos): no hace falta tirar más.', { kind: 'warn' }); return; }
+    const e = Dice.check('Salvación de muerte', 0, { mode: 'normal' });
+    if (e.nat === 20) {
+      ch.hp.current = 1; ch.death.s = 0; ch.death.f = 0; ch.conditions.unconscious = 0;
+      Toast.show('¡20 natural! Recuperas 1 PG y vuelves en ti.', { kind: 'good' });
+    } else if (e.nat === 1) {
+      ch.death.f = Math.min(3, ch.death.f + 2);
+      Toast.show('1 natural: dos fallos.', { kind: 'bad' });
+    } else if (e.total >= 10) ch.death.s = Math.min(3, ch.death.s + 1);
+    else ch.death.f = Math.min(3, ch.death.f + 1);
+    if (ch.hp.current === 0 && ch.death.s >= 3) Toast.show('Tres éxitos: estás estable.', { kind: 'good' });
+    if (ch.hp.current === 0 && ch.death.f >= 3) Toast.show('Tres fallos: el personaje muere.', { kind: 'bad' });
+  },
+
+  // ---------- Dados de golpe y pociones ----------
+  spendHD(ch) {
+    if (Calc.hdLeft(ch) <= 0) { Toast.show('No te quedan dados de golpe.', { kind: 'warn' }); return null; }
+    const con = Calc.abilMod(ch, 'con');
+    const expr = `1d${ch.hdDie}${con ? signed(con) : ''}`;
+    const r = Dice.rollExpr(expr);
+    const gained = Math.max(0, r.total);
+    ch.hdSpent = toInt(ch.hdSpent, 0) + 1;
+    const real = Game.heal(ch, gained);
+    Dice.push({ kind: 'heal', label: 'Dado de golpe', formula: expr, detail: `${r.detail} → +${real} PG`, total: real });
+    return real;
+  },
+
+  potion(ch, k) {
+    const p = DATA.potions.find(x => x.k === k);
+    if (!ch.potions[k] || ch.potions[k] < 1) { Toast.show(`No tienes ${p.name.toLowerCase()}.`, { kind: 'warn' }); return; }
+    const r = Dice.rollExpr(p.dice);
+    ch.potions[k] -= 1;
+    const real = Game.heal(ch, r.total);
+    Dice.push({ kind: 'heal', label: p.name, formula: p.dice, detail: `${r.detail} → +${real} PG`, total: real });
+  },
+
+  // ---------- Conjuros ----------
+  cast(ch, l, i) {
+    const e = ((ch.spell.lists[l] || [])[i]);
+    if (!e || !String(e.name || '').trim()) return;
+    if (l === 0) { Dice.push({ kind: 'note', label: `Lanzas ${e.name}`, formula: 'Truco', detail: '', total: '' }); return; }
+    let slot = 0;
+    for (let s = l; s <= 9; s++) {
+      const sl = ch.spell.slots[s];
+      if (sl.total > 0 && sl.used < sl.total) { slot = s; break; }
+    }
+    if (!slot) { Toast.show(`No te quedan espacios de nivel ${l} o superior.`, { kind: 'warn' }); return; }
+    ch.spell.slots[slot].used++;
+    const up = slot > l ? ` (como nivel ${slot})` : '';
+    Dice.push({ kind: 'note', label: `Lanzas ${e.name}${up}`, formula: `Espacio de nivel ${slot}`, detail: '', total: '' });
+    if (e.conc) {
+      const prev = ch.spell.concentration;
+      ch.spell.concentration = e.name;
+      if (prev && prev !== e.name) Toast.show(`Dejas de concentrarte en ${prev}.`, { kind: 'warn' });
+    }
+  },
+
+  // ---------- Descansos ----------
+  shortRest(ch) {
+    ch.resources.forEach(r => { if (r.recharge === 'short') r.used = 0; });
+    if (ch.spell && ch.spell.slotsRecharge === 'short') {
+      for (let l = 1; l <= 9; l++) ch.spell.slots[l].used = 0;
+    }
+  },
+
+  longRest(ch) {
+    ch.hp.current = ch.hp.max;
+    ch.hp.temp = 0;
+    ch.death.s = 0; ch.death.f = 0;
+    ch.conditions.unconscious = 0;
+    const back = Math.max(1, Math.floor(Calc.level(ch) / 2));      // recuperas la mitad de tus dados
+    ch.hdSpent = Math.max(0, toInt(ch.hdSpent, 0) - back);
+    ch.resources.forEach(r => { if (r.recharge !== 'none') r.used = 0; });
+    if (ch.spell) {
+      for (let l = 1; l <= 9; l++) ch.spell.slots[l].used = 0;
+      ch.spell.concentration = '';
+    }
+    ch.exhaustion = Math.max(0, toInt(ch.exhaustion, 0) - 1);
+  },
+};
+
+/* ============================================================
+   10-ui-tools.js — ventana modal, avisos, resultado de tirada,
+   panel de herramientas (dados, historial, estados, descansos, notas) y barra de estado
+   ============================================================ */
+
+// ---------- Ventana modal (usa <dialog>) ----------
+const Modal = (() => {
+  let dlg = null;
+  function ensure() {
+    if (dlg) return dlg;
+    dlg = document.createElement('dialog');
+    dlg.id = 'modal';
+    document.body.appendChild(dlg);
+    dlg.addEventListener('mousedown', e => { if (e.target === dlg) close(); });   // clic fuera = cerrar
+    return dlg;
+  }
+  function open({ title, html = '', buttons = [], wide = false, onOpen }) {
+    const d = ensure();
+    d.className = wide ? 'wide' : '';
+    d.innerHTML = `<div class="m-box"><h2 class="m-title">${esc(title)}</h2>
+      <div class="m-body">${html}</div><div class="m-actions"></div></div>`;
+    const bar = $('.m-actions', d);
+    buttons.forEach(b => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn ' + (b.cls || '');
+      btn.textContent = b.label;
+      btn.addEventListener('click', () => { if (!b.onClick || b.onClick(d) !== true) close(); });
+      bar.appendChild(btn);
+    });
+    if (!d.open) d.showModal();
+    if (onOpen) onOpen(d);
+  }
+  function close() { if (dlg && dlg.open) dlg.close(); }
+  return { open, close };
+})();
+
+// ---------- Avisos cortos ----------
+const Toast = (() => {
+  function box() {
+    let b = $('#toasts');
+    if (!b) {
+      b = document.createElement('div');
+      b.id = 'toasts'; b.setAttribute('aria-live', 'polite');
+      document.body.appendChild(b);
+    }
+    return b;
+  }
+  function show(text, { kind = 'info', sticky = false, actions = [] } = {}) {
+    const t = document.createElement('div');
+    t.className = `toast toast-${kind}`;
+    t.innerHTML = `<span>${esc(text)}</span>`;
+    actions.forEach(a => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn btn-sm'; b.textContent = a.label;
+      b.addEventListener('click', () => { t.remove(); a.fn(); });
+      t.appendChild(b);
+    });
+    const x = document.createElement('button');
+    x.type = 'button'; x.className = 'toast-x'; x.setAttribute('aria-label', 'Cerrar aviso');
+    x.innerHTML = icon('x');
+    x.addEventListener('click', () => t.remove());
+    t.appendChild(x);
+    box().appendChild(t);
+    if (!sticky) setTimeout(() => t.remove(), 4500 + text.length * 35);
+  }
+  return { show };
+})();
+
+// ---------- Resultado grande de la última tirada ----------
+const RollToast = (() => {
+  let timer = null;
+  function show(entry) {
+    let el = $('#roll-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'roll-toast'; el.setAttribute('role', 'status');
+      document.body.appendChild(el);
+    }
+    const isNote = entry.kind === 'note';
+    const extra = (entry.flag === 'crit' && entry.atk != null)
+      ? `<button type="button" class="btn btn-sm" data-act="crit-dmg" data-arg="${entry.atk}">Daño crítico</button>` : '';
+    el.className = `roll-toast ${entry.flag ? 'flag-' + entry.flag : ''} ${isNote ? 'is-note' : ''}`;
+    el.innerHTML = `${isNote ? '' : `<b class="rt-total">${entry.total}</b>`}
+      <div class="rt-txt"><span class="rt-label">${esc(entry.label)}</span>
+      <span class="rt-detail">${esc(entry.formula)}${entry.detail ? ' · ' + esc(entry.detail) : ''}</span></div>
+      ${entry.flag === 'crit' && entry.kind === 'd20' ? '<span class="rt-flag">¡Crítico!</span>' : ''}
+      ${entry.flag === 'fumble' ? '<span class="rt-flag">Pifia</span>' : ''}${extra}`;
+    el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop', 'show');
+    clearTimeout(timer);
+    timer = setTimeout(() => el.classList.remove('show'), entry.atk != null && entry.flag === 'crit' ? 9000 : 5000);
+  }
+  return { show };
+})();
+
+// ---------- Panel de herramientas ----------
+const Tools = {};
+
+Tools.html = ch => `
+  <div class="tools-head"><h2>Herramientas</h2>
+    <button type="button" class="mini" data-act="tools-toggle" aria-label="Cerrar herramientas">${icon('x')}</button></div>
+
+  <details class="tl" open><summary>Dados</summary>
+    <div class="adv" role="group" aria-label="Ventaja o desventaja para tiradas de d20">
+      <button type="button" data-mode="dis">Desventaja</button>
+      <button type="button" data-mode="normal">Normal</button>
+      <button type="button" data-mode="adv">Ventaja</button>
+    </div>
+    <div class="dice-grid">
+      ${['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'].map(d => `<button type="button" class="die" data-act="die" data-arg="${d}">${d}</button>`).join('')}
+    </div>
+    <form id="expr-form" class="expr">
+      <input id="expr" placeholder="2d6+3" autocomplete="off" aria-label="Expresión de dados">
+      <button type="submit" class="btn btn-sm">Tirar</button>
+    </form>
+  </details>
+
+  <details class="tl" open><summary>Historial</summary>
+    <ol id="history" class="history" aria-live="off"></ol>
+    <button type="button" class="btn btn-sm btn-ghost" data-act="hist-clear">Borrar historial</button>
+  </details>
+
+  <details class="tl"><summary>Estados</summary>
+    <div class="chips">
+      ${DATA.conditions.map(c => `<button type="button" class="chip" data-st="conditions.${c.k}" data-max="2" title="${esc(c.tip)}">${c.name}</button>`).join('')}
+    </div>
+    <label class="exh">Agotamiento
+      <select data-bind="exhaustion" data-type="int" aria-label="Nivel de agotamiento">
+        ${DATA.exhaustion.map((t, i) => `<option value="${i}">${i === 0 ? t : t}</option>`).join('')}
+      </select></label>
+  </details>
+
+  <details class="tl" open><summary>Descansos</summary>
+    <div class="rest-btns">
+      <button type="button" class="btn" data-act="rest-short">${icon('hourglass')} Descanso corto</button>
+      <button type="button" class="btn" data-act="rest-long">${icon('moon')} Descanso largo</button>
+    </div>
+  </details>
+
+  <details class="tl"><summary>Notas de sesión</summary>
+    <textarea class="session-notes" data-bind="notes" rows="6" placeholder="Pistas, nombres, deudas…" aria-label="Notas de sesión"></textarea>
+  </details>`;
+
+Tools.renderHistory = () => {
+  const ol = $('#history'); if (!ol) return;
+  if (!Dice.history.length) { ol.innerHTML = '<li class="h-empty">Todavía no hay tiradas.</li>'; }
+  else {
+    ol.innerHTML = Dice.history.map(e => {
+      const t = e.time.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+      return `<li class="h-entry ${e.flag ? 'flag-' + e.flag : ''} k-${e.kind}">
+        <b class="h-total">${e.total === '' ? '·' : e.total}</b>
+        <div><span class="h-label">${esc(e.label)}</span><span class="h-detail">${esc(e.formula)}${e.detail ? ' · ' + esc(e.detail) : ''}</span></div>
+        <time>${t}</time></li>`;
+    }).join('');
+  }
+  $$('.adv [data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === Dice.getMode())));
+};
+
+// ---------- Barra de estado (siempre visible arriba) ----------
+Tools.status = ch => {
+  if (ch.hp.current > 0 || toInt(ch.hp.max, 0) <= 0) return '';
+  if (ch.death.f >= 3) return 'Muerto';
+  if (ch.death.s >= 3) return 'Estable';
+  return 'Inconsciente';
+};
+
+Tools.renderHud = ch => {
+  const hud = $('#hud'); if (!hud) return;
+  const max = Math.max(0, toInt(ch.hp.max, 0)), cur = Math.max(0, toInt(ch.hp.current, 0));
+  const pct = max > 0 ? clamp(cur / max * 100, 0, 100) : 0;
+  const level = pct <= 25 ? 'low' : pct <= 50 ? 'mid' : 'ok';
+  const status = Tools.status(ch);
+  const pills = [];
+  if (status) pills.push(`<span class="pill pill-bad">${status}</span>`);
+  DATA.conditions.filter(c => ch.conditions[c.k]).forEach(c => pills.push(`<span class="pill" title="${esc(c.tip)}">${c.name}</span>`));
+  if (ch.exhaustion > 0) pills.push(`<span class="pill" title="${esc(DATA.exhaustion[ch.exhaustion])}">Agotamiento ${ch.exhaustion}</span>`);
+  if (ch.spell && ch.spell.concentration) pills.push(`<span class="pill pill-conc">Concentración: ${esc(ch.spell.concentration)}</span>`);
+  hud.innerHTML = `
+    <div class="hud-hp ${level}"><span class="hud-k">PG</span><b>${cur}</b><span class="hud-of">/ ${max || '–'}</span>
+      ${ch.hp.temp > 0 ? `<span class="hud-temp">+${ch.hp.temp} temp.</span>` : ''}
+      <div class="hud-bar" aria-hidden="true"><i style="width:${pct}%"></i></div></div>
+    <span class="hud-ac"><span class="hud-k">CA</span><b>${esc(ch.ac)}</b></span>
+    <div class="hud-pills">${pills.join('')}</div>`;
+  // Barra dentro del recuadro de vida de la hoja
+  const bar = $('.hp-bar i');
+  if (bar) { bar.style.width = pct + '%'; bar.parentElement.dataset.level = level; }
+};
+
+/* ============================================================
+   11-menu.js — menú inicial: lista de personajes y creación de uno nuevo
+   ============================================================ */
+const Menu = {};
+
+Menu.timeAgo = ts => {
+  const s = Math.max(0, (Date.now() - ts) / 1000);
+  if (s < 60) return 'hace un momento';
+  if (s < 3600) return `hace ${Math.floor(s / 60)} min`;
+  if (s < 86400) return `hace ${Math.floor(s / 3600)} h`;
+  const d = Math.floor(s / 86400);
+  return d === 1 ? 'ayer' : d < 30 ? `hace ${d} días` : new Date(ts).toLocaleDateString('es-AR');
+};
+
+Menu.typeLabel = t => (t === 'caster' ? 'Con magia' : 'Sin magia');
+
+Menu.card = ch => {
+  const i = ch.info;
+  const sub = [i.class ? `${i.class} ${i.level || 1}` : `Nivel ${i.level || 1}`, i.race].filter(Boolean).join(' · ');
+  const max = toInt(ch.hp.max, 0), cur = clamp(toInt(ch.hp.current, 0), 0, Math.max(max, 0));
+  const pct = max ? Math.round(cur / max * 100) : 0;
+  return `<article class="char-card" data-type="${ch.type}">
+    <button type="button" class="cc-main" data-act="open" data-arg="${ch.id}">
+      <span class="cc-badge">${Menu.typeLabel(ch.type)}</span>
+      <span class="cc-name">${esc(i.name || 'Sin nombre')}</span>
+      <span class="cc-sub">${esc(sub)}</span>
+      <span class="cc-hp" aria-label="Puntos de golpe ${cur} de ${max}"><i style="width:${pct}%"></i></span>
+      <span class="cc-meta">${max ? `${cur}/${max} PG · ` : ''}editado ${Menu.timeAgo(ch.updated)}</span>
+    </button>
+    <div class="cc-tools">
+      <button type="button" class="mini" data-act="dup" data-arg="${ch.id}" title="Duplicar" aria-label="Duplicar">${icon('copy')}</button>
+      <button type="button" class="mini" data-act="export-one" data-arg="${ch.id}" title="Exportar a archivo" aria-label="Exportar">${icon('download')}</button>
+      <button type="button" class="mini rm" data-act="delete" data-arg="${ch.id}" title="Eliminar" aria-label="Eliminar">${icon('trash')}</button>
+    </div>
+  </article>`;
+};
+
+Menu.html = () => {
+  const list = Store.all();
+  return `
+  <main class="home">
+    <header class="home-head">
+      <div>
+        <h1>Hojas de personaje</h1>
+        <p>D&amp;D 5e. Tus personajes se guardan en este navegador.</p>
+      </div>
+      <div class="home-tools">
+        <button type="button" class="btn btn-ghost" data-act="import">${icon('upload')} Importar</button>
+        <button type="button" class="btn btn-ghost" data-act="export-all" ${list.length ? '' : 'disabled'}>${icon('download')} Exportar todo</button>
+        <button type="button" class="btn btn-ghost icon-only" data-act="theme" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema">${icon('contrast')}</button>
+      </div>
+    </header>
+    ${Store.isStorageOk() ? '' : `<p class="warn-bar">Este navegador no permite guardar automáticamente. Usa «Exportar» para no perder tus personajes.</p>`}
+    <section class="chars" aria-label="Personajes">
+      <button type="button" class="char-new" data-act="new">
+        <span class="cn-plus">${icon('plus')}</span><b>Nuevo personaje</b>
+        <span>Elige entre hoja con magia o sin magia</span>
+      </button>
+      ${list.map(Menu.card).join('')}
+    </section>
+    ${list.length ? '' : '<p class="home-empty">Todavía no tienes personajes. Crea el primero y elige qué hoja usar.</p>'}
+    <input type="file" id="import-file" accept=".json,application/json" hidden>
+  </main>`;
+};
+
+// Dibujito de las páginas que trae cada tipo de hoja
+Menu.art = type => {
+  const caster = type === 'caster';
+  const page = (x, inner, dashed) => `<g transform="translate(${x} 2)">
+    <rect width="44" height="62" rx="2" class="pg${dashed ? ' pg-off' : ''}"/>${dashed ? '' : inner}</g>`;
+  const p1 = `<rect x="4" y="4" width="36" height="6" class="bx"/>
+    <rect x="4" y="13" width="12" height="45" class="bx"/>
+    <rect x="18" y="13" width="11" height="14" class="bx"/>
+    ${caster ? '<rect x="18" y="29" width="11" height="6" class="hl"/><rect x="18" y="37" width="11" height="21" class="bx"/>'
+             : '<rect x="18" y="29" width="11" height="29" class="bx"/><path d="M20 35h7M20 40h7M20 45h7M20 50h7" class="ln"/>'}
+    <rect x="31" y="13" width="9" height="45" class="bx"/>`;
+  const p2 = `<rect x="4" y="4" width="36" height="6" class="bx"/>
+    <rect x="4" y="13" width="12" height="20" class="bx"/><rect x="18" y="13" width="11" height="20" class="bx"/>
+    <rect x="31" y="13" width="9" height="20" class="bx"/><rect x="4" y="36" width="12" height="22" class="bx"/>
+    <rect x="18" y="36" width="22" height="22" class="bx"/>`;
+  const p3 = `<rect x="4" y="4" width="36" height="6" class="hl"/>
+    ${[0, 1, 2].map(c => `<g><rect x="${4 + c * 12.5}" y="13" width="11" height="45" class="bx"/>
+      <path d="M${6 + c * 12.5} 20h7M${6 + c * 12.5} 26h7M${6 + c * 12.5} 32h7M${6 + c * 12.5} 38h7M${6 + c * 12.5} 44h7" class="ln"/></g>`).join('')}`;
+  return `<svg class="tc-art" viewBox="0 0 150 66" role="img" aria-label="${caster ? 'Tres páginas: hoja, detalles y conjuros' : 'Una página de hoja, más detalles'}">
+    ${page(2, p1)}${page(53, p2)}${page(104, p3, !caster)}</svg>`;
+};
+
+Menu.openNew = () => {
+  const card = (type, title, who, items) => `
+    <label class="type-card">
+      <input type="radio" name="ctype" value="${type}" ${type === 'caster' ? 'checked' : ''}>
+      <span class="tc-body">
+        ${Menu.art(type)}
+        <b class="tc-title">${title}</b>
+        <span class="tc-who">${who}</span>
+        <ul>${items.map(t => `<li>${t}</li>`).join('')}</ul>
+      </span>
+    </label>`;
+
+  Modal.open({
+    title: 'Nuevo personaje', wide: true,
+    html: `
+      <div class="type-pick" role="radiogroup" aria-label="Tipo de hoja">
+        ${card('caster', 'Con magia', 'Mago, clérigo, bardo, brujo, paladín, explorador…', [
+          '3 páginas: hoja, detalles y conjuros',
+          'Característica, CD y ataque de conjuros',
+          'Espacios por nivel (1 a 9) y lista de conjuros',
+          'Concentración y descansos que recuperan espacios',
+          'Ataques: 3 filas']) }
+        ${card('martial', 'Sin magia', 'Bárbaro, guerrero, monje, pícaro…', [
+          '1 página de hoja, más detalles',
+          'Sin bloque ni página de conjuros',
+          'Más lugar para ataques: 4 filas y notas',
+          'Rasgos, equipo y competencias con renglones'])}
+      </div>
+      <div class="new-fields">
+        <label>Nombre<input id="nc-name" autocomplete="off" placeholder="Sin nombre"></label>
+        <label>Clase<select id="nc-class"></select></label>
+      </div>
+      <p class="hint">Si eliges una clase, se cargan el dado de golpe, las salvaciones con competencia y los espacios de conjuro. Todo se puede cambiar después.</p>`,
+    buttons: [
+      { label: 'Cancelar', cls: 'btn-ghost' },
+      { label: 'Crear personaje', cls: 'btn-primary', onClick: d => {
+          const type = $('input[name=ctype]:checked', d).value;
+          const ch = Store.create(type, { name: $('#nc-name', d).value.trim(), classId: $('#nc-class', d).value });
+          App.open(ch.id);
+        } },
+    ],
+    onOpen: d => {
+      const fill = () => {
+        const type = $('input[name=ctype]:checked', d).value;
+        const sel = $('#nc-class', d);
+        const opts = DATA.classes.filter(c => c.sheet === type || c.sheet === 'both');
+        sel.innerHTML = opts.map(c => `<option value="${c.id}">${c.id === 'custom' ? 'Otra / la completo yo' : c.name}</option>`).join('');
+        sel.value = 'custom';
+      };
+      $$('input[name=ctype]', d).forEach(r => r.addEventListener('change', fill));
+      fill();
+      $('#nc-name', d).focus();
+    },
+  });
+};
+
+Menu.confirmDelete = id => {
+  const ch = Store.get(id); if (!ch) return;
+  Modal.open({
+    title: 'Eliminar personaje',
+    html: `<p>Se borrará <b>${esc(ch.info.name || 'Sin nombre')}</b> de este navegador. Esto no se puede deshacer; si quieres conservarlo, exporta el archivo antes.</p>`,
+    buttons: [
+      { label: 'Cancelar', cls: 'btn-ghost' },
+      { label: 'Eliminar', cls: 'btn-danger', onClick: () => { Store.remove(id); App.showHome(); } },
+    ],
+  });
+};
+
+/* ============================================================
+   12-app.js — la aplicación: rutas (menú ↔ hoja), enlace de campos,
+   refresco de pantalla y acciones de los botones (data-act)
+   ============================================================ */
+const App = (() => {
+  let ch = null;        // personaje abierto (null en el menú)
+  let tab = 'front';    // página visible: front | details | spells
+
+  // ---------- Rutas con #hash para que el botón "atrás" funcione ----------
+  function go(hash) {
+    if ((location.hash || '') === hash || (!location.hash && hash === '')) route();
+    else location.hash = hash;
+  }
+  function route() {
+    Modal.close();
+    const m = location.hash.match(/^#c\/(.+)$/);
+    const c = m && Store.get(m[1]);
+    if (c && (!ch || ch.id !== c.id)) tab = 'front';      // otro personaje: empieza por la hoja principal
+    if (c) renderSheet(c); else renderHome();
+  }
+
+  function renderHome() {
+    ch = null;
+    document.body.dataset.view = 'home';
+    $('#app').innerHTML = Menu.html();
+    document.title = 'Hojas de personaje · D&D 5e';
+  }
+
+  function renderSheet(c) {
+    ch = c;
+    if (!ch.spell && tab === 'spells') tab = 'front';
+    Calc.syncSlots(ch);
+    const caster = ch.type === 'caster';
+    document.body.dataset.view = 'sheet';
+    document.body.dataset.type = ch.type;
+    if (!document.body.dataset.tools) document.body.dataset.tools = window.innerWidth >= 1240 ? 'open' : 'closed';
+
+    $('#app').innerHTML = `
+      <div class="shell">
+        <header class="topbar no-print">
+          <button type="button" class="btn btn-ghost" data-act="home">${icon('back')}<span class="tb-hide">Personajes</span></button>
+          <div class="tb-id"><b class="tb-name" data-mirror="info.name"></b><span class="tb-type">${Menu.typeLabel(ch.type)}</span></div>
+          <nav class="tabs" role="tablist" aria-label="Páginas de la hoja">
+            <button type="button" role="tab" data-tab="front">Hoja</button>
+            <button type="button" role="tab" data-tab="details">Detalles</button>
+            ${caster ? '<button type="button" role="tab" data-tab="spells">Conjuros</button>' : ''}
+          </nav>
+          <div class="tb-tools">
+            <span id="save-state" class="save-state" aria-live="polite"></span>
+            <button type="button" class="btn btn-ghost icon-only" data-act="print" title="Imprimir o guardar como PDF" aria-label="Imprimir">${icon('printer')}</button>
+            <button type="button" class="btn btn-ghost icon-only" data-act="export-one" data-arg="${ch.id}" title="Exportar este personaje" aria-label="Exportar">${icon('download')}</button>
+            <button type="button" class="btn btn-ghost icon-only" data-act="theme" title="Tema claro/oscuro" aria-label="Cambiar tema">${icon('contrast')}</button>
+            <button type="button" class="btn" data-act="tools-toggle">${icon('d20')}<span class="tb-hide">Herramientas</span></button>
+          </div>
+        </header>
+        <div id="hud" class="hud no-print" aria-label="Estado del personaje"></div>
+        <div class="stage">
+          <div class="pages">
+            ${Front.html(ch)}${Details.html(ch)}${caster ? Spells.html(ch) : ''}
+          </div>
+          <aside id="tools" class="tools no-print" aria-label="Herramientas">${Tools.html(ch)}</aside>
+        </div>
+      </div>`;
+    setTab(tab);
+    refresh();
+    Tools.renderHistory();
+    measureBar();
+    window.scrollTo(0, 0);
+  }
+
+  // El panel de herramientas empieza justo debajo de la barra superior (cuya altura cambia al achicar la ventana)
+  function measureBar() {
+    const bar = $('.topbar');
+    document.documentElement.style.setProperty('--tb-h', (bar ? bar.offsetHeight : 52) + 'px');
+  }
+
+  function setTab(name) {
+    if (!$(`.page[data-page="${name}"]`)) name = 'front';
+    tab = name;
+    $$('.page').forEach(p => p.classList.toggle('is-active', p.dataset.page === name));
+    $$('[data-tab]').forEach(b => { const on = b.dataset.tab === name; b.setAttribute('aria-selected', String(on)); b.classList.toggle('on', on); });
+    if (name === 'spells') Spells.filter(ch);
+  }
+
+  // ---------- Refresco: pone en pantalla lo que dice el personaje ----------
+  function refresh() {
+    if (!ch) return;
+    if (Calc.syncSlots(ch) && ch.spell) Spells.renderSlots(ch);
+    const out = Calc.outputs(ch);
+    const active = document.activeElement;
+
+    $$('[data-out]').forEach(el => { const v = out[el.dataset.out]; if (v !== undefined) el.textContent = v; });
+    $$('[data-mirror]').forEach(el => { el.textContent = getPath(ch, el.dataset.mirror) || 'Sin nombre'; });
+
+    $$('[data-bind]').forEach(el => {
+      if (el === active) return;
+      const v = getPath(ch, el.dataset.bind);
+      const s = v == null ? '' : String(v);
+      if (el.value !== s) el.value = s;
+    });
+    $$('[data-st]').forEach(el => { el.dataset.state = String(toInt(getPath(ch, el.dataset.st), 0)); });
+    $$('.pips').forEach(p => {
+      const n = toInt(getPath(ch, p.dataset.pips), 0);
+      $$('.pip', p).forEach((b, i) => { b.classList.toggle('on', i < n); b.setAttribute('aria-pressed', String(i < n)); });
+    });
+    $$('[data-ovr]').forEach(el => {
+      if (el === active) return;
+      const ov = getPath(ch, el.dataset.ovr);
+      const isOvr = ov != null && ov !== '';
+      const base = String(out[el.dataset.calc]);
+      el.value = isOvr ? (el.dataset.signed ? signed(toInt(ov, 0)) : String(ov))
+                       : (el.dataset.signed ? base : base.replace(/^\+/, ''));
+      const wrap = el.closest('.ovr'); if (wrap) wrap.classList.toggle('is-ovr', isOvr);
+    });
+    Tools.renderHud(ch);
+  }
+
+  // Cada vez que algo cambia: guardar + refrescar
+  function changed() {
+    if (!ch) return;
+    Store.touch(ch);
+    const s = $('#save-state'); if (s) { s.textContent = 'Guardando…'; s.className = 'save-state'; }
+    refresh();
+  }
+
+  function setFromField(el) {
+    let v = el.value;
+    if (el.dataset.type === 'int') v = v === '' ? 0 : toInt(v, 0);
+    setPath(ch, el.dataset.bind, v);
+  }
+
+  // Para vistas que se vuelven a dibujar por completo
+  const rerender = {
+    atk: () => { $('#atk-list').innerHTML = Front.attacks(ch); },
+    res: () => { $('#res-list').innerHTML = Front.resources(ch); },
+    list: l => { $(`[data-list="${l}"]`).innerHTML = Spells.listHTML(ch, l); Spells.filter(ch); },
+  };
+
+  const slug = s => (s || 'personaje').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'personaje';
+
+  // ---------- Tema ----------
+  function applyTheme() {
+    const t = Store.settings().theme;
+    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    else delete document.documentElement.dataset.theme;
+  }
+
+  // ---------- Descansos ----------
+  function restShort() {
+    const info = () => `<p>Dados de golpe: <b>${Calc.hdLeft(ch)}</b> de ${Calc.hdTotal(ch)} (d${ch.hdDie}).<br>
+      Puntos de golpe: <b>${ch.hp.current}</b> / ${ch.hp.max}.</p>`;
+    Modal.open({
+      title: 'Descanso corto',
+      html: `<div id="rs-info">${info()}</div>
+        <p class="hint">Gasta dados de golpe para curarte (dado + Constitución). Al terminar se recuperan los recursos marcados como «Desc. corto»${ch.spell && ch.spell.slotsRecharge === 'short' ? ' y tus espacios de magia de pacto' : ''}.</p>`,
+      buttons: [
+        { label: 'Cancelar', cls: 'btn-ghost' },
+        { label: 'Gastar un dado', onClick: d => { Game.spendHD(ch); changed(); $('#rs-info', d).innerHTML = info(); return true; } },
+        { label: 'Terminar descanso', cls: 'btn-primary', onClick: () => { Game.shortRest(ch); changed(); Toast.show('Descanso corto terminado.', { kind: 'good' }); } },
+      ],
+    });
+  }
+  function restLong() {
+    Modal.open({
+      title: 'Descanso largo',
+      html: `<ul class="plain">
+          <li>Recuperas todos los puntos de golpe y pierdes los temporales.</li>
+          <li>Recuperas la mitad de tus dados de golpe (mínimo 1).</li>
+          ${ch.spell ? '<li>Recuperas todos los espacios de conjuro y termina la concentración.</li>' : ''}
+          <li>Se recuperan los recursos de «Desc. corto» y «Desc. largo».</li>
+          <li>Se reinician las salvaciones de muerte y baja un nivel de agotamiento.</li></ul>`,
+      buttons: [
+        { label: 'Cancelar', cls: 'btn-ghost' },
+        { label: 'Descansar', cls: 'btn-primary', onClick: () => { Game.longRest(ch); changed(); Toast.show('Descanso largo terminado.', { kind: 'good' }); } },
+      ],
+    });
+  }
+
+  // Botones Daño / Curar de la hoja: leen la cantidad del cuadro de al lado
+  function hpAmount(kind) {
+    const f = $('#hp-amt');
+    const n = toInt(f.value, 0);
+    if (n <= 0) {
+      Toast.show('Escribe la cantidad en el cuadro junto a «Daño» y «Curar» y vuelve a pulsar.', { kind: 'warn' });
+      f.focus();
+      return;
+    }
+    if (kind === 'damage') Game.damage(ch, n);
+    else {
+      const got = Game.heal(ch, n);
+      Toast.show(`Curas ${got} PG. PG: ${ch.hp.current}${ch.hp.max > 0 ? ' de ' + ch.hp.max : ''}.`, { kind: 'good' });
+    }
+    f.value = '';
+    changed();
+  }
+
+  // ---------- Acciones de los botones: data-act="nombre" data-arg="valor" ----------
+  const Actions = {
+    home: () => NativeBridge.isActive() ? NativeBridge.close() : go(''),
+    open: id => go('#c/' + id),
+    new: () => Menu.openNew(),
+    dup: id => { Store.duplicate(id); renderHome(); },
+    delete: id => Menu.confirmDelete(id),
+    'export-one': id => { const c = Store.get(id); if (c) download(slug(c.info.name) + '.json', Store.exportOne(id)); },
+    'export-all': () => download('personajes-dnd5e.json', Store.exportAll()),
+    import: () => $('#import-file').click(),
+    theme: () => {
+      const order = ['auto', 'dark', 'light'];
+      const next = order[(order.indexOf(Store.settings().theme) + 1) % 3];
+      Store.setSetting('theme', next); applyTheme();
+      Toast.show('Tema: ' + { auto: 'según el sistema', dark: 'oscuro', light: 'claro' }[next]);
+    },
+    print: () => NativeBridge.isActive() ? NativeBridge.print() : window.print(),
+
+    roll: arg => Game.roll(ch, arg),
+    atk: i => Game.attack(ch, +i),
+    dmg: (i, ev) => Game.attackDamage(ch, +i, ev.shiftKey),
+    'crit-dmg': i => Game.attackDamage(ch, +i, true),
+    'atk-add': () => { ch.attacks.push({ name: '', bonus: '', damage: '' }); rerender.atk(); changed(); },
+    'atk-del': i => { ch.attacks.splice(+i, 1); rerender.atk(); changed(); },
+    'res-add': () => { ch.resources.push({ name: '', total: 1, used: 0, recharge: 'long' }); rerender.res(); changed(); },
+    'res-del': i => { ch.resources.splice(+i, 1); rerender.res(); changed(); },
+    'ovr-reset': path => { setPath(ch, path, null); changed(); },
+
+    damage: () => hpAmount('damage'),
+    heal: () => hpAmount('heal'),
+    'hd-spend': () => { Game.spendHD(ch); changed(); },
+    'death-roll': () => { Game.deathRoll(ch); changed(); },
+    potion: k => { Game.potion(ch, k); changed(); },
+
+    cast: arg => { const [l, i] = arg.split(':').map(Number); Game.cast(ch, l, i); changed(); },
+    'spell-del': arg => {
+      const [l, i] = arg.split(':').map(Number);
+      if (ch.spell.lists[l][i]) ch.spell.lists[l].splice(i, 1);
+      rerender.list(l); changed();
+    },
+    'conc-end': () => { ch.spell.concentration = ''; changed(); },
+
+    die: d => { if (d === 'd20') Dice.check('d20'); else Dice.expression(d, '1' + d); },
+    'hist-clear': () => Dice.clear(),
+    'tools-toggle': () => { document.body.dataset.tools = document.body.dataset.tools === 'open' ? 'closed' : 'open'; },
+    'rest-short': () => restShort(),
+    'rest-long': () => restLong(),
+  };
+
+  // ---------- Eventos (uno solo para toda la página) ----------
+  function bindEvents() {
+    document.addEventListener('click', e => {
+      const t = e.target;
+      const act = t.closest('[data-act]');
+      if (act) { Actions[act.dataset.act]?.(act.dataset.arg, e, act); return; }
+      if (!ch) return;
+      const st = t.closest('[data-st]');
+      if (st) {
+        setPath(ch, st.dataset.st, (toInt(getPath(ch, st.dataset.st), 0) + 1) % toInt(st.dataset.max, 2));
+        changed(); return;
+      }
+      const pip = t.closest('.pip');
+      if (pip) {
+        const cur = toInt(getPath(ch, pip.dataset.pip), 0), i = +pip.dataset.i;
+        setPath(ch, pip.dataset.pip, cur === i + 1 ? i : i + 1);
+        changed(); return;
+      }
+      const tb = t.closest('[data-tab]');
+      if (tb) { setTab(tb.dataset.tab); window.scrollTo(0, 0); return; }
+      const md = t.closest('[data-mode]');
+      if (md) Dice.setMode(md.dataset.mode);
+    });
+
+    document.addEventListener('input', e => {
+      const el = e.target;
+      if (el.id === 'sp-filter') { if (ch) Spells.filter(ch); return; }
+      if (!ch) return;
+      if (el.matches('[data-ovr]')) {
+        const raw = el.value.trim();
+        setPath(ch, el.dataset.ovr, (raw === '' || raw === '+' || raw === '-') ? null : toInt(raw, 0));
+        changed(); return;
+      }
+      if (!el.matches('[data-bind]')) return;
+      if (el.dataset.bind === 'hp.max') {
+        const wasFull = toInt(ch.hp.current, 0) === toInt(ch.hp.max, 0);   // incluye el 0/0 de un personaje nuevo
+        setFromField(el);
+        if (wasFull) ch.hp.current = ch.hp.max;
+        changed(); return;
+      }
+      setFromField(el);
+      const li = el.closest('.spell.is-blank');                       // al escribir en la fila vacía, aparece otra
+      if (li && el.value.trim()) {
+        li.classList.remove('is-blank');
+        li.insertAdjacentHTML('afterend', Spells.rowHTML(ch, +li.dataset.l, +li.dataset.i + 1, null));
+      }
+      changed();
+    });
+
+    document.addEventListener('change', e => {
+      const el = e.target;
+      if (el.id === 'import-file') {
+        const f = el.files[0]; if (!f) return;
+        f.text().then(txt => {
+          try { const n = Store.importText(txt); Toast.show(n ? `Importados ${n} personaje(s).` : 'El archivo no tiene personajes.', { kind: n ? 'good' : 'warn' }); renderHome(); }
+          catch (err) { Toast.show('No se pudo leer el archivo: no es un JSON válido.', { kind: 'bad' }); }
+        });
+        el.value = ''; return;
+      }
+      if (el.id === 'sp-prep') { Spells.filter(ch); return; }
+      if (el.id === 'sp-auto') {
+        ch.spell.auto = el.checked;
+        Spells.renderSlots(ch); changed(); return;
+      }
+      if (!ch) return;
+      if (el.type === 'number' && (el.min !== '' || el.max !== '') && el.dataset.bind) {   // respeta min / max
+        let v = toInt(el.value, 0);
+        if (el.min !== '') v = Math.max(+el.min, v);
+        if (el.max !== '') v = Math.min(+el.max, v);
+        setPath(ch, el.dataset.bind, v);
+      }
+      const what = el.dataset.rerender;
+      if (what === 'resources') {
+        ch.resources.forEach(r => { r.used = clamp(toInt(r.used, 0), 0, toInt(r.total, 0)); });
+        rerender.res();
+      }
+      if (what === 'slots') {
+        for (let l = 1; l <= 9; l++) { const s = ch.spell.slots[l]; s.used = clamp(toInt(s.used, 0), 0, toInt(s.total, 0)); }
+        Spells.renderSlots(ch);
+      }
+      changed();
+    });
+
+    // Al salir de un campo con valor automático, vuelve a mostrar el calculado
+    document.addEventListener('focusout', () => setTimeout(refresh, 0));
+
+    document.addEventListener('submit', e => {
+      if (e.target.id !== 'expr-form') return;
+      e.preventDefault();
+      const v = $('#expr').value.trim(); if (!v) return;
+      if (!Dice.expression(v, v)) Toast.show('No entiendo esa expresión. Prueba con algo como 2d6+3.', { kind: 'warn' });
+    });
+  }
+
+  function init() {
+    Store.load();
+    applyTheme();
+    Dice.onRoll(entry => { if (entry) RollToast.show(entry); Tools.renderHistory(); });
+    Store.onSaved(ok => {
+      const s = $('#save-state'); if (!s) return;
+      s.textContent = ok ? 'Guardado' : 'No se pudo guardar';
+      s.className = 'save-state' + (ok ? ' ok' : ' bad');
+    });
+    bindEvents();
+    window.addEventListener('hashchange', route);
+    window.addEventListener('resize', debounce(measureBar, 100));
+    window.addEventListener('pagehide', () => Store.flush());
+    route();
+  }
+
+  return { init, open: id => go('#c/' + id), showHome: () => go(''), current: () => ch };
+})();
+
+/* ============================================================
+   Integración Drivebrew
+   Conserva la hoja original y enlaza su guardado con el perfil nativo.
+   En un navegador común sigue funcionando como el HTML independiente.
+   ============================================================ */
+const NativeBridge = (() => {
+  let active = false;
+  let loading = false;
+  let nativeCharacterId = '';
+  let lastSnapshot = '';
+
+  const bridge = () => window.HybridWebView || window.chrome?.webview || null;
+
+  function send(message) {
+    const json = JSON.stringify(message);
+    try {
+      if (window.HybridWebView?.SendRawMessage) window.HybridWebView.SendRawMessage(json);
+      else if (window.chrome?.webview?.postMessage) window.chrome.webview.postMessage(json);
+      else if (window.webkit?.messageHandlers?.webwindowinterop)
+        window.webkit.messageHandlers.webwindowinterop.postMessage(json);
+    } catch (_) { /* El siguiente saludo reintentará el enlace. */ }
+  }
+
+  const text = (fields, ...names) => {
+    for (const name of names) {
+      const value = fields?.[name];
+      if (value !== undefined && value !== null && String(value).trim()) return String(value);
+    }
+    return '';
+  };
+  const number = (value, fallback = 0) => {
+    const parsed = Number.parseInt(String(value ?? ''), 10);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+  const ability = (payload, key) => {
+    const upper = key.toUpperCase();
+    return clamp(number(payload.abilityBaseScores?.[upper] ?? payload.textFields?.[upper], 10), 1, 30);
+  };
+
+  function legacyCharacter(payload) {
+    const fields = payload.textFields || {};
+    const spellRows = [...(payload.knownSpells || []), ...(payload.preparedSpells || [])];
+    const classLevel = text(fields, 'ClassLevel') || (payload.classLevels || []).map(item => item?.name || '').join(' / ');
+    const casterClass = /\b(?:artificer|bard|cleric|druid|paladin|ranger|sorcerer|warlock|wizard|mago|clérigo|druida|bardo|brujo|hechicero|paladín|explorador)\b/i.test(classLevel);
+    const caster = spellRows.length > 0 || casterClass || !!text(fields, 'Spellcasting Class 2', 'SpellcastingAbility 2');
+    const ch = Store.make(caster ? 'caster' : 'martial');
+    ch.id = payload.characterId || ch.id;
+    ch.info.name = payload.characterName || text(fields, 'CharacterName', 'CharacterName 2');
+    const levelMatch = classLevel.match(/\b(?:[1-9]|1\d|20)\b/);
+    ch.info.level = levelMatch ? number(levelMatch[0], 1) : 1;
+    ch.info.class = classLevel.replace(/\b(?:[1-9]|1\d|20)\b/g, '').replace(/[\s,/-]+$/, '').trim();
+    ch.info.background = text(fields, 'Background');
+    ch.info.player = text(fields, 'PlayerName');
+    ch.info.race = text(fields, 'Race ');
+    ch.info.alignment = text(fields, 'Alignment');
+    ch.info.xp = text(fields, 'XP');
+    for (const key of ['str', 'dex', 'con', 'int', 'wis', 'cha']) ch.abilities[key] = ability(payload, key);
+    ch.inspiration = number(text(fields, 'Inspiration'), 0);
+    ch.ac = number(text(fields, 'AC', 'Armor Class'), 10);
+    ch.speed = text(fields, 'Speed') || ch.speed;
+    ch.hp.max = number(text(fields, 'HPMax'), 0);
+    ch.hp.current = number(text(fields, 'HPCurrent'), ch.hp.max);
+    ch.hp.temp = number(text(fields, 'HPTemp'), 0);
+    ch.attackNotes = text(fields, 'AttacksSpellcasting');
+    ch.features = text(fields, 'Features and Traits', 'Feat+Traits', 'Digital.ClassFeatures');
+    ch.equipment = text(fields, 'Equipment');
+    ch.details.age = text(fields, 'Age');
+    ch.details.height = text(fields, 'Height');
+    ch.details.weight = text(fields, 'Weight');
+    ch.details.eyes = text(fields, 'Eyes');
+    ch.details.skin = text(fields, 'Skin');
+    ch.details.hair = text(fields, 'Hair');
+    ch.details.personality = text(fields, 'PersonalityTraits ');
+    ch.details.ideals = text(fields, 'Ideals');
+    ch.details.bonds = text(fields, 'Bonds');
+    ch.details.flaws = text(fields, 'Flaws');
+    ch.details.allies = text(fields, 'Allies');
+    ch.details.backstory = text(fields, 'Backstory');
+
+    const attacks = (payload.attacks || []).filter(item => item?.name);
+    if (attacks.length) ch.attacks = attacks.map(item => ({
+      name: item.name || '', bonus: item.attackBonus || '', damage: item.damage || ''
+    }));
+
+    if (ch.spell) {
+      ch.spell.class = text(fields, 'Spellcasting Class 2') || ch.info.class;
+      const seen = new Set();
+      for (const spell of spellRows) {
+        const name = String(spell?.name || '').trim();
+        const level = clamp(number(spell?.level, 0), 0, 9);
+        const key = `${level}:${name.toLocaleLowerCase()}`;
+        if (!name || seen.has(key)) continue;
+        seen.add(key);
+        const prepared = (payload.preparedSpells || []).some(item => item?.id === spell.id);
+        ch.spell.lists[level].push({ name, prep: prepared ? 1 : 0, conc: 0 });
+      }
+    }
+    return ch;
+  }
+
+  function parseSavedSheet(value) {
+    if (!value || typeof value !== 'string') return null;
+    try {
+      const parsed = JSON.parse(value);
+      const ch = Array.isArray(parsed?.chars) ? parsed.chars[0] : parsed;
+      return ch && ch.info ? ch : null;
+    } catch (_) { return null; }
+  }
+
+  function load(payload) {
+    if (!payload || typeof payload !== 'object') return;
+    active = true;
+    nativeCharacterId = String(payload.characterId || '');
+    const saved = parseSavedSheet(payload.htmlSheetJson);
+    const raw = saved || legacyCharacter(payload);
+    raw.id = nativeCharacterId || raw.id;
+    if (!raw.info.name) raw.info.name = payload.characterName || '';
+    loading = true;
+    const ch = Store.replaceSingle(raw, raw.type);
+    lastSnapshot = Store.exportOne(ch.id);
+    loading = false;
+    App.open(ch.id);
+    send({ type: 'loaded' });
+  }
+
+  function snapshot(force = false) {
+    if (!active || loading) return;
+    const ch = App.current() || Store.all()[0];
+    if (!ch) return;
+    const sheetJson = Store.exportOne(ch.id);
+    if (!force && sheetJson === lastSnapshot) return;
+    lastSnapshot = sheetJson;
+    send({ type: 'htmlSheetSave', sheetJson, characterName: ch.info?.name || '' });
+  }
+
+  function receive(raw) {
+    try {
+      const message = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (message?.type === 'load') load(message.payload || {});
+    } catch (error) {
+      send({ type: 'error', message: `No se pudo cargar la hoja: ${error.message}` });
+    }
+  }
+
+  function init() {
+    Store.onSaved(ok => { if (ok) snapshot(); });
+    window.addEventListener('HybridWebViewMessageReceived', event => receive(event.detail?.message));
+    window.chrome?.webview?.addEventListener?.('message', event => receive(event.data));
+    window.addEventListener('pagehide', () => snapshot(true));
+    send({ type: 'ready' });
+    setTimeout(() => { if (!active) send({ type: 'ready' }); }, 300);
+    setTimeout(() => { if (!active) send({ type: 'ready' }); }, 900);
+  }
+
+  return {
+    init,
+    isActive: () => active,
+    close: () => { snapshot(true); send({ type: 'closeSheet' }); },
+    print: () => { snapshot(true); setTimeout(() => window.print(), 60); },
+  };
+})();
+
+document.addEventListener('DOMContentLoaded', () => { App.init(); NativeBridge.init(); });
+
+</script>
 </body>
 </html>

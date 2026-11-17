@@ -2,7 +2,7 @@ namespace DndCompendium.Core.Models;
 
 public sealed class CharacterSheetData
 {
-    public const int CurrentSchemaVersion = 4;
+    public const int CurrentSchemaVersion = 5;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
 
@@ -13,6 +13,12 @@ public sealed class CharacterSheetData
     public int CreatorStep { get; set; } = 1;
 
     public string? PortraitDataUrl { get; set; }
+
+    /// <summary>
+    /// Complete offline snapshot produced by the three-page HTML character sheet.
+    /// Legacy structured fields remain available for migration and PDF export.
+    /// </summary>
+    public string? HtmlSheetJson { get; set; }
 
     public Dictionary<string, string> TextFields { get; init; } = new(StringComparer.Ordinal);
 

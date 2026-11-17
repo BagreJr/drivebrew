@@ -93,7 +93,9 @@ public partial class CharacterSheetViewModel(
             type = "load",
             payload = new
             {
+                characterId = _character?.Id,
                 characterName = CharacterName,
+                htmlSheetJson = _data.HtmlSheetJson,
                 portraitDataUrl = _data.PortraitDataUrl,
                 isCreationDraft = _data.IsCreationDraft,
                 creatorStep = _data.CreatorStep,
@@ -177,6 +179,128 @@ public partial class CharacterSheetViewModel(
                 })
             }
         });
+
+    public void ApplyHtmlSheetJson(string json, string? characterName)
+    {
+        if (_character is null || string.IsNullOrWhiteSpace(json)) return;
+        if (json.Length > 2_000_000)
+            throw new InvalidDataException("La hoja supera el tamaño máximo permitido.");
+
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+        if (root.ValueKind != JsonValueKind.Object
+            || !root.TryGetProperty("chars", out var characters)
+            || characters.ValueKind != JsonValueKind.Array
+            || characters.GetArrayLength() != 1)
+            throw new InvalidDataException("La hoja recibida no tiene el formato esperado.");
+
+        var sheet = characters[0];
+        if (sheet.ValueKind != JsonValueKind.Object
+            || !sheet.TryGetProperty("info", out var info)
+            || info.ValueKind != JsonValueKind.Object)
+            throw new InvalidDataException("La hoja no contiene los datos del personaje.");
+
+        _data.HtmlSheetJson = json;
+        var name = JsonString(info, "name")?.Trim();
+        if (string.IsNullOrWhiteSpace(name)) name = characterName?.Trim();
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            CharacterName = name;
+            SetLegacyText("CharacterName", name);
+            SetLegacyText("CharacterName 2", name);
+        }
+
+        var className = JsonString(info, "class")?.Trim() ?? string.Empty;
+        var level = JsonInt(info, "level", 1);
+        SetLegacyText("ClassLevel", string.Join(' ', new[] { className, level.ToString(CultureInfo.InvariantCulture) }
+            .Where(value => !string.IsNullOrWhiteSpace(value))));
+        SetLegacyText("Background", JsonString(info, "background"));
+        SetLegacyText("PlayerName", JsonString(info, "player"));
+        SetLegacyText("Race ", JsonString(info, "race"));
+        SetLegacyText("Alignment", JsonString(info, "alignment"));
+        SetLegacyText("XP", JsonString(info, "xp"));
+
+        if (sheet.TryGetProperty("abilities", out var abilities) && abilities.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var pair in new[] { ("str", "STR"), ("dex", "DEX"), ("con", "CON"), ("int", "INT"), ("wis", "WIS"), ("cha", "CHA") })
+            {
+                var score = Math.Clamp(JsonInt(abilities, pair.Item1, 10), 1, 30);
+                _data.AbilityBaseScores[pair.Item2] = score;
+                SetLegacyText(pair.Item2, score.ToString(CultureInfo.InvariantCulture));
+            }
+        }
+
+        SetLegacyText("Inspiration", JsonInt(sheet, "inspiration", 0).ToString(CultureInfo.InvariantCulture));
+        SetLegacyText("AC", JsonInt(sheet, "ac", 10).ToString(CultureInfo.InvariantCulture));
+        SetLegacyText("Speed", JsonString(sheet, "speed"));
+        if (sheet.TryGetProperty("hp", out var hp) && hp.ValueKind == JsonValueKind.Object)
+        {
+            SetLegacyText("HPMax", JsonInt(hp, "max", 0).ToString(CultureInfo.InvariantCulture));
+            SetLegacyText("HPCurrent", JsonInt(hp, "current", 0).ToString(CultureInfo.InvariantCulture));
+            SetLegacyText("HPTemp", JsonInt(hp, "temp", 0).ToString(CultureInfo.InvariantCulture));
+        }
+        SetLegacyText("AttacksSpellcasting", JsonString(sheet, "attackNotes"));
+        SetLegacyText("Features and Traits", JsonString(sheet, "features"));
+        SetLegacyText("Equipment", JsonString(sheet, "equipment"));
+
+        if (sheet.TryGetProperty("details", out var details) && details.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var pair in new[]
+            {
+                ("age", "Age"), ("height", "Height"), ("weight", "Weight"), ("eyes", "Eyes"),
+                ("skin", "Skin"), ("hair", "Hair"), ("allies", "Allies"),
+                ("personality", "PersonalityTraits "), ("ideals", "Ideals"), ("bonds", "Bonds"),
+                ("flaws", "Flaws"), ("backstory", "Backstory")
+            }) SetLegacyText(pair.Item2, JsonString(details, pair.Item1));
+        }
+
+        if (sheet.TryGetProperty("attacks", out var attacks) && attacks.ValueKind == JsonValueKind.Array)
+        {
+            _data.Attacks.Clear();
+            foreach (var attack in attacks.EnumerateArray())
+            {
+                var attackName = JsonString(attack, "name")?.Trim();
+                if (string.IsNullOrWhiteSpace(attackName)) continue;
+                _data.Attacks.Add(new CharacterAttack
+                {
+                    Name = attackName,
+                    AttackBonus = JsonString(attack, "bonus") ?? string.Empty,
+                    Damage = JsonString(attack, "damage") ?? string.Empty,
+                    IsEquipped = true
+                });
+            }
+        }
+        ProjectAttacksToPdf();
+        MarkChanged();
+    }
+
+    private void SetLegacyText(string name, string? value)
+    {
+        _data.GeneratedTextFields.Remove(name);
+        if (string.IsNullOrWhiteSpace(value)) _data.TextFields.Remove(name);
+        else _data.TextFields[name] = value;
+    }
+
+    private static string? JsonString(JsonElement element, string name)
+    {
+        if (!element.TryGetProperty(name, out var property)) return null;
+        return property.ValueKind switch
+        {
+            JsonValueKind.String => property.GetString(),
+            JsonValueKind.Number => property.GetRawText(),
+            _ => null
+        };
+    }
+
+    private static int JsonInt(JsonElement element, string name, int fallback)
+    {
+        if (!element.TryGetProperty(name, out var property)) return fallback;
+        if (property.ValueKind == JsonValueKind.Number && property.TryGetInt32(out var number)) return number;
+        return property.ValueKind == JsonValueKind.String
+            && int.TryParse(property.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out number)
+                ? number
+                : fallback;
+    }
 
     public void ApplyEditorChange(string name, string kind, string? value, bool isChecked)
     {
@@ -986,6 +1110,13 @@ public partial class CharacterSheetViewModel(
     private async Task SaveCoreAsync()
     {
         if (_character is null) return;
+        var requestedName = CharacterName.Trim();
+        if (!string.IsNullOrWhiteSpace(requestedName)
+            && !string.Equals(requestedName, _character.Name, StringComparison.CurrentCulture))
+        {
+            await profiles.RenameAsync(_character.Id, requestedName);
+            _character = _character with { Name = requestedName };
+        }
         SyncSpellSnapshots();
         ProjectSpellsToPdf();
         _data.UpdatedAt = DateTimeOffset.UtcNow;

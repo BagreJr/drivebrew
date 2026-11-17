@@ -73,6 +73,7 @@ jobs:
           dotnet test tests/DndCompendium.Core.Tests/DndCompendium.Core.Tests.csproj -c Release
           dotnet test tests/DndCompendium.Infrastructure.Tests/DndCompendium.Infrastructure.Tests.csproj -c Release
           node eng/test-character-sheet-rules.cjs
+          node eng/test-character-sheet-browser.cjs
 
       - name: Build signed APK
         shell: pwsh

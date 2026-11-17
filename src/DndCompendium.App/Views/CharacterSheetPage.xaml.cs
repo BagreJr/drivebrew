@@ -15,6 +15,7 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
     private string? _characterId;
     private bool _webViewReady;
     private CancellationTokenSource? _payloadHandshake;
+    private CancellationTokenSource? _htmlSaveDebounce;
 
     public CharacterSheetPage(CharacterSheetViewModel viewModel)
     {
@@ -91,6 +92,12 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
                 break;
             case "loaded":
                 _webViewReady = true;
+                break;
+            case "htmlSheetSave":
+                _viewModel.ApplyHtmlSheetJson(
+                    StringProperty(root, "sheetJson"),
+                    NullableStringProperty(root, "characterName"));
+                ScheduleHtmlSheetSave();
                 break;
             case "change":
                 var name = root.GetProperty("name").GetString() ?? string.Empty;
@@ -364,6 +371,27 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
 
     private void SendSheetPayload() => TrySendSheetPayload();
 
+    private void ScheduleHtmlSheetSave()
+    {
+        _htmlSaveDebounce?.Cancel();
+        _htmlSaveDebounce?.Dispose();
+        _htmlSaveDebounce = new CancellationTokenSource();
+        _ = SaveHtmlSheetAfterDelayAsync(_htmlSaveDebounce.Token);
+    }
+
+    private async Task SaveHtmlSheetAfterDelayAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(900, cancellationToken);
+            await MainThread.InvokeOnMainThreadAsync(_viewModel.SaveIfNeededAsync);
+        }
+        catch (OperationCanceledException)
+        {
+            // A newer edit restarts the short autosave delay.
+        }
+    }
+
     private static void OnWebResourceRequested(object? sender, WebViewWebResourceRequestedEventArgs e)
     {
         if (e.Uri.Scheme is not ("http" or "https") || e.Uri.IsLoopback || LocalWebViewHosts.Contains(e.Uri.Host)) return;
@@ -377,6 +405,7 @@ public partial class CharacterSheetPage : ContentPage, IQueryAttributable
     protected override async void OnDisappearing()
     {
         _payloadHandshake?.Cancel();
+        _htmlSaveDebounce?.Cancel();
         await _viewModel.SaveIfNeededAsync();
         base.OnDisappearing();
     }

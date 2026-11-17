@@ -3,73 +3,36 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+
 const root = path.resolve(__dirname, '..');
-const characterSheetHtml = fs.readFileSync(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/character-sheet.html'), 'utf8');
-assert.match(characterSheetHtml, /_framework\/hybridwebview\.js/, 'Character Sheet must load the MAUI HybridWebView bridge');
-assert.match(characterSheetHtml, /sheet3\/reference-sheet\.css/, 'Character Sheet must load the supplied three-page visual system');
-assert.match(characterSheetHtml, /sheet3\/reference-sheet\.js/, 'Character Sheet must load the supplied sheet navigation');
-const referenceSheetScript = fs.readFileSync(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet3/reference-sheet.js'), 'utf8');
-const referenceSheetStyles = fs.readFileSync(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet3/reference-sheet.css'), 'utf8');
-const sheetSectionsScript = fs.readFileSync(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet3/sections.js'), 'utf8');
-for (const page of ['front', 'details', 'spells']) assert.match(referenceSheetScript, new RegExp(`['\"]${page}['\"]`), `Missing ${page} sheet page`);
-for (const selector of ['.sheetTabs', '.identitySheet', '.abilityClassic']) assert.match(referenceSheetStyles, new RegExp(selector.replace('.', '\\.')), `Missing reference style ${selector}`);
-const rules = require(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet/character-sheet-rules.js'));
-assert.match(referenceSheetScript, /abilitySheet\(values\)/, 'Abilities and skills must remain integrated into the main sheet');
-assert.doesNotMatch(referenceSheetScript, /Características y skills|abilities.*Características/, 'The duplicate abilities page must not be exposed');
-assert.doesNotMatch(sheetSectionsScript, /function abilities\(\)|Abilities & Skills|overview,abilities,/, 'The unused duplicate abilities renderer must be removed');
-require(path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/sheet/layout.js'));
+const sheetPath = path.join(root, 'src/DndCompendium.App/Resources/Raw/wwwroot/character-sheet.html');
+const html = fs.readFileSync(sheetPath, 'utf8');
 
-const values = new Map(Object.entries({
-  STR: '15', DEX: '14', CON: '13', INT: '16', WIS: '12', CHA: '8',
-  ClassLevel: 'Wizard 5', 'SpellcastingAbility 2': 'INT'
-}));
-const checked = new Set(['Check Box 11', 'Check Box 34']);
-const calculated = rules.calculate(values, checked);
-const expected = {
-  STRmod: '+2', 'DEXmod ': '+2', CONmod: '+1', INTmod: '+3', WISmod: '+1', CHamod: '-1',
-  ProfBonus: '+3', 'ST Strength': '+5', Acrobatics: '+2', 'Perception ': '+4', Passive: '14',
-  Initiative: '+2', 'SpellSaveDC  2': '14', 'SpellAtkBonus 2': '+6'
-};
-for (const [name, value] of Object.entries(expected)) assert.equal(calculated.get(name), value, name);
+assert.match(html, /<html lang="es">/, 'The supplied Spanish character sheet must be installed');
+assert.match(html, /_framework\/hybridwebview\.js/, 'The MAUI bridge must load');
+assert.match(html, /const NativeBridge = \(\(\) =>/, 'Native persistence bridge is missing');
+assert.match(html, /htmlSheetSave/, 'The full sheet snapshot must be saved by the app');
+assert.match(html, /replaceSingle\(raw/, 'Native profiles must own exactly one HTML sheet');
+assert.doesNotMatch(html, /https:\/\/(?:fonts\.googleapis|fonts\.gstatic)\.com/, 'The editor must not need online fonts');
 
-assert.equal(rules.calculate(new Map([['ClassLevel', 'Fighter 3 / Rogue 2']]), new Set()).get('ProfBonus'), '+3');
-assert.equal(rules.calculate(new Map([['ClassLevel', 'Paladin 9']]), new Set()).get('SpellcastingAbility 2'), 'CHA');
-assert.equal(rules.calculate(new Map([['ClassLevel', 'Cleric 17']]), new Set()).get('ProfBonus'), '+6');
-
-const structured = rules.calculate(values, checked, {
-  abilityBaseScores: new Map([['STR', 15], ['DEX', 14], ['CON', 13], ['INT', 16], ['WIS', 12], ['CHA', 8]]),
-  proficiencyRanks: new Map([['Perception ', 2], ['ST Strength', 1]]),
-  otherBonuses: new Map([['Perception ', 1], ['Initiative', 2], ['SpellSaveDC  2', 1]]),
-  modifiers: [{ target: 'STR', value: 1, sourceName: 'Feat', isActive: true }]
-});
-assert.equal(structured.get('STR'), '16', 'structured ability total');
-assert.equal(structured.get('STRmod'), '+3', 'modifier from structured total');
-assert.equal(structured.get('ST Strength'), '+6', 'proficient saving throw');
-assert.equal(structured.get('Perception '), '+8', 'expertise plus other bonus');
-assert.equal(structured.get('Passive'), '18', 'passive perception from structured result');
-assert.equal(structured.get('Initiative'), '+4', 'initiative other bonus');
-assert.equal(structured.get('SpellSaveDC  2'), '15', 'spell DC other bonus');
-
-const overridden = rules.calculate(values, checked, {
-  proficiencyRanks: { Athletics: 2 },
-  otherBonuses: { Athletics: -1 },
-  overrides: { Athletics: '+99' }
-});
-assert.equal(overridden.get('Athletics'), '+99', 'manual override wins without deleting inputs');
-assert.deepEqual(rules.explain('Athletics', values, checked, {
-  proficiencyRanks: { Athletics: 2 }, otherBonuses: { Athletics: -1 }
-}).map(part => part.label), ['Fuerza', 'Expertise', 'Otros']);
-
-const layout = globalThis.DRIVEBREW_SHEET_LAYOUT;
-assert.equal(layout.pages.length, 3);
-assert.equal(layout.fields.length, 332);
-const names = new Set(layout.fields.map(field => field.name));
-for (const name of [...Object.values(rules.ABILITIES).flatMap(item => [item.score, item.modifier]), ...expectedKeys()]) {
-  assert.ok(names.has(name), `Missing PDF field: ${name}`);
+for (const page of ['front', 'details', 'spells']) {
+  assert.match(html, new RegExp(`data-page=["']${page}["']`), `Missing ${page} sheet page`);
 }
-
-function expectedKeys() {
-  return ['ClassLevel', 'ProfBonus', 'Initiative', 'Passive', 'SpellcastingAbility 2', 'SpellSaveDC  2', 'SpellAtkBonus 2'];
+for (const field of [
+  'info.name', 'info.class', 'info.level',
+  'hp.max', 'hp.current', 'features', 'equipment', 'details.age'
+]) {
+  assert.match(html, new RegExp(`data-bind=["']${field.replace('.', '\\.')}`), `Missing editable field ${field}`);
 }
+assert.ok(html.includes('data-bind="abilities.${a.k}"'), 'Missing editable ability fields');
+for (const feature of [
+  'Descanso corto', 'Descanso largo', 'Ataques y lanzamiento de conjuros',
+  'Rasgos y atributos', 'Historia del personaje', 'Conjuros'
+]) assert.ok(html.includes(feature), `Missing supplied feature: ${feature}`);
 
-console.log('Character Sheet rules and 332-field layout verified.');
+const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
+  .map(match => match[1]).filter(source => source.trim());
+assert.equal(scripts.length, 1, 'Expected one inline application script');
+assert.doesNotThrow(() => new Function(scripts[0]), 'The embedded application JavaScript must compile');
+
+console.log('Supplied three-page editable character sheet and native persistence bridge verified.');
