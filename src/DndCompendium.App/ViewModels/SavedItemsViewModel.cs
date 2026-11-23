@@ -8,6 +8,8 @@ namespace DndCompendium.App.ViewModels;
 
 public abstract partial class SavedItemsViewModel : ObservableObject
 {
+    private static readonly string[] ExploitClasses =
+        ["Barbarian", "Fighter", "Gunslinger", "Rogue", "Warden", "Warlord"];
     private readonly ISpellRepository _spellRepository;
     private readonly IExploitRepository _exploitRepository;
     private readonly ICharacterProfileStore _profileStore;
@@ -34,12 +36,17 @@ public abstract partial class SavedItemsViewModel : ObservableObject
     public ObservableCollection<SavedItemViewModel> Items { get; } = [];
     public string PageTitle { get; }
     public IReadOnlyList<string> ContentOptions { get; } = ["Todos", "Spells", "Exploits"];
-    public IReadOnlyList<string> LevelOptions { get; } =
+    public IReadOnlyList<string> SpellLevelOptions { get; } =
         ["Todos", "Truco (0)", "Nivel 1", "Nivel 2", "Nivel 3", "Nivel 4", "Nivel 5", "Nivel 6", "Nivel 7", "Nivel 8", "Nivel 9"];
+    public IReadOnlyList<string> OriginOptions { get; } = ["Todos", "Arcano", "Divino", "Primal"];
+    public IReadOnlyList<string> BooleanOptions { get; } = ["Todos", "Sí", "No"];
     public IReadOnlyList<string> CastingTimeOptions { get; } = ["Todos", "Action", "Bonus Action", "Reaction", "Otro"];
     public IReadOnlyList<string> ComponentOptions { get; } = ["Todos", "Verbal (V)", "Somático (S)", "Material (M)"];
     public IReadOnlyList<string> SortOptions { get; } = ["Manual", "A–Z", "Z–A", "Nivel menor a mayor", "Nivel mayor a menor"];
-    public bool ShowPreparedFilters => _preparedOnly;
+    public bool ShowSpellFilters => SelectedContent == "Spells";
+    public bool ShowExploitFilters => SelectedContent == "Exploits";
+    public bool CanUseExploitSubfilters => ShowExploitFilters && SelectedExploitType != "Todos";
+    public bool CanChooseExploitClass => ShowExploitFilters && SelectedExploitType == "Exploit";
     public bool CanReorder => SelectedSort == "Manual";
 
     [ObservableProperty]
@@ -67,16 +74,35 @@ public abstract partial class SavedItemsViewModel : ObservableObject
     private string searchQuery = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowSpellFilters))]
+    [NotifyPropertyChangedFor(nameof(ShowExploitFilters))]
+    [NotifyPropertyChangedFor(nameof(CanUseExploitSubfilters))]
+    [NotifyPropertyChangedFor(nameof(CanChooseExploitClass))]
     private string selectedContent = "Todos";
 
     [ObservableProperty]
-    private string selectedLevel = "Todos";
+    private string selectedSpellLevel = "Todos";
 
     [ObservableProperty]
-    private IReadOnlyList<string> classOptions = ["Todas"];
+    private IReadOnlyList<string> spellClassOptions = ["Todas"];
 
     [ObservableProperty]
-    private string selectedClass = "Todas";
+    private string selectedSpellClass = "Todas";
+
+    [ObservableProperty]
+    private string selectedOrigin = "Todos";
+
+    [ObservableProperty]
+    private IReadOnlyList<string> schoolOptions = ["Todas"];
+
+    [ObservableProperty]
+    private string selectedSchool = "Todas";
+
+    [ObservableProperty]
+    private string selectedConcentration = "Todos";
+
+    [ObservableProperty]
+    private string selectedRitual = "Todos";
 
     [ObservableProperty]
     private string selectedCastingTime = "Todos";
@@ -85,15 +111,57 @@ public abstract partial class SavedItemsViewModel : ObservableObject
     private string selectedComponent = "Todos";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanUseExploitSubfilters))]
+    [NotifyPropertyChangedFor(nameof(CanChooseExploitClass))]
+    private string selectedExploitType = "Todos";
+
+    [ObservableProperty]
+    private IReadOnlyList<string> exploitTypeOptions = ["Todos"];
+
+    [ObservableProperty]
+    private string selectedExploitClass = "Todas";
+
+    [ObservableProperty]
+    private IReadOnlyList<string> exploitLevelOptions = ["Todos"];
+
+    [ObservableProperty]
+    private string selectedExploitLevel = "Todos";
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanReorder))]
     private string selectedSort;
 
     partial void OnSearchQueryChanged(string value) => ApplyFilter();
     partial void OnSelectedContentChanged(string value) => ApplyFilter();
-    partial void OnSelectedLevelChanged(string value) => ApplyFilter();
-    partial void OnSelectedClassChanged(string value) => ApplyFilter();
+    partial void OnSelectedSpellLevelChanged(string value) => ApplyFilter();
+    partial void OnSelectedSpellClassChanged(string value) => ApplyFilter();
+    partial void OnSelectedOriginChanged(string value) => ApplyFilter();
+    partial void OnSelectedSchoolChanged(string value) => ApplyFilter();
+    partial void OnSelectedConcentrationChanged(string value) => ApplyFilter();
+    partial void OnSelectedRitualChanged(string value) => ApplyFilter();
     partial void OnSelectedCastingTimeChanged(string value) => ApplyFilter();
     partial void OnSelectedComponentChanged(string value) => ApplyFilter();
+    partial void OnSelectedExploitTypeChanged(string value)
+    {
+        OnPropertyChanged(nameof(CanUseExploitSubfilters));
+        OnPropertyChanged(nameof(CanChooseExploitClass));
+        SelectedExploitClass = FixedClassForType(value) ?? "Todas";
+        SelectedExploitLevel = "Todos";
+        ApplyFilter();
+    }
+    partial void OnSelectedExploitClassChanged(string value)
+    {
+        if (!GetExploitLevelFilterOptions().Any(option => option.Value == SelectedExploitLevel && option.IsAvailable))
+            SelectedExploitLevel = "Todos";
+        ApplyFilter();
+    }
+    partial void OnSelectedExploitLevelChanged(string value)
+    {
+        if (CanChooseExploitClass
+            && !GetExploitClassFilterOptions().Any(option => option.Value == SelectedExploitClass && option.IsAvailable))
+            SelectedExploitClass = "Todas";
+        ApplyFilter();
+    }
     partial void OnSelectedSortChanged(string value)
     {
         ApplyFilter();
@@ -141,11 +209,31 @@ public abstract partial class SavedItemsViewModel : ObservableObject
             }
             _allItems.AddRange(byKey.Values.OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase));
 
-            ClassOptions = ["Todas", .. _allItems
+            SpellClassOptions = ["Todas", .. _allItems
+                .Where(item => item.IsSpell)
                 .SelectMany(item => item.Classes)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order(StringComparer.OrdinalIgnoreCase)];
-            if (!ClassOptions.Contains(SelectedClass, StringComparer.OrdinalIgnoreCase)) SelectedClass = "Todas";
+            if (!SpellClassOptions.Contains(SelectedSpellClass, StringComparer.OrdinalIgnoreCase)) SelectedSpellClass = "Todas";
+            SchoolOptions = ["Todas", .. _allItems
+                .Where(item => item.IsSpell)
+                .Select(item => item.School)
+                .Where(school => !string.IsNullOrWhiteSpace(school))
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .Order(StringComparer.CurrentCultureIgnoreCase)];
+            if (!SchoolOptions.Contains(SelectedSchool, StringComparer.CurrentCultureIgnoreCase)) SelectedSchool = "Todas";
+
+            var preferredTypes = new[] { "Knacks", "Techniques", "Blood Rites", "Exploit", "Maneuvers" };
+            ExploitTypeOptions = ["Todos", .. preferredTypes.Where(type => _allItems.Any(item =>
+                !item.IsSpell && string.Equals(item.ExploitType, type, StringComparison.OrdinalIgnoreCase)))];
+            ExploitLevelOptions = ["Todos", .. _allItems
+                .Where(item => !item.IsSpell)
+                .Select(item => item.Level)
+                .Distinct()
+                .Order()
+                .Select(level => $"Nivel {level}")];
+            if (!ExploitTypeOptions.Contains(SelectedExploitType, StringComparer.OrdinalIgnoreCase))
+                SelectedExploitType = "Todos";
             ApplyFilter();
         }
         catch (Exception exception)
@@ -248,32 +336,47 @@ public abstract partial class SavedItemsViewModel : ObservableObject
         if (query.Length > 0)
         {
             filtered = filtered.Where(item => item.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
-                || item.DetailText.Contains(query, StringComparison.CurrentCultureIgnoreCase));
+                || item.DetailText.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                || item.SearchText.Contains(query, StringComparison.CurrentCultureIgnoreCase));
         }
-        if (SelectedContent == "Spells") filtered = filtered.Where(item => item.IsSpell);
-        if (SelectedContent == "Exploits") filtered = filtered.Where(item => !item.IsSpell);
-
-        var level = SelectedLevel switch
+        if (SelectedContent == "Spells")
         {
-            "Truco (0)" => 0,
-            var value when value.StartsWith("Nivel ", StringComparison.Ordinal)
-                && int.TryParse(value.AsSpan(6), out var parsed) => parsed,
-            _ => -1
-        };
-        if (level >= 0) filtered = filtered.Where(item => item.Level == level);
-        if (SelectedClass != "Todas")
-            filtered = filtered.Where(item => item.Classes.Contains(SelectedClass, StringComparer.OrdinalIgnoreCase));
-        if (SelectedCastingTime != "Todos")
-            filtered = filtered.Where(item => item.IsSpell && item.CastingTimeCategory == SelectedCastingTime);
-        if (SelectedComponent != "Todos")
-        {
-            filtered = SelectedComponent switch
+            filtered = filtered.Where(item => item.IsSpell);
+            var level = ParseLevel(SelectedSpellLevel);
+            if (SelectedSpellLevel == "Truco (0)") level = 0;
+            if (level is not null) filtered = filtered.Where(item => item.Level == level);
+            if (SelectedSpellClass != "Todas")
+                filtered = filtered.Where(item => item.Classes.Contains(SelectedSpellClass, StringComparer.OrdinalIgnoreCase));
+            if (SelectedOrigin != "Todos")
+                filtered = filtered.Where(item => item.Origins.Contains(SelectedOrigin, StringComparer.OrdinalIgnoreCase));
+            if (SelectedSchool != "Todas")
+                filtered = filtered.Where(item => string.Equals(item.School, SelectedSchool, StringComparison.CurrentCultureIgnoreCase));
+            if (SelectedConcentration != "Todos")
+                filtered = filtered.Where(item => item.IsConcentration == (SelectedConcentration == "Sí"));
+            if (SelectedRitual != "Todos")
+                filtered = filtered.Where(item => item.IsRitual == (SelectedRitual == "Sí"));
+            if (SelectedCastingTime != "Todos")
+                filtered = filtered.Where(item => item.CastingTimeCategory == SelectedCastingTime);
+            if (SelectedComponent != "Todos")
             {
-                "Verbal (V)" => filtered.Where(item => item.IsSpell && item.HasVerbalComponent),
-                "Somático (S)" => filtered.Where(item => item.IsSpell && item.HasSomaticComponent),
-                "Material (M)" => filtered.Where(item => item.IsSpell && item.HasMaterialComponent),
-                _ => filtered
-            };
+                filtered = SelectedComponent switch
+                {
+                    "Verbal (V)" => filtered.Where(item => item.HasVerbalComponent),
+                    "Somático (S)" => filtered.Where(item => item.HasSomaticComponent),
+                    "Material (M)" => filtered.Where(item => item.HasMaterialComponent),
+                    _ => filtered
+                };
+            }
+        }
+        else if (SelectedContent == "Exploits")
+        {
+            filtered = filtered.Where(item => !item.IsSpell);
+            if (SelectedExploitType != "Todos")
+                filtered = filtered.Where(item => string.Equals(item.ExploitType, SelectedExploitType, StringComparison.OrdinalIgnoreCase));
+            if (SelectedExploitClass != "Todas")
+                filtered = filtered.Where(item => item.Classes.Contains(SelectedExploitClass, StringComparer.OrdinalIgnoreCase));
+            if (ParseLevel(SelectedExploitLevel) is int exploitLevel)
+                filtered = filtered.Where(item => item.Level == exploitLevel);
         }
 
         filtered = SelectedSort switch
@@ -290,12 +393,58 @@ public abstract partial class SavedItemsViewModel : ObservableObject
         NotifyListState();
     }
 
+    public IReadOnlyList<SavedFilterOption> GetExploitClassFilterOptions()
+    {
+        var entries = ExploitsForSelectedType().ToArray();
+        var selectedLevel = ParseLevel(SelectedExploitLevel);
+        return [new("Todas", CanChooseExploitClass), .. ExploitClasses.Select(option => new SavedFilterOption(
+            option,
+            CanChooseExploitClass && entries.Any(item =>
+                (selectedLevel is null || item.Level == selectedLevel)
+                && item.Classes.Contains(option, StringComparer.OrdinalIgnoreCase))))];
+    }
+
+    public IReadOnlyList<SavedFilterOption> GetExploitLevelFilterOptions()
+    {
+        var entries = ExploitsForSelectedType().ToArray();
+        return ExploitLevelOptions
+            .Select(option => new SavedFilterOption(
+                option,
+                CanUseExploitSubfilters && (option == "Todos" || ParseLevel(option) is int level && entries.Any(item =>
+                    item.Level == level
+                    && (SelectedExploitClass == "Todas" || item.Classes.Contains(SelectedExploitClass, StringComparer.OrdinalIgnoreCase))))))
+            .ToArray();
+    }
+
+    private IEnumerable<SavedItemViewModel> ExploitsForSelectedType()
+        => SelectedExploitType == "Todos"
+            ? []
+            : _allItems.Where(item => !item.IsSpell
+                && string.Equals(item.ExploitType, SelectedExploitType, StringComparison.OrdinalIgnoreCase));
+
+    private static string? FixedClassForType(string type) => type switch
+    {
+        "Knacks" => "Ranger",
+        "Techniques" => "Monk",
+        "Blood Rites" => "Blood Hunter",
+        "Maneuvers" => "Vagabond",
+        _ => null
+    };
+
+    private static int? ParseLevel(string option)
+        => option.StartsWith("Nivel ", StringComparison.Ordinal)
+           && int.TryParse(option.AsSpan(6), out var level)
+            ? level
+            : null;
+
     private void NotifyListState()
     {
         OnPropertyChanged(nameof(ResultSummary));
         OnPropertyChanged(nameof(IsEmpty));
     }
 }
+
+public sealed record SavedFilterOption(string Value, bool IsAvailable);
 
 public partial class SavedItemViewModel : ObservableObject
 {
@@ -308,10 +457,16 @@ public partial class SavedItemViewModel : ObservableObject
         string detailText,
         bool isSpell,
         IReadOnlyList<string> classes,
+        string searchText,
+        IReadOnlyList<string>? origins = null,
+        string school = "",
+        bool isConcentration = false,
+        bool isRitual = false,
         string castingTimeCategory = "",
         bool hasVerbalComponent = false,
         bool hasSomaticComponent = false,
-        bool hasMaterialComponent = false)
+        bool hasMaterialComponent = false,
+        string exploitType = "")
     {
         Id = id;
         Kind = kind;
@@ -321,10 +476,16 @@ public partial class SavedItemViewModel : ObservableObject
         DetailText = detailText;
         IsSpell = isSpell;
         Classes = classes;
+        SearchText = searchText;
+        Origins = origins ?? [];
+        School = school;
+        IsConcentration = isConcentration;
+        IsRitual = isRitual;
         CastingTimeCategory = castingTimeCategory;
         HasVerbalComponent = hasVerbalComponent;
         HasSomaticComponent = hasSomaticComponent;
         HasMaterialComponent = hasMaterialComponent;
+        ExploitType = exploitType;
     }
 
     public string Id { get; }
@@ -335,10 +496,16 @@ public partial class SavedItemViewModel : ObservableObject
     public string DetailText { get; }
     public bool IsSpell { get; }
     public IReadOnlyList<string> Classes { get; }
+    public string SearchText { get; }
+    public IReadOnlyList<string> Origins { get; }
+    public string School { get; }
+    public bool IsConcentration { get; }
+    public bool IsRitual { get; }
     public string CastingTimeCategory { get; }
     public bool HasVerbalComponent { get; }
     public bool HasSomaticComponent { get; }
     public bool HasMaterialComponent { get; }
+    public string ExploitType { get; }
     public SavedContentKind ContentKind => IsSpell ? SavedContentKind.Spell : SavedContentKind.Exploit;
     public SavedItemReference Reference => new(ContentKind, Id);
     public string ReferenceKey => ReferenceKeyFor(ContentKind, Id);
@@ -352,6 +519,11 @@ public partial class SavedItemViewModel : ObservableObject
         SpellDisplay.School(spell.School),
         true,
         spell.Classes,
+        $"{spell.Effect} {spell.HigherLevels}",
+        spell.Origins,
+        SpellDisplay.School(spell.School),
+        spell.IsConcentration,
+        spell.IsRitual,
         SpellDisplay.CastingTimeCategory(spell.CastingTime),
         spell.HasVerbalComponent,
         spell.HasSomaticComponent,
@@ -365,7 +537,9 @@ public partial class SavedItemViewModel : ObservableObject
         $"Nivel {exploit.Level}",
         exploit.Type,
         false,
-        exploit.Classes);
+        exploit.Classes,
+        $"{exploit.Prerequisite} {exploit.Effect}",
+        exploitType: exploit.Type);
 
     public static string ReferenceKeyFor(SavedContentKind contentKind, string id)
         => $"{contentKind}:{id}";

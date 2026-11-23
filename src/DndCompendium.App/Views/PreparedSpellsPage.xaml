@@ -30,22 +30,58 @@
                         <Label Style="{StaticResource EyebrowLabelStyle}" Text="CONTENIDO" />
                         <Picker ItemsSource="{Binding ContentOptions}" SelectedItem="{Binding SelectedContent}" Style="{StaticResource CompactPickerStyle}" />
                     </VerticalStackLayout>
-                    <VerticalStackLayout WidthRequest="116" Spacing="2">
-                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="NIVEL" />
-                        <Picker ItemsSource="{Binding LevelOptions}" SelectedItem="{Binding SelectedLevel}" Style="{StaticResource CompactPickerStyle}" />
-                    </VerticalStackLayout>
-                    <VerticalStackLayout WidthRequest="138" Spacing="2">
-                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="CLASE" />
-                        <Picker ItemsSource="{Binding ClassOptions}" SelectedItem="{Binding SelectedClass}" Style="{StaticResource CompactPickerStyle}" />
-                    </VerticalStackLayout>
-                    <VerticalStackLayout WidthRequest="150" Spacing="2">
-                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="CASTEO" />
-                        <Picker ItemsSource="{Binding CastingTimeOptions}" SelectedItem="{Binding SelectedCastingTime}" Style="{StaticResource CompactPickerStyle}" />
-                    </VerticalStackLayout>
-                    <VerticalStackLayout WidthRequest="150" Spacing="2">
-                        <Label Style="{StaticResource EyebrowLabelStyle}" Text="COMPONENTE" />
-                        <Picker ItemsSource="{Binding ComponentOptions}" SelectedItem="{Binding SelectedComponent}" Style="{StaticResource CompactPickerStyle}" />
-                    </VerticalStackLayout>
+                    <HorizontalStackLayout IsVisible="{Binding ShowSpellFilters}" Spacing="8">
+                        <VerticalStackLayout WidthRequest="116" Spacing="2">
+                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="NIVEL" />
+                            <Picker ItemsSource="{Binding SpellLevelOptions}" SelectedItem="{Binding SelectedSpellLevel}" Style="{StaticResource CompactPickerStyle}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout WidthRequest="138" Spacing="2">
+                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="CLASE" />
+                            <Picker ItemsSource="{Binding SpellClassOptions}" SelectedItem="{Binding SelectedSpellClass}" Style="{StaticResource CompactPickerStyle}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout WidthRequest="116" Spacing="2">
+                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="ORIGEN" />
+                            <Picker ItemsSource="{Binding OriginOptions}" SelectedItem="{Binding SelectedOrigin}" Style="{StaticResource CompactPickerStyle}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout WidthRequest="138" Spacing="2">
+                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="ESCUELA" />
+                            <Picker ItemsSource="{Binding SchoolOptions}" SelectedItem="{Binding SelectedSchool}" Style="{StaticResource CompactPickerStyle}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout WidthRequest="130" Spacing="2">
+                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="CONCENTRACIÓN" />
+                            <Picker ItemsSource="{Binding BooleanOptions}" SelectedItem="{Binding SelectedConcentration}" Style="{StaticResource CompactPickerStyle}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout WidthRequest="110" Spacing="2">
+                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="RITUAL" />
+                            <Picker ItemsSource="{Binding BooleanOptions}" SelectedItem="{Binding SelectedRitual}" Style="{StaticResource CompactPickerStyle}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout WidthRequest="150" Spacing="2">
+                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="CASTEO" />
+                            <Picker ItemsSource="{Binding CastingTimeOptions}" SelectedItem="{Binding SelectedCastingTime}" Style="{StaticResource CompactPickerStyle}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout WidthRequest="150" Spacing="2">
+                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="COMPONENTE" />
+                            <Picker ItemsSource="{Binding ComponentOptions}" SelectedItem="{Binding SelectedComponent}" Style="{StaticResource CompactPickerStyle}" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout IsVisible="{Binding ShowExploitFilters}" Spacing="8">
+                        <VerticalStackLayout WidthRequest="145" Spacing="2">
+                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="TIPO" />
+                            <Button Clicked="OnExploitTypeFilterClicked" Style="{StaticResource SmallSecondaryButtonStyle}" Text="{Binding SelectedExploitType}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout WidthRequest="150" Spacing="2">
+                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="CLASE" />
+                            <Button Clicked="OnExploitClassFilterClicked" IsEnabled="{Binding CanChooseExploitClass}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="{Binding SelectedExploitClass}">
+                                <Button.Triggers><DataTrigger Binding="{Binding CanChooseExploitClass}" TargetType="Button" Value="False"><Setter Property="Opacity" Value="0.5" /></DataTrigger></Button.Triggers>
+                            </Button>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout WidthRequest="125" Spacing="2">
+                            <Label Style="{StaticResource EyebrowLabelStyle}" Text="NIVEL" />
+                            <Button Clicked="OnExploitLevelFilterClicked" IsEnabled="{Binding CanUseExploitSubfilters}" Style="{StaticResource SmallSecondaryButtonStyle}" Text="{Binding SelectedExploitLevel}">
+                                <Button.Triggers><DataTrigger Binding="{Binding CanUseExploitSubfilters}" TargetType="Button" Value="False"><Setter Property="Opacity" Value="0.5" /></DataTrigger></Button.Triggers>
+                            </Button>
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
                     <VerticalStackLayout WidthRequest="180" Spacing="2">
                         <Label Style="{StaticResource EyebrowLabelStyle}" Text="ORDEN" />
                         <Picker ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSort}" Style="{StaticResource CompactPickerStyle}" />
@@ -58,7 +94,7 @@
             <Label Grid.Row="1" Margin="0,5,0,0" IsVisible="{Binding HasError}" Style="{StaticResource ErrorLabelStyle}" Text="{Binding ErrorMessage}" />
         </Grid>
         <RefreshView Grid.Row="3" Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
-            <CollectionView Margin="10,0" ItemsSource="{Binding Items}" SelectionMode="None">
+            <CollectionView Margin="10,0" ItemsSource="{Binding Items}" ItemsUpdatingScrollMode="KeepScrollOffset" SelectionMode="None">
                 <CollectionView.EmptyView>
                     <VerticalStackLayout Padding="28" Spacing="8">
                         <Label HorizontalTextAlignment="Center" Style="{StaticResource TitleLabelStyle}" Text="Todavía no hay preparados" />
@@ -102,5 +138,22 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
         </RefreshView>
+
+        <Grid x:Name="FilterOverlay" Grid.RowSpan="4" Padding="28" BackgroundColor="#B0000000" IsVisible="False" ZIndex="100">
+            <Border MaximumHeightRequest="560" Padding="14" BackgroundColor="{StaticResource Surface}" Stroke="{StaticResource Outline}" VerticalOptions="Center">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
+                    <Label x:Name="FilterMenuTitle" Style="{StaticResource TitleLabelStyle}" />
+                    <CollectionView x:Name="FilterOptionsList" Grid.Row="1" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:SavedFilterOption">
+                                <Button Margin="0,2" Clicked="OnFilterOptionClicked" CommandParameter="{Binding Value}" IsEnabled="{Binding IsAvailable}" Style="{StaticResource SmallGhostButtonStyle}" Text="{Binding Value}" />
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Button Grid.Row="2" Clicked="OnCloseFilterMenuClicked" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Cerrar" />
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </ContentView>
