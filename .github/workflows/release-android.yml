@@ -29,7 +29,31 @@ permissions:
   contents: write
 
 jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.303
+      - name: Build Windows package
+        shell: pwsh
+        env:
+          VERSION_NAME: ${{ inputs.version_name }}
+          VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          dotnet workload install maui-windows
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./eng/build-windows.ps1 -VersionName $env:VERSION_NAME -VersionCode $env:VERSION_CODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: artifacts/DndCompendium-Windows-x64.zip
+          if-no-files-found: error
+          compression-level: 0
+
   build-and-release:
+    needs: windows
     runs-on: windows-latest
     environment: android-production
     steps:
@@ -127,6 +151,10 @@ jobs:
           $manifest | ConvertTo-Json -Depth 4 | Set-Content -Encoding utf8NoBOM app-update.json
           $env:RELEASE_NOTES | Set-Content -Encoding utf8NoBOM release-notes.md
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-x64
+
       - name: Publish GitHub Release
         shell: pwsh
         env:
@@ -138,7 +166,7 @@ jobs:
         run: |
           $arguments = @(
             "release", "create", $env:RELEASE_TAG,
-            "DndCompendium.apk", "app-update.json",
+            "DndCompendium.apk", "app-update.json", "DndCompendium-Windows-x64.zip",
             "--title", "D&D Compendium $env:VERSION_NAME",
             "--notes-file", "release-notes.md",
             "--target", $env:TARGET_SHA

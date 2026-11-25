@@ -1,6 +1,6 @@
 # D&D Compendium Offline
 
-Aplicación .NET MAUI para Android e iOS que prioriza una
+Aplicación .NET MAUI para Android, iOS y Windows que prioriza una
 regla: un documento instalado debe poder abrirse, buscarse y navegarse sin red,
 sin Google Drive y sin una sesión de Google activa.
 
@@ -77,6 +77,28 @@ secretos fuera del repositorio.
 
 Las actualizaciones instalables desde la propia aplicación y el workflow manual
 de GitHub Releases se describen en [`docs/android-app-updates.md`](docs/android-app-updates.md).
+
+## Compilar para Windows
+
+```powershell
+.\.dotnet\dotnet.exe workload install maui-windows
+.\eng\build-windows.ps1 -Dotnet (Resolve-Path .\.dotnet\dotnet.exe).Path
+```
+
+Extraé por completo `artifacts/DndCompendium-Windows-x64.zip` y abrí
+`DndCompendium.exe` dentro de la carpeta extraída. Requiere Windows 10
+versión 2004 o posterior, Windows de 64 bits y WebView2. La app guarda los
+datos en `%LOCALAPPDATA%\Drivebrew\DndCompendium`, también al abrirla desde
+una carpeta nueva. **Configuración → Actualizaciones de Windows** ofrece
+el paquete nuevo cuando se publica en GitHub.
+
+Para compartir un personaje con Android, activalo y usá **Configuración →
+Transferir personaje → Exportar personaje**. Abrí **Importar personaje**
+en el otro dispositivo y elegí ese archivo JSON. Cada copia reimportada
+actualiza al personaje vinculado por su identificador, y la aplicación
+conserva un respaldo de la versión anterior. Transferí la copia cada vez
+que quieras pasar cambios. Los catálogos se actualizan por separado desde
+Google Drive.
 
 ## Compilar para iPhone/iPad
 

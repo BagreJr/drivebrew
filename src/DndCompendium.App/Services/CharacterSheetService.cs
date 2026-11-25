@@ -2,6 +2,7 @@ using System.Text.Json;
 using DndCompendium.Core.Abstractions;
 using DndCompendium.Core.Models;
 using DndCompendium.Core.Services;
+using DndCompendium.Infrastructure.Persistence;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Storage;
@@ -24,11 +25,14 @@ public interface ICharacterSheetService
     Task<bool> PickAndImportAsync(CharacterProfile character, CancellationToken cancellationToken = default);
     Task ShareAsync(CharacterProfile character, CancellationToken cancellationToken = default);
     Task DeleteAsync(string characterId, CancellationToken cancellationToken = default);
+    Task ExportActiveCharacterAsync(Stream output);
+    Task<string> ImportCharacterAsync(Stream input);
 }
 
 public sealed class CharacterSheetService(
     ICharacterSheetEditor editor,
-    ICharacterSheetPdfService pdfService) : ICharacterSheetService
+    ICharacterSheetPdfService pdfService,
+    JsonCharacterProfileStore profiles) : ICharacterSheetService
 {
     private const string TemplateFileName = "character_sheet_template.pdf";
     private const long MaximumImportBytes = 40L * 1024L * 1024L;
@@ -39,7 +43,7 @@ public sealed class CharacterSheetService(
     };
 
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private readonly string _sheetDirectory = Path.Combine(FileSystem.Current.AppDataDirectory, "character-sheets");
+    private readonly string _sheetDirectory = Path.Combine(CompendiumStorage.DataDirectory, "character-sheets");
 
     public async Task EnsureCreatedAsync(CharacterProfile character, CancellationToken cancellationToken = default)
     {
@@ -67,11 +71,13 @@ public sealed class CharacterSheetService(
             }
 
             var changed = EnsureCharacterName(data, character.Name);
+            var needsPdf = !File.Exists(pdfPath)
+                || File.GetLastWriteTimeUtc(dataPath) > File.GetLastWriteTimeUtc(pdfPath);
             // Writing the normalized JSON also performs additive schema migration.
             // The original values and PDF fields are never removed by this step.
-            await WriteDataAtomicallyAsync(dataPath, data, cancellationToken).ConfigureAwait(false);
+            await WriteDataAtomicallyAsync(dataPath, data, cancellationToken, skipUnchanged: true).ConfigureAwait(false);
             MarkV5MigrationComplete(character.Id);
-            if (!File.Exists(pdfPath) || changed)
+            if (needsPdf || changed)
                 await GeneratePdfAtomicallyAsync(pdfPath, data, cancellationToken).ConfigureAwait(false);
         }
         finally
@@ -92,6 +98,21 @@ public sealed class CharacterSheetService(
         {
             _gate.Release();
         }
+    }
+
+    public async Task ExportActiveCharacterAsync(Stream output)
+    {
+        await EnsureCreatedAsync(await profiles.GetActiveAsync());
+        await _gate.WaitAsync();
+        try { await profiles.ExportActiveCharacterAsync(output); }
+        finally { _gate.Release(); }
+    }
+
+    public async Task<string> ImportCharacterAsync(Stream input)
+    {
+        await _gate.WaitAsync();
+        try { return await profiles.ImportCharacterAsync(input); }
+        finally { _gate.Release(); }
     }
 
     public async Task SaveDataAsync(
@@ -251,17 +272,20 @@ public sealed class CharacterSheetService(
     private static async Task WriteDataAtomicallyAsync(
         string destination,
         CharacterSheetData data,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool skipUnchanged = false)
     {
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(NormalizeData(data), JsonOptions);
+        if (skipUnchanged && File.Exists(destination))
+        {
+            var previous = await File.ReadAllBytesAsync(destination, cancellationToken).ConfigureAwait(false);
+            if (bytes.AsSpan().SequenceEqual(previous)) return;
+        }
+
         var temporary = $"{destination}.{Guid.NewGuid():N}.tmp";
         try
         {
-            await using (var output = new FileStream(
-                temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, FileOptions.Asynchronous))
-            {
-                await JsonSerializer.SerializeAsync(output, NormalizeData(data), JsonOptions, cancellationToken)
-                    .ConfigureAwait(false);
-            }
+            await File.WriteAllBytesAsync(temporary, bytes, cancellationToken).ConfigureAwait(false);
             File.Move(temporary, destination, overwrite: true);
         }
         finally

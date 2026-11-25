@@ -10,19 +10,29 @@ public partial class App : Application
     private readonly IDownloadManager _downloadManager;
     private readonly AppUpdateCoordinator _appUpdates;
     private readonly ContentUpdateStatus _contentUpdates;
+#if WINDOWS
+    private readonly WindowsUpdateService _windowsUpdates;
+#endif
     private int _startupUpdateStarted;
 
     public App(
         AppShell shell,
         IDownloadManager downloadManager,
         AppUpdateCoordinator appUpdates,
-        ContentUpdateStatus contentUpdates)
+        ContentUpdateStatus contentUpdates
+#if WINDOWS
+        , WindowsUpdateService windowsUpdates
+#endif
+        )
     {
         InitializeComponent();
         _shell = shell;
         _downloadManager = downloadManager;
         _appUpdates = appUpdates;
         _contentUpdates = contentUpdates;
+#if WINDOWS
+        _windowsUpdates = windowsUpdates;
+#endif
         UserAppTheme = AppTheme.Dark;
         _shell.Loaded += OnShellLoaded;
     }
@@ -51,6 +61,9 @@ public partial class App : Application
             _contentUpdates.SetUnavailable();
         }
 
+#if WINDOWS
+        await NotifyWindowsUpdateAsync();
+#elif ANDROID
         var appUpdate = await _appUpdates.CheckAsync(manual: false);
         var availableManifest = appUpdate is { IsUpdateAvailable: true }
             ? appUpdate.Manifest
@@ -76,6 +89,25 @@ public partial class App : Application
             }
             else _appUpdates.Postpone(availableManifest);
         }
+#endif
     }
 
+#if WINDOWS
+    private async Task NotifyWindowsUpdateAsync()
+    {
+        try
+        {
+            var update = await _windowsUpdates.CheckAsync();
+            if (update is null) return;
+            var download = await _shell.DisplayAlertAsync("Actualización disponible",
+                $"D&D Compendium {update.Version.ToString(2)} está disponible para Windows.",
+                "Descargar", "Más tarde");
+            if (download) await Launcher.Default.OpenAsync(update.DownloadUri);
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            System.Diagnostics.Debug.WriteLine(exception.Message);
+        }
+    }
+#endif
 }

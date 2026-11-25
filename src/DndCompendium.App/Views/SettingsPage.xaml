@@ -15,7 +15,7 @@
                     <Label
                         Margin="0,4,0,0"
                         Style="{StaticResource MutedLabelStyle}"
-                        Text="Ajustá la futura sincronización sin afectar tus copias locales." />
+                        Text="Gestioná el contenido, los personajes y las actualizaciones." />
                 </VerticalStackLayout>
             </Border>
 
@@ -66,8 +66,29 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Label Style="{StaticResource SectionLabelStyle}" Text="App Updates" />
-            <Border Padding="16" Style="{StaticResource CardStyle}">
+            <Border x:Name="CharacterTransferCard" Padding="16" Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Style="{StaticResource TitleLabelStyle}" Text="Transferir personaje" />
+                    <Label Style="{StaticResource MutedLabelStyle}" Text="Exportá el personaje activo e importalo en el otro dispositivo. La copia incluye la hoja, los recursos, los favoritos y los preparados." />
+                    <FlexLayout Wrap="Wrap" JustifyContent="Start">
+                        <Button Margin="0,0,8,6" Clicked="OnExportCharacter" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Exportar personaje" />
+                        <Button Margin="0,0,8,6" Clicked="OnImportCharacter" Style="{StaticResource SmallAccentButtonStyle}" Text="Importar personaje" />
+                        <Button x:Name="PreviousBackupButton" Margin="0,0,8,6" Clicked="OnExportPreviousBackup" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Guardar respaldo anterior" />
+                    </FlexLayout>
+                    <Label x:Name="CharacterTransferStatus" Style="{StaticResource MutedLabelStyle}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border x:Name="WindowsUpdatesCard" IsVisible="False" Padding="16" Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Style="{StaticResource TitleLabelStyle}" Text="Actualizaciones de Windows" />
+                    <Label x:Name="WindowsUpdateStatus" Style="{StaticResource MutedLabelStyle}" />
+                    <Button x:Name="WindowsUpdateCheckButton" Clicked="OnCheckWindowsUpdate" HorizontalOptions="Start" Style="{StaticResource SmallSecondaryButtonStyle}" Text="Buscar actualización" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label x:Name="AndroidUpdatesTitle" Style="{StaticResource SectionLabelStyle}" Text="App Updates" />
+            <Border x:Name="AndroidUpdatesCard" Padding="16" Style="{StaticResource CardStyle}">
                 <VerticalStackLayout Spacing="11">
                     <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="4">
                         <Label Style="{StaticResource TitleLabelStyle}" Text="Current Version" />

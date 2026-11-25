@@ -5,7 +5,7 @@ using DndCompendium.Core.Services;
 
 namespace DndCompendium.Infrastructure.Persistence;
 
-public sealed class JsonCharacterProfileStore : ICharacterProfileStore
+public sealed partial class JsonCharacterProfileStore : ICharacterProfileStore
 {
     private const int ProfileVersion = 4;
     private const string DefaultCharacterName = "Mi personaje";

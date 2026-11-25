@@ -5,7 +5,6 @@ using DndCompendium.App.Views;
 using DndCompendium.Infrastructure.DependencyInjection;
 using DndCompendium.Core.Abstractions;
 using DndCompendium.App.Services;
-using Microsoft.Maui.Storage;
 
 namespace DndCompendium.App;
 
@@ -22,7 +21,7 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			});
 
-		builder.Services.AddDndCompendiumInfrastructure(FileSystem.Current.AppDataDirectory);
+		builder.Services.AddDndCompendiumInfrastructure(CompendiumStorage.DataDirectory);
 #if ANDROID
 		builder.Services.AddSingleton<IAppPackageInstaller, AndroidAppPackageInstaller>();
 		builder.Services.AddSingleton<IAppUpdateScheduler, AndroidAppUpdateScheduler>();
@@ -33,6 +32,9 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ICharacterSheetEditor, DefaultCharacterSheetEditor>();
 #endif
 		builder.Services.AddSingleton<AppUpdateCoordinator>();
+#if WINDOWS
+		builder.Services.AddSingleton<WindowsUpdateService>();
+#endif
 		builder.Services.AddSingleton<ContentUpdateStatus>();
 		builder.Services.AddSingleton<ICharacterSheetService, CharacterSheetService>();
 

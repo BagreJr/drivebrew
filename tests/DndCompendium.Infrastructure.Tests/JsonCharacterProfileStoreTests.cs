@@ -6,6 +6,55 @@ namespace DndCompendium.Infrastructure.Tests;
 public sealed class JsonCharacterProfileStoreTests
 {
     [Fact]
+    public async Task Transfer_PreservesCharacterIdentitySheetAndSavedDataAcrossDevices()
+    {
+        using var phoneDirectory = new TemporaryDirectory();
+        using var desktopDirectory = new TemporaryDirectory();
+        var phone = new JsonCharacterProfileStore(phoneDirectory.Path);
+        var desktop = new JsonCharacterProfileStore(desktopDirectory.Path);
+        var desktopCharacter = await desktop.GetActiveAsync();
+        var hero = await phone.CreateAsync("Nyx");
+        await phone.SetSavedAsync(SavedContentKind.Spell, SavedStateKind.Favorite, "shield", true);
+        await phone.SetSavedAsync(SavedContentKind.Exploit, SavedStateKind.Prepared, "parry", true);
+        await phone.UpsertResourceAsync(new CharacterResource { Id = "", Name = "Ki", Maximum = 5, Current = 4 });
+        var sheets = Path.Combine(phoneDirectory.Path, "character-sheets");
+        Directory.CreateDirectory(sheets);
+        await File.WriteAllTextAsync(Path.Combine(sheets, $"{hero.Id}.json"), """{"HtmlSheetJson":"{\"level\":3}"}""");
+
+        using var fromPhone = new MemoryStream();
+        await phone.ExportActiveCharacterAsync(fromPhone);
+        fromPhone.Position = 0;
+        Assert.Equal("Nyx", await desktop.ImportCharacterAsync(fromPhone));
+        Assert.Equal(hero.Id, (await desktop.GetActiveAsync()).Id);
+        Assert.Contains(desktopCharacter, await desktop.GetAllAsync());
+        Assert.Contains("shield", await desktop.GetSavedIdsAsync(SavedContentKind.Spell, SavedStateKind.Favorite));
+        Assert.Equal(new SavedItemReference(SavedContentKind.Exploit, "parry"), Assert.Single(await desktop.GetPreparedOrderAsync()));
+        Assert.Equal(4, Assert.Single(await desktop.GetResourcesAsync()).Current);
+        var importedSheet = await File.ReadAllTextAsync(Path.Combine(desktopDirectory.Path, "character-sheets", $"{hero.Id}.json"));
+        Assert.Contains("HtmlSheetJson", importedSheet);
+        Assert.Contains("level", importedSheet);
+
+        await desktop.RenameAsync(hero.Id, "Nyx en PC");
+        using var fromDesktop = new MemoryStream();
+        await desktop.ExportActiveCharacterAsync(fromDesktop);
+        fromDesktop.Position = 0;
+        Assert.Equal("Nyx en PC", await phone.ImportCharacterAsync(fromDesktop));
+        Assert.Single(await phone.GetAllAsync(), character => character.Id == hero.Id);
+        await using var prior = File.OpenRead(phone.PreviousCharacterBackupPath);
+        Assert.Equal("Nyx", await desktop.ImportCharacterAsync(prior));
+    }
+
+    [Fact]
+    public async Task Transfer_RejectsUntrustedCharacterIdsBeforeWriting()
+    {
+        using var directory = new TemporaryDirectory();
+        var store = new JsonCharacterProfileStore(directory.Path);
+        using var import = new MemoryStream("""{"Version":1,"Character":{"Id":"../other","Name":"Nyx"},"Saved":{"CharacterId":"../other"}}"""u8.ToArray());
+        await Assert.ThrowsAsync<InvalidDataException>(() => store.ImportCharacterAsync(import));
+        Assert.Equal("Mi personaje", (await store.GetActiveAsync()).Name);
+    }
+
+    [Fact]
     public async Task MigratesLegacySelectionsIntoInitialCharacter()
     {
         using var directory = new TemporaryDirectory();
