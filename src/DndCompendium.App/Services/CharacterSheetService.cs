@@ -46,39 +46,15 @@ public sealed class CharacterSheetService(
     private readonly string _sheetDirectory = Path.Combine(CompendiumStorage.DataDirectory, "character-sheets");
 
     public async Task EnsureCreatedAsync(CharacterProfile character, CancellationToken cancellationToken = default)
+        => await LoadDataAsync(character, cancellationToken).ConfigureAwait(false);
+
+    public async Task<CharacterSheetData> LoadDataAsync(CharacterProfile character, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(character);
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            Directory.CreateDirectory(_sheetDirectory);
-            var pdfPath = SheetPath(character.Id);
-            var dataPath = DataPath(character.Id);
-            CharacterSheetData data;
-            if (File.Exists(dataPath))
-            {
-                await BackupBeforeV5MigrationAsync(character.Id, dataPath, pdfPath, cancellationToken).ConfigureAwait(false);
-                data = await ReadDataAsync(dataPath, cancellationToken).ConfigureAwait(false);
-            }
-            else if (File.Exists(pdfPath))
-            {
-                await using var pdf = File.OpenRead(pdfPath);
-                data = await pdfService.ReadAsync(pdf, cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                data = new CharacterSheetData { IsCreationDraft = true, CreatorStep = 1 };
-            }
-
-            var changed = EnsureCharacterName(data, character.Name);
-            var needsPdf = !File.Exists(pdfPath)
-                || File.GetLastWriteTimeUtc(dataPath) > File.GetLastWriteTimeUtc(pdfPath);
-            // Writing the normalized JSON also performs additive schema migration.
-            // The original values and PDF fields are never removed by this step.
-            await WriteDataAtomicallyAsync(dataPath, data, cancellationToken, skipUnchanged: true).ConfigureAwait(false);
-            MarkV5MigrationComplete(character.Id);
-            if (needsPdf || changed)
-                await GeneratePdfAtomicallyAsync(pdfPath, data, cancellationToken).ConfigureAwait(false);
+            return await LoadOrCreateDataAsync(character, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -86,18 +62,31 @@ public sealed class CharacterSheetService(
         }
     }
 
-    public async Task<CharacterSheetData> LoadDataAsync(CharacterProfile character, CancellationToken cancellationToken = default)
+    private async Task<CharacterSheetData> LoadOrCreateDataAsync(CharacterProfile character, CancellationToken cancellationToken)
     {
-        await EnsureCreatedAsync(character, cancellationToken).ConfigureAwait(false);
-        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
+        Directory.CreateDirectory(_sheetDirectory);
+        var pdfPath = SheetPath(character.Id);
+        var dataPath = DataPath(character.Id);
+        CharacterSheetData data;
+        if (File.Exists(dataPath))
         {
-            return await ReadDataAsync(DataPath(character.Id), cancellationToken).ConfigureAwait(false);
+            await BackupBeforeV5MigrationAsync(character.Id, dataPath, pdfPath, cancellationToken).ConfigureAwait(false);
+            data = await ReadDataAsync(dataPath, cancellationToken).ConfigureAwait(false);
         }
-        finally
+        else if (File.Exists(pdfPath))
         {
-            _gate.Release();
+            await using var pdf = File.OpenRead(pdfPath);
+            data = await pdfService.ReadAsync(pdf, cancellationToken).ConfigureAwait(false);
         }
+        else
+        {
+            data = new CharacterSheetData { IsCreationDraft = true, CreatorStep = 1 };
+        }
+
+        EnsureCharacterName(data, character.Name);
+        await WriteDataAtomicallyAsync(dataPath, data, cancellationToken, skipUnchanged: true).ConfigureAwait(false);
+        MarkV5MigrationComplete(character.Id);
+        return data;
     }
 
     public async Task ExportActiveCharacterAsync(Stream output)
@@ -128,7 +117,6 @@ public sealed class CharacterSheetService(
         {
             Directory.CreateDirectory(_sheetDirectory);
             await WriteDataAtomicallyAsync(DataPath(character.Id), data, cancellationToken).ConfigureAwait(false);
-            await GeneratePdfAtomicallyAsync(SheetPath(character.Id), data, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -158,8 +146,21 @@ public sealed class CharacterSheetService(
 
     public async Task OpenAsync(CharacterProfile character, CancellationToken cancellationToken = default)
     {
-        await EnsureCreatedAsync(character, cancellationToken);
+        await EnsurePdfAsync(character, cancellationToken);
         await editor.OpenAsync(SheetPath(character.Id), $"Hoja de {character.Name}", cancellationToken);
+    }
+
+    private async Task EnsurePdfAsync(CharacterProfile character, CancellationToken cancellationToken)
+    {
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var data = await LoadOrCreateDataAsync(character, cancellationToken).ConfigureAwait(false);
+            var pdfPath = SheetPath(character.Id);
+            if (!File.Exists(pdfPath) || File.GetLastWriteTimeUtc(DataPath(character.Id)) >= File.GetLastWriteTimeUtc(pdfPath))
+                await GeneratePdfAtomicallyAsync(pdfPath, data, cancellationToken).ConfigureAwait(false);
+        }
+        finally { _gate.Release(); }
     }
 
     public async Task<bool> PickAndImportAsync(CharacterProfile character, CancellationToken cancellationToken = default)
@@ -203,7 +204,7 @@ public sealed class CharacterSheetService(
 
     public async Task ShareAsync(CharacterProfile character, CancellationToken cancellationToken = default)
     {
-        await EnsureCreatedAsync(character, cancellationToken);
+        await EnsurePdfAsync(character, cancellationToken);
         var exportDirectory = Path.Combine(FileSystem.Current.CacheDirectory, "character-sheets");
         Directory.CreateDirectory(exportDirectory);
         var exportPath = Path.Combine(exportDirectory, $"{SafeFileName(character.Name)} - Character Sheet.pdf");

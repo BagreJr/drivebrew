@@ -64,6 +64,24 @@ public sealed class DocumentResourceTests
     }
 
     [Fact]
+    public async Task Store_AllowsReaderToContinueWhenAResourceIsReplacedAfterOpening()
+    {
+        using var directory = new TemporaryDirectory();
+        await using var store = new SqliteDocumentResourceStore(directory.Path);
+        const string id = "reader-snapshot";
+        const string url = "https://93.184.216.34/cover.png";
+        await store.ReplaceReferencesAsync(id, [new ExternalResourceReference(url, DocumentResourceKind.Image)]);
+        await store.StoreAsync(id, url, "image/png", PngBytes);
+        var original = Assert.Single((await store.GetManifestAsync(id)).Resources);
+        byte[] updated = [.. PngBytes, 0x01];
+        await store.StoreAsync(id, url, "image/png", updated);
+
+        Assert.Null(await store.ReadResourceAsync(original));
+        var current = Assert.Single((await store.GetManifestAsync(id)).Resources);
+        Assert.Equal(updated, (await store.ReadResourceAsync(current))?.Content);
+    }
+
+    [Fact]
     public async Task Manager_KeepsSuccessfulResourcesAndReportsIndividualFailures()
     {
         using var directory = new TemporaryDirectory();

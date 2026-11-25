@@ -15,10 +15,12 @@ public sealed class ContentUpdateStatus
 
     public ContentUpdateState State { get; private set; } = ContentUpdateState.Checking;
     public string Label { get; private set; } = "Comprobando…";
+    public bool HasUpdatedDocuments { get; private set; }
 
     public void SetChecking()
     {
         State = ContentUpdateState.Checking;
+        HasUpdatedDocuments = false;
         Label = "Comprobando…";
         Changed?.Invoke(this, EventArgs.Empty);
     }
@@ -26,6 +28,7 @@ public sealed class ContentUpdateStatus
     public void SetResult(DocumentUpdateResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
+        HasUpdatedDocuments = result.UpdatedFileNames.Count > 0;
         if (result.FailedFileNames.Count > 0)
         {
             State = ContentUpdateState.Problem;
@@ -44,6 +47,7 @@ public sealed class ContentUpdateStatus
     public void SetUnavailable()
     {
         State = ContentUpdateState.Problem;
+        HasUpdatedDocuments = false;
         Label = "✕ Sin verificar";
         Changed?.Invoke(this, EventArgs.Empty);
     }

@@ -95,6 +95,12 @@ public partial class LibraryViewModel : ObservableObject
         {
             await _repository.InitializeAsync();
 
+#if WINDOWS
+            if (!_initialized && (await _repository.GetDocumentsAsync()).Count == 0)
+            {
+                await _repository.UpsertCatalogAsync(DndCompendium.Infrastructure.Sources.GoogleDriveDocumentSource.GetOfflineCatalog());
+            }
+#else
             try
             {
                 await _downloadManager.InitializeLibraryAsync();
@@ -109,6 +115,7 @@ public partial class LibraryViewModel : ObservableObject
                 // A remote/catalog refresh must never make the local library unusable.
                 ErrorMessage = $"La biblioteca local está disponible, pero no se pudo actualizar: {exception.Message}";
             }
+#endif
 
             await ReloadDocumentsAsync();
             _initialized = true;
@@ -335,6 +342,10 @@ public partial class LibraryViewModel : ObservableObject
             OnPropertyChanged(nameof(IsContentCurrent));
             OnPropertyChanged(nameof(HasContentUpdateProblem));
             OnPropertyChanged(nameof(ContentStatusText));
+#if WINDOWS
+            if (_contentUpdates.HasUpdatedDocuments && _initialized)
+                LoadCommand.Execute(null);
+#endif
         });
     }
 }

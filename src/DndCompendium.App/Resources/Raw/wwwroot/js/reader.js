@@ -291,9 +291,13 @@
   }
 
   function setMode(mode, zoom = state.zoom, fontScale = state.fontScale, notify = true) {
-    state.mode = normalizeMode(mode);
-    state.zoom = clampNumber(zoom, 0.35, 2.5, state.zoom);
-    state.fontScale = clampNumber(fontScale, 0.75, 1.8, state.fontScale);
+    const nextMode = normalizeMode(mode);
+    const nextZoom = clampNumber(zoom, 0.35, 2.5, state.zoom);
+    const nextFontScale = clampNumber(fontScale, 0.75, 1.8, state.fontScale);
+    const needsRepair = state.mode !== nextMode || state.fontScale !== nextFontScale;
+    state.mode = nextMode;
+    state.zoom = nextZoom;
+    state.fontScale = nextFontScale;
     shell.classList.toggle('mode-book', state.mode === 'book');
     shell.classList.toggle('mode-mobile', state.mode === 'mobile');
     shell.dataset.mode = state.mode;
@@ -301,7 +305,7 @@
     shell.style.setProperty('--reader-font-scale', String(state.fontScale));
     shell.style.setProperty('--scaled-page-width', `${PAGE_WIDTH * state.zoom}px`);
     shell.style.setProperty('--scaled-page-height', `${PAGE_HEIGHT * state.zoom}px`);
-    if (state.mode === 'book' && state.pageCount > 0) queueBookOverflowRepair();
+    if (notify && needsRepair && state.mode === 'book' && state.pageCount > 0) queueBookOverflowRepair();
     if (notify) sendToHost({ type: 'modeChanged', mode: state.mode, zoom: state.zoom, fontScale: state.fontScale, documentId: state.documentId });
     return { mode: state.mode, zoom: state.zoom, fontScale: state.fontScale };
   }
@@ -344,9 +348,9 @@
         || /(?:width|height)\s*:\s*(?:100%|[4-9]\d%|\d{3,}px)/u.test(inlineStyle);
       if (authoredArtwork) media.classList.add('readerArtwork');
       if (mask) mask.classList.add('readerArtworkFrame');
-      if (media instanceof HTMLImageElement && authoredArtwork && !media.complete) {
+      if (media instanceof HTMLImageElement && !media.complete) {
         media.addEventListener('load', () => {
-          if (state.mode === 'book') queueBookOverflowRepair();
+          if (state.mode === 'book' && shell.dataset.readerState === 'ready') queueBookOverflowRepair(page);
         }, { once: true });
       }
       if (media instanceof HTMLImageElement && !authoredArtwork) {
@@ -377,7 +381,7 @@
   // A page may grow vertically so prose is not clipped. Artwork that was sized
   // with percentages must keep the geometry of the original Homebrewery paper;
   // otherwise height:100% grows together with the repaired page.
-  function captureBookArtworkGeometry(page) {
+  function captureBookArtworkGeometry(page, geometry) {
     const pageRect = page.getBoundingClientRect();
     const scale = page.offsetWidth > 0 ? pageRect.width / page.offsetWidth : state.zoom;
     if (!(pageRect.width > 0) || !(scale > 0)) return;
@@ -401,11 +405,7 @@
         left = Math.max(0, Math.min(PAGE_WIDTH - width, left));
         top = Math.max(0, Math.min(PAGE_HEIGHT - height, top));
       }
-      element.classList.add('readerBookGeometry');
-      element.style.setProperty('--reader-book-left', `${left}px`);
-      element.style.setProperty('--reader-book-top', `${top}px`);
-      element.style.setProperty('--reader-book-width', `${width}px`);
-      element.style.setProperty('--reader-book-height', `${height}px`);
+      geometry.push({ element, left, top, width, height });
     }
   }
 
@@ -430,27 +430,51 @@
     return false;
   }
 
-  async function repairBookOverflow() {
+  function repairBookOverflow(pages) {
     if (state.mode !== 'book') return [];
-    const pages = [...documentRoot.querySelectorAll('.page')];
     for (const page of pages) page.classList.remove('readerTextOverflow');
-    await nextFrame();
-    for (const page of pages) captureBookArtworkGeometry(page);
-    const repairedPages = [];
-    for (const page of pages) {
-      if (!hasClippedBookText(page)) continue;
-      page.classList.add('readerTextOverflow');
-      repairedPages.push(Number(page.dataset.pageNumber));
+    // Batch measurements before writes so Chromium lays out the book once per stage.
+    const geometry = [];
+    for (const page of pages) captureBookArtworkGeometry(page, geometry);
+    for (const { element, left, top, width, height } of geometry) {
+      element.classList.add('readerBookGeometry');
+      element.style.setProperty('--reader-book-left', `${left}px`);
+      element.style.setProperty('--reader-book-top', `${top}px`);
+      element.style.setProperty('--reader-book-width', `${width}px`);
+      element.style.setProperty('--reader-book-height', `${height}px`);
     }
-    return repairedPages;
+    const clipped = pages.filter(hasClippedBookText);
+    for (const page of clipped) page.classList.add('readerTextOverflow');
+    return clipped.map(page => Number(page.dataset.pageNumber));
   }
 
-  function queueBookOverflowRepair() {
-    globalThis.requestAnimationFrame(() => { void repairBookOverflow(); });
+  let repairFrame = 0;
+  let repairEntireBook = false;
+  const pagesToRepair = new Set();
+
+  function cancelBookOverflowRepair() {
+    if (repairFrame) globalThis.cancelAnimationFrame(repairFrame);
+    repairFrame = 0;
+    repairEntireBook = false;
+    pagesToRepair.clear();
+  }
+
+  function queueBookOverflowRepair(page) {
+    if (page) pagesToRepair.add(page);
+    else repairEntireBook = true;
+    if (repairFrame) return;
+    repairFrame = globalThis.requestAnimationFrame(() => {
+      const pages = repairEntireBook
+        ? [...documentRoot.querySelectorAll('.page')]
+        : [...pagesToRepair].filter(candidate => documentRoot.contains(candidate));
+      cancelBookOverflowRepair();
+      repairBookOverflow(pages);
+    });
   }
 
   async function renderDocument(input) {
     const generation = ++state.renderGeneration;
+    cancelBookOverflowRepair();
     const payload = typeof input === 'string' ? { content: input } : (input ?? {});
     const rawContent = pick(payload, ['content', 'Content', 'text', 'Text', 'markdown', 'Markdown', 'rawText', 'RawText'], '');
     if (typeof rawContent !== 'string') throw new TypeError('El documento debe contener texto HBFM en content.');
@@ -535,8 +559,8 @@
     if (generation !== state.renderGeneration) return null;
     if (document.fonts?.ready) await document.fonts.ready;
     await waitForMediaGeometry(pageModels.map(model => model.page));
-    const repairedPages = await repairBookOverflow();
     if (generation !== state.renderGeneration) return null;
+    const repairedPages = repairBookOverflow(pageModels.map(model => model.page));
     shell.dataset.readerState = pageErrors.length === pageSources.length ? 'error' : 'ready';
     documentRoot.scrollIntoView({ block: 'start' });
     hideStatus();
@@ -580,6 +604,7 @@
 
   function clear() {
     ++state.renderGeneration;
+    cancelBookOverflowRepair();
     state.pageObserver?.disconnect();
     state.pageObserver = null;
     documentRoot.replaceChildren();

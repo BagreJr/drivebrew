@@ -220,18 +220,34 @@ public sealed class SqliteDocumentResourceStore : IDocumentResourceStore, IAsync
         var resources = new List<LocalDocumentResource>();
         foreach (var resource in manifest.Resources.Where(resource => resource.State == DocumentResourceState.Available))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (resource.RelativePath is null || resource.MimeType is null || resource.Sha256 is null) continue;
-            var bytes = await File.ReadAllBytesAsync(ResolvePath(resource.RelativePath), cancellationToken).ConfigureAwait(false);
-            var actualHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
-            if (!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(resource.Sha256), Encoding.ASCII.GetBytes(actualHash)))
-            {
-                await UpdateStateAsync(documentId, resource.SourceUrl, DocumentResourceState.Unavailable, "Local resource checksum mismatch.", cancellationToken).ConfigureAwait(false);
-                continue;
-            }
-            resources.Add(new LocalDocumentResource(resource.SourceUrl, resource.MimeType, resource.Sha256, resource.RelativePath, bytes));
+            var content = await ReadResourceAsync(resource, cancellationToken).ConfigureAwait(false);
+            if (content is not null) resources.Add(content);
         }
         return resources;
+    }
+
+    public async Task<LocalDocumentResource?> ReadResourceAsync(DocumentResource resource, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (resource.State != DocumentResourceState.Available ||
+            resource.RelativePath is null || resource.MimeType is null || resource.Sha256 is null) return null;
+        byte[] bytes;
+        try
+        {
+            bytes = await File.ReadAllBytesAsync(ResolvePath(resource.RelativePath), cancellationToken).ConfigureAwait(false);
+        }
+        catch (FileNotFoundException)
+        {
+            // A download can replace the file after the reader took its manifest snapshot.
+            return null;
+        }
+        var actualHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        if (!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(resource.Sha256), Encoding.ASCII.GetBytes(actualHash)))
+        {
+            await UpdateStateAsync(resource.DocumentId, resource.SourceUrl, DocumentResourceState.Unavailable, "Local resource checksum mismatch.", cancellationToken).ConfigureAwait(false);
+            return null;
+        }
+        return new LocalDocumentResource(resource.SourceUrl, resource.MimeType, resource.Sha256, resource.RelativePath, bytes);
     }
 
     public async Task DeleteResourcesAsync(string documentId, CancellationToken cancellationToken = default)

@@ -372,6 +372,9 @@ public sealed class DownloadManagerTests
             CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<LocalDocumentResource>>([]);
 
+        public Task<LocalDocumentResource?> ReadResourceAsync(DocumentResource resource, CancellationToken cancellationToken = default)
+            => Task.FromResult<LocalDocumentResource?>(null);
+
         public Task DeleteAsync(string documentId, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 

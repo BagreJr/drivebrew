@@ -14,5 +14,6 @@ public interface IDocumentResourceManager
     Task<IReadOnlyList<LocalDocumentResource>> ReadAvailableAsync(
         string documentId,
         CancellationToken cancellationToken = default);
+    Task<LocalDocumentResource?> ReadResourceAsync(DocumentResource resource, CancellationToken cancellationToken = default);
     Task DeleteAsync(string documentId, CancellationToken cancellationToken = default);
 }

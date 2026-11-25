@@ -122,6 +122,9 @@ public sealed class DocumentResourceManager : IDocumentResourceManager
         CancellationToken cancellationToken = default)
         => _store.ReadAvailableAsync(documentId, cancellationToken);
 
+    public Task<LocalDocumentResource?> ReadResourceAsync(DocumentResource resource, CancellationToken cancellationToken = default)
+        => _store.ReadResourceAsync(resource, cancellationToken);
+
     public Task DeleteAsync(string documentId, CancellationToken cancellationToken = default)
         => _store.DeleteResourcesAsync(documentId, cancellationToken);
 

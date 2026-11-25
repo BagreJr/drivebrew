@@ -46,6 +46,11 @@ public sealed class GoogleDriveDocumentSource : IDocumentSource
         return documents.OrderBy(document => document.Title, StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
+    public static IReadOnlyList<SourceDocument> GetOfflineCatalog()
+        => Definitions.Values.Select(definition => CreateDocument(definition, definition.SizeBytes, definition.ModifiedAt, false))
+            .OrderBy(document => document.Title, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
     public async Task<Stream> OpenReadAsync(
         string documentId,
         CancellationToken cancellationToken = default)
@@ -164,7 +169,11 @@ public sealed class GoogleDriveDocumentSource : IDocumentSource
             // The baseline catalog must remain usable; actual downloads still report errors.
         }
 
-        return new SourceDocument
+        return CreateDocument(definition, size, modifiedAt, isAuthoritative);
+    }
+
+    private static SourceDocument CreateDocument(DriveDocumentDefinition definition, long size, DateTimeOffset modifiedAt, bool isAuthoritative)
+        => new()
         {
             Id = definition.Id,
             Title = definition.Title,
@@ -177,7 +186,6 @@ public sealed class GoogleDriveDocumentSource : IDocumentSource
             Version = $"drive:{definition.FileId}:{modifiedAt.ToUnixTimeMilliseconds()}:{size}",
             IsVersionAuthoritative = isAuthoritative
         };
-    }
 
     private static Uri CreateDownloadUrl(string fileId)
         => new(string.Format(System.Globalization.CultureInfo.InvariantCulture, DownloadUrlFormat, fileId));

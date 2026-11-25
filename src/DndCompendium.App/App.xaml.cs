@@ -12,6 +12,8 @@ public partial class App : Application
     private readonly ContentUpdateStatus _contentUpdates;
 #if WINDOWS
     private readonly WindowsUpdateService _windowsUpdates;
+    private static readonly TimeSpan WindowsCheckInterval = TimeSpan.FromHours(12);
+    private const string WindowsLastLibraryCheck = "windows.last-library-check";
 #endif
     private int _startupUpdateStarted;
 
@@ -50,6 +52,9 @@ public partial class App : Application
         }
 
         _shell.Loaded -= OnShellLoaded;
+#if WINDOWS
+        await RefreshWindowsInBackgroundAsync();
+#else
         _contentUpdates.SetChecking();
         try
         {
@@ -61,9 +66,7 @@ public partial class App : Application
             _contentUpdates.SetUnavailable();
         }
 
-#if WINDOWS
-        await NotifyWindowsUpdateAsync();
-#elif ANDROID
+#if ANDROID
         var appUpdate = await _appUpdates.CheckAsync(manual: false);
         var availableManifest = appUpdate is { IsUpdateAvailable: true }
             ? appUpdate.Manifest
@@ -90,14 +93,45 @@ public partial class App : Application
             else _appUpdates.Postpone(availableManifest);
         }
 #endif
+#endif
     }
 
 #if WINDOWS
+    private async Task RefreshWindowsInBackgroundAsync()
+    {
+        var lastCheck = new DateTime(Preferences.Default.Get(WindowsLastLibraryCheck, 0L), DateTimeKind.Utc);
+        if (DateTime.UtcNow - lastCheck < WindowsCheckInterval)
+        {
+            _contentUpdates.SetResult(new([], []));
+        }
+        else if (Connectivity.Current.NetworkAccess == NetworkAccess.Internet)
+        {
+            // Let Windows paint the local catalog before checking network metadata.
+            await Task.Delay(1500);
+            try
+            {
+                var result = await _downloadManager.UpdateInstalledDocumentsAsync();
+                if (result.FailedFileNames.Count == 0)
+                    Preferences.Default.Set(WindowsLastLibraryCheck, DateTime.UtcNow.Ticks);
+                _contentUpdates.SetResult(result);
+            }
+            catch (Exception)
+            {
+                _contentUpdates.SetUnavailable();
+            }
+        }
+        else
+        {
+            _contentUpdates.SetUnavailable();
+        }
+        await NotifyWindowsUpdateAsync();
+    }
+
     private async Task NotifyWindowsUpdateAsync()
     {
         try
         {
-            var update = await _windowsUpdates.CheckAsync();
+            var update = await _windowsUpdates.CheckAsync(automatic: true);
             if (update is null) return;
             var download = await _shell.DisplayAlertAsync("Actualización disponible",
                 $"D&D Compendium {update.Version.ToString(2)} está disponible para Windows.",

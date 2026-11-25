@@ -4,7 +4,9 @@ const path = require('node:path');
 const os = require('node:os');
 const { spawn } = require('node:child_process');
 
-const root = path.resolve(__dirname, '..', 'src', 'DndCompendium.App', 'Resources', 'Raw', 'wwwroot');
+const root = process.env.READER_ASSET_ROOT
+  ? path.resolve(process.env.READER_ASSET_ROOT)
+  : path.resolve(__dirname, '..', 'src', 'DndCompendium.App', 'Resources', 'Raw', 'wwwroot');
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2' };
 const server = http.createServer((request, response) => {
@@ -55,6 +57,7 @@ async function main() {
       socket.send(JSON.stringify({ id, method, params }));
     });
     await send('Runtime.enable');
+    await send('Performance.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
     let readerReady = false;
     for (let attempt = 0; attempt < 50; attempt += 1) {
@@ -81,11 +84,14 @@ async function main() {
     const mobile = await send('Runtime.evaluate', { expression: `(() => { const p=document.querySelectorAll('.page')[1]; const i=p.querySelector('img'); const pr=p.getBoundingClientRect(),ir=i.getBoundingClientRect(); return {artwork:i.classList.contains('readerArtwork'), width:ir.width, height:ir.height, inside:ir.left>=pr.left-1&&ir.right<=pr.right+1, pageWidth:pr.width}; })()`, returnByValue: true });
     const fixture = fs.readFileSync(path.resolve(__dirname, '..', 'test-data', 'homebrewery-real', 'Magus.txt'), 'utf8');
     const fixtureEncoded = Buffer.from(fixture, 'utf8').toString('base64');
+    const metrics = async () => Object.fromEntries((await send('Performance.getMetrics')).metrics.map(({ name, value }) => [name, value]));
+    const beforeFixture = await metrics();
     const fixtureRender = await send('Runtime.evaluate', {
       expression: `DndReader.renderDocument({title:'Magus',mode:'book',content:new TextDecoder().decode(Uint8Array.from(atob('${fixtureEncoded}'),c=>c.charCodeAt(0)))})`,
       awaitPromise: true,
       returnByValue: true
     });
+    const afterFixture = await metrics();
     const fixtureBook = await send('Runtime.evaluate', { expression: `(() => [...document.querySelectorAll('.page')].filter(p=>p.classList.contains('readerTextOverflow')).map(p=>({page:Number(p.dataset.pageNumber),height:Math.round(p.getBoundingClientRect().height),oversize:[...p.querySelectorAll('.readerBookGeometry')].filter(x=>{const r=x.getBoundingClientRect();return r.width>816.5||r.height>1056.5;}).length})))()`, returnByValue: true });
     await send('Runtime.evaluate', { expression: `DndReader.setMode('mobile')`, returnByValue: true });
     await delay(300);
@@ -94,7 +100,10 @@ async function main() {
       render: rendered.result.value,
       book: book.result.value,
       mobile: mobile.result.value,
-      fixture: { render: fixtureRender.result.value, repaired: fixtureBook.result.value, mobile: fixtureMobile.result.value }
+      fixture: { render: fixtureRender.result.value, repaired: fixtureBook.result.value, mobile: fixtureMobile.result.value },
+      fixtureRenderMetrics: Object.fromEntries(
+        ['LayoutCount', 'RecalcStyleCount', 'LayoutDuration', 'TaskDuration'].map(name => [name, afterFixture[name] - beforeFixture[name]])
+      )
     };
     if (!result.book.repaired || result.book.textOutside) throw new Error(`Book overflow repair failed: ${JSON.stringify(result.book)}`);
     if (result.book.imageWidth > result.book.pageWidth + 1 || result.book.imageHeight > 1057) throw new Error(`Book artwork escaped its original paper: ${JSON.stringify(result.book)}`);

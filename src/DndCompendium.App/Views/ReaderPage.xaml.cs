@@ -18,6 +18,7 @@ public partial class ReaderPage : ContentPage, IQueryAttributable
 
     private readonly ReaderViewModel _viewModel;
     private bool _webViewReady;
+    private CancellationTokenSource? _payloadCancellation;
     private int _payloadGeneration;
     private string? _pendingTarget;
 
@@ -27,6 +28,12 @@ public partial class ReaderPage : ContentPage, IQueryAttributable
         BindingContext = _viewModel = viewModel;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         _viewModel.ReaderMessageRequested += OnReaderMessageRequested;
+        ReaderWebView.HandlerChanging += (_, args) =>
+        {
+            if (args.OldHandler is null) return;
+            _webViewReady = false;
+            _payloadCancellation?.Cancel();
+        };
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -42,6 +49,7 @@ public partial class ReaderPage : ContentPage, IQueryAttributable
         }
 
         var documentId = Uri.UnescapeDataString(Convert.ToString(rawDocumentId)!);
+        _payloadCancellation?.Cancel();
         _ = _viewModel.LoadAsync(documentId);
     }
 
@@ -203,6 +211,7 @@ public partial class ReaderPage : ContentPage, IQueryAttributable
 
     private async void SendDocumentPayload()
     {
+        CancellationTokenSource? request = null;
         try
         {
             if (!_webViewReady || !_viewModel.HasContent)
@@ -210,6 +219,10 @@ public partial class ReaderPage : ContentPage, IQueryAttributable
                 return;
             }
 
+            _payloadCancellation?.Cancel();
+            request = new CancellationTokenSource();
+            _payloadCancellation = request;
+            var token = request.Token;
             var generation = Interlocked.Increment(ref _payloadGeneration);
             await MainThread.InvokeOnMainThreadAsync(() =>
                 TrySendRawMessage("{\"type\":\"clearResources\"}"));
@@ -221,21 +234,28 @@ public partial class ReaderPage : ContentPage, IQueryAttributable
                     return;
                 }
 
-                var resourcePayload = await Task.Run(() => ReaderViewModel.CreateResourcePayloadJson(resource));
-                await MainThread.InvokeOnMainThreadAsync(() => TrySendRawMessage(resourcePayload));
-                await Task.Yield();
+                var resourcePayload = await Task.Run(() => _viewModel.CreateResourcePayloadAsync(resource, token), token);
+                token.ThrowIfCancellationRequested();
+                if (resourcePayload is not null)
+                    await MainThread.InvokeOnMainThreadAsync(() => !token.IsCancellationRequested && TrySendRawMessage(resourcePayload));
             }
 
-            if (generation == _payloadGeneration)
+            if (generation == _payloadGeneration && !token.IsCancellationRequested)
             {
-                var payload = _viewModel.CreatePayloadJson();
-                await MainThread.InvokeOnMainThreadAsync(() => TrySendRawMessage(payload));
+                var payload = await Task.Run(_viewModel.CreatePayloadJson, token);
+                await MainThread.InvokeOnMainThreadAsync(() => !token.IsCancellationRequested && TrySendRawMessage(payload));
             }
         }
+        catch (OperationCanceledException) when (request?.IsCancellationRequested == true) { }
         catch (Exception exception)
         {
             MainThread.BeginInvokeOnMainThread(() =>
                 _viewModel.ReportHostWarning($"No se pudo completar el render local: {exception.Message}"));
+        }
+        finally
+        {
+            if (ReferenceEquals(_payloadCancellation, request)) _payloadCancellation = null;
+            request?.Dispose();
         }
     }
 

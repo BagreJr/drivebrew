@@ -57,7 +57,7 @@ public partial class ReaderViewModel : ObservableObject
 
     public string FontScaleLabel => $"{FontScale:P0}";
 
-    public IReadOnlyList<LocalDocumentResource> LocalResources { get; private set; } = [];
+    public IReadOnlyList<DocumentResource> LocalResources { get; private set; } = [];
 
     [ObservableProperty]
     private string title = "Lector";
@@ -141,7 +141,7 @@ public partial class ReaderViewModel : ObservableObject
 
             Title = content.Title;
             var manifest = await _resourceManager.GetManifestAsync(documentId, cancellationToken);
-            LocalResources = await _resourceManager.ReadAvailableAsync(documentId, cancellationToken);
+            LocalResources = manifest.Resources.Where(resource => resource.State == DocumentResourceState.Available).ToArray();
             OfflineStatus = manifest.OfflineState switch
             {
                 DocumentOfflineState.Complete => "Offline completo",
@@ -192,8 +192,11 @@ public partial class ReaderViewModel : ObservableObject
         payload = new { mode = Mode, zoom = Zoom, fontScale = FontScale }
     });
 
-    public static string CreateResourcePayloadJson(LocalDocumentResource resource)
-        => JsonSerializer.Serialize(new
+    public async Task<string?> CreateResourcePayloadAsync(DocumentResource metadata, CancellationToken cancellationToken)
+    {
+        var resource = await _resourceManager.ReadResourceAsync(metadata, cancellationToken).ConfigureAwait(false);
+        if (resource is null) return null;
+        return JsonSerializer.Serialize(new
         {
             type = "resource",
             payload = new
@@ -203,6 +206,7 @@ public partial class ReaderViewModel : ObservableObject
                 base64 = Convert.ToBase64String(resource.Content)
             }
         });
+    }
 
     public void HandleReaderMessage(string? message)
     {
