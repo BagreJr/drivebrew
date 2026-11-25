@@ -62,7 +62,9 @@ async function main() {
     let readerReady = false;
     for (let attempt = 0; attempt < 50; attempt += 1) {
       const readiness = await send('Runtime.evaluate', {
-        expression: `typeof DndReader !== 'undefined' && typeof DndReader.renderDocument === 'function'`,
+        expression: `document.readyState === 'complete' && typeof DndReader !== 'undefined' &&
+          typeof DndReader.renderDocument === 'function' &&
+          [...document.styleSheets].some(sheet => sheet.href?.endsWith('/css/reader.css'))`,
         returnByValue: true
       });
       readerReady = readiness.result.value === true;
@@ -84,17 +86,30 @@ async function main() {
     const mobile = await send('Runtime.evaluate', { expression: `(() => { const p=document.querySelectorAll('.page')[1]; const i=p.querySelector('img'); const pr=p.getBoundingClientRect(),ir=i.getBoundingClientRect(); return {artwork:i.classList.contains('readerArtwork'), width:ir.width, height:ir.height, inside:ir.left>=pr.left-1&&ir.right<=pr.right+1, pageWidth:pr.width}; })()`, returnByValue: true });
     const fixture = fs.readFileSync(path.resolve(__dirname, '..', 'test-data', 'homebrewery-real', 'Magus.txt'), 'utf8');
     const fixtureEncoded = Buffer.from(fixture, 'utf8').toString('base64');
+    // Give the public URLs in this fixture local test images so the regression
+    // measures downloaded artwork rather than broken-image placeholders.
+    const fixtureImages = Object.fromEntries(
+      Array.from(fixture.matchAll(/!\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/g), ([, url]) =>
+        [url, `data:image/png;base64,${pixel}`])
+    );
     const metrics = async () => Object.fromEntries((await send('Performance.getMetrics')).metrics.map(({ name, value }) => [name, value]));
     const beforeFixture = await metrics();
     const fixtureRender = await send('Runtime.evaluate', {
-      expression: `DndReader.renderDocument({title:'Magus',mode:'book',content:new TextDecoder().decode(Uint8Array.from(atob('${fixtureEncoded}'),c=>c.charCodeAt(0)))})`,
+      expression: `DndReader.renderDocument({title:'Magus',mode:'book',resourceMap:${JSON.stringify(fixtureImages)},content:new TextDecoder().decode(Uint8Array.from(atob('${fixtureEncoded}'),c=>c.charCodeAt(0)))})`,
       awaitPromise: true,
       returnByValue: true
     });
     const afterFixture = await metrics();
     const fixtureBook = await send('Runtime.evaluate', { expression: `(() => [...document.querySelectorAll('.page')].filter(p=>p.classList.contains('readerTextOverflow')).map(p=>({page:Number(p.dataset.pageNumber),height:Math.round(p.getBoundingClientRect().height),oversize:[...p.querySelectorAll('.readerBookGeometry')].filter(x=>{const r=x.getBoundingClientRect();return r.width>816.5||r.height>1056.5;}).length})))()`, returnByValue: true });
     await send('Runtime.evaluate', { expression: `DndReader.setMode('mobile')`, returnByValue: true });
-    await delay(300);
+    const fixtureMediaReady = await send('Runtime.evaluate', { expression: `(async () => {
+      const images = [...document.querySelectorAll('.page img')];
+      for (const image of images) image.loading = 'eager';
+      await Promise.all(images.map(image => image.decode()));
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return images.every(image => image.naturalWidth > 0);
+    })()`, awaitPromise: true, returnByValue: true });
+    if (fixtureMediaReady.exceptionDetails || !fixtureMediaReady.result.value) throw new Error('The local fixture images did not decode.');
     const fixtureMobile = await send('Runtime.evaluate', { expression: `(() => { const images=[...document.querySelectorAll('.page img')]; const metrics=images.filter(i=>i.classList.contains('readerArtwork')).map(i=>{const page=i.closest('.page'),p=page.getBoundingClientRect(),r=i.getBoundingClientRect(),f=i.closest('.readerArtworkFrame'),fr=f?.getBoundingClientRect();return {ratio:r.width/p.width,frameRatio:fr?fr.width/p.width:0,page:page.dataset.pageNumber,parent:i.parentElement.className||i.parentElement.tagName,frame:f?.className||''};}).sort((a,b)=>a.ratio-b.ratio); const ratios=metrics.map(x=>x.ratio); return {images:images.length,artwork:ratios.length,outside:images.filter(i=>{const p=i.closest('.page').getBoundingClientRect(),r=i.getBoundingClientRect();return r.width>0&&(r.left<p.left-1||r.right>p.right+1);}).length,metrics,medianArtworkWidth:ratios.length?ratios[Math.floor(ratios.length/2)]:0}; })()`, returnByValue: true });
     const result = {
       render: rendered.result.value,
