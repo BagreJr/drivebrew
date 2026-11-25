@@ -86,7 +86,8 @@ de GitHub Releases se describen en [`docs/android-app-updates.md`](docs/android-
 ```
 
 Extraé por completo `artifacts/DndCompendium-Windows-x64.zip` y abrí
-`DndCompendium.exe` dentro de la carpeta extraída. Requiere Windows 10
+`DndCompendium.exe` junto a la carpeta `App`. Movelos juntos si cambiás
+la ubicación de la aplicación. Requiere Windows 10
 versión 2004 o posterior, Windows de 64 bits y WebView2. La app guarda los
 datos en `%LOCALAPPDATA%\Drivebrew\DndCompendium`, también al abrirla desde
 una carpeta nueva. **Configuración → Actualizaciones de Windows** ofrece
