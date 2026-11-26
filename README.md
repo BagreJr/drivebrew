@@ -1,6 +1,6 @@
 # D&D Compendium Offline
 
-Aplicación .NET MAUI para Android, iOS y Windows que prioriza una
+Aplicación para Android, iOS, Windows y Linux que prioriza una
 regla: un documento instalado debe poder abrirse, buscarse y navegarse sin red,
 sin Google Drive y sin una sesión de Google activa.
 
@@ -100,6 +100,26 @@ actualiza al personaje vinculado por su identificador, y la aplicación
 conserva un respaldo de la versión anterior. Transferí la copia cada vez
 que quieras pasar cambios. Los catálogos se actualizan por separado desde
 Google Drive.
+
+## Linux de escritorio
+
+Drivebrew para Linux x64 incluye su entorno .NET y abre la interfaz en el
+navegador instalado mediante una conexión local. La biblioteca, el buscador,
+la lectura de TXT, los personajes y sus ediciones funcionan sin Internet.
+Las descargas de Drive y los enlaces externos necesitan conexión.
+
+- En Ubuntu, Debian y derivados, instalá `Drivebrew-Linux-amd64.deb` con el
+  gestor de paquetes. Después buscá **Drivebrew** en el menú de aplicaciones.
+- Para usar el paquete portable, extraé `Drivebrew-Linux-x64.tar.gz` y ejecutá
+  `./Drivebrew` dentro de la carpeta extraída.
+
+**Configuración → Transferir personaje** utiliza el mismo JSON de Windows y
+Android. La hoja también puede imprimirse o guardarse como PDF desde el
+navegador. Tus datos van en `$XDG_DATA_HOME/drivebrew` o, por defecto,
+`~/.local/share/drivebrew`. Desde Configuración podés cerrar el proceso.
+
+Compilá ambos paquetes con `bash eng/build-linux.sh` en Ubuntu 22.04
+o posterior, con .NET SDK 10 y `dpkg-deb`.
 
 ## Compilar para iPhone/iPad
 

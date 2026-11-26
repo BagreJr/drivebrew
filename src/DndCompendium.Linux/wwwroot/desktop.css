@@ -1,0 +1,37 @@
+:root { color-scheme: dark; font-family: system-ui, sans-serif; color: #f4eadb; background: #18151c; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.shell { background: #231e29; border-bottom: 1px solid #433944; }
+.brand, nav, #main { padding-inline: 1rem; margin-inline: auto; max-width: 78rem; }
+.brand { display: flex; align-items: baseline; justify-content: space-between; gap: .8rem; padding-block: .75rem .4rem; }
+.brand strong { font-family: Georgia, serif; font-size: 1.7rem; color: #f1ca80; }
+#character-name, .muted { color: #c2b2be; font-size: .9rem; }
+nav, .actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+nav { padding-block: .25rem .65rem; }
+button, input, select, a.button { font: inherit; border: 1px solid #625366; background: #28222d; color: inherit; border-radius: .45rem; padding: .5rem .72rem; }
+button, a.button { cursor: pointer; }
+button:hover, a.button:hover, button[aria-current="page"] { border-color: #d7a957; background: #3c302b; }
+button:disabled { opacity: .5; cursor: default; }
+button.primary { background: #755022; border-color: #bf9d63; }
+a { color: #f1ca80; }
+a.button { display: inline-block; text-decoration: none; }
+#status:not(:empty) { padding: .5rem 0; color: #e5bf88; }
+#status.error { color: #ffb7ad; }
+h1 { font: 700 1.65rem Georgia, serif; margin-block: .75rem; }
+h2 { font-size: 1.06rem; margin: 0; }
+p { margin-block: .3rem .65rem; }
+.toolbar, .filters { display: flex; flex-wrap: wrap; align-items: end; gap: .65rem; margin-block: .65rem; }
+.toolbar input[type=search] { flex: 1; min-width: 12rem; }
+.filters label { display: grid; gap: .2rem; font-size: .85rem; color: #ded3df; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(28rem, 100%), 1fr)); gap: .55rem; }
+.card { display: grid; gap: .4rem; align-content: start; padding: .8rem; border: 1px solid #4c3f50; border-radius: .6rem; background: #231e29; }
+.card .actions { margin-block-start: .25rem; }
+.meta { color: #e3bc79; font-size: .85rem; }
+.description { white-space: pre-wrap; overflow-wrap: anywhere; }
+details summary { cursor: pointer; color: #f1ca80; }
+dialog { width: min(95vw, 45rem); border: 1px solid #625366; border-radius: .65rem; background: #231e29; padding: 1.25rem; }
+dialog::backdrop { background: #100c13ce; }
+.detail-body { margin-block: .65rem; }
+.viewer { width: 100%; height: max(36rem, calc(100vh - 11rem)); border: 1px solid #4c3f50; border-radius: .5rem; background: #171318; }
+.paging { padding-block: .75rem 1.25rem; }
+:focus-visible { outline: 2px solid #efc978; outline-offset: 2px; }

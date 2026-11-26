@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Drivebrew</AssemblyName>
+    <Version>1.33.0</Version>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DndCompendium.Infrastructure/DndCompendium.Infrastructure.csproj" />
+    <Content Update="wwwroot/**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../DndCompendium.App/Resources/Raw/wwwroot/**"
+      Link="wwwroot/render/%(RecursiveDir)%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

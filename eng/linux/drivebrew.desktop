@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Drivebrew
+Comment=Compendio y hojas de personaje offline
+Exec=drivebrew
+Icon=drivebrew
+Terminal=false
+Categories=Game;Utility;
