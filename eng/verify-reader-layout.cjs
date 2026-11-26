@@ -7,7 +7,7 @@ const { spawn } = require('node:child_process');
 const root = process.env.READER_ASSET_ROOT
   ? path.resolve(process.env.READER_ASSET_ROOT)
   : path.resolve(__dirname, '..', 'src', 'DndCompendium.App', 'Resources', 'Raw', 'wwwroot');
-const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const chromePath = process.env.READER_CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2' };
 const server = http.createServer((request, response) => {
   const pathname = new URL(request.url, 'http://localhost').pathname === '/' ? '/index.html' : new URL(request.url, 'http://localhost').pathname;
@@ -22,19 +22,19 @@ const delay = (milliseconds) => new Promise(resolve => setTimeout(resolve, milli
 async function main() {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const appPort = server.address().port;
-  const debugPort = 9327;
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'drivebrew-reader-'));
   const browser = spawn(chromePath, [
     '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-    `--remote-debugging-port=${debugPort}`, `--user-data-dir=${profile}`,
-    `http://127.0.0.1:${appPort}/index.html`
+    '--remote-debugging-port=0', `--user-data-dir=${profile}`,
+    'about:blank'
   ], { stdio: 'ignore' });
   try {
     let target;
     for (let attempt = 0; attempt < 40; attempt += 1) {
       try {
+        const debugPort = Number(fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8').split(/\r?\n/, 1)[0]);
         const targets = await fetch(`http://127.0.0.1:${debugPort}/json/list`).then(result => result.json());
-        target = targets.find(item => item.type === 'page' && item.url.includes(`127.0.0.1:${appPort}`));
+        target = targets.find(item => item.type === 'page' && item.url === 'about:blank');
         if (target) break;
       } catch { /* Chrome is still starting. */ }
       await delay(100);
@@ -59,6 +59,8 @@ async function main() {
     await send('Runtime.enable');
     await send('Performance.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+    const navigation = await send('Page.navigate', { url: `http://127.0.0.1:${appPort}/index.html` });
+    if (navigation.errorText) throw new Error(navigation.errorText);
     let readerReady = false;
     for (let attempt = 0; attempt < 50; attempt += 1) {
       const readiness = await send('Runtime.evaluate', {
@@ -71,7 +73,13 @@ async function main() {
       if (readerReady) break;
       await delay(100);
     }
-    if (!readerReady) throw new Error('The offline reader did not finish loading.');
+    if (!readerReady) {
+      const readerState = await send('Runtime.evaluate', { returnByValue: true,
+        expression: `({ url: location.href, ready: document.readyState, api: typeof DndReader,
+          styles: [...document.styleSheets].map(sheet => sheet.href), title: document.title })`
+      });
+      throw new Error(`The offline reader did not finish loading: ${JSON.stringify(readerState.result.value)}`);
+    }
 
     const pixel = 'iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAYAAAB/qH1jAAAAFUlEQVR42mNkYPj/n4GBgYGJAQoAHg4CAZnfB5QAAAAASUVORK5CYII=';
     const paragraphs = Array.from({ length: 150 }, (_, index) => `Paragraph ${index + 1}. This deliberately long line verifies that readable prose is never clipped outside the book page.`).join('\n\n');
@@ -124,8 +132,20 @@ async function main() {
     if (result.book.imageWidth > result.book.pageWidth + 1 || result.book.imageHeight > 1057) throw new Error(`Book artwork escaped its original paper: ${JSON.stringify(result.book)}`);
     if (!result.mobile.artwork || !result.mobile.inside || result.mobile.width < result.mobile.pageWidth * .9 || result.mobile.height <= 0) throw new Error(`Mobile artwork repair failed: ${JSON.stringify(result.mobile)}`);
     if (result.fixture.render.pageCount < 20 || result.fixture.render.pageErrors.length > 0 || result.fixture.mobile.outside > 0
-      || result.fixture.repaired.some(page => page.oversize > 0) || result.fixture.mobile.medianArtworkWidth < .9)
-      throw new Error(`Real Homebrewery fixture failed: ${JSON.stringify(result.fixture)}`);
+      || result.fixture.repaired.some(page => page.oversize > 0) || result.fixture.mobile.medianArtworkWidth < .9) {
+      const diagnostic = await send('Runtime.evaluate', { returnByValue: true, expression: `(() => {
+        const image = document.querySelector('article[data-page-number="3"] img');
+        const rule = (element) => {
+          const style = getComputedStyle(element);
+          return { class: element.className, width: element.getBoundingClientRect().width, cssWidth: style.width,
+            columnCount: style.columnCount, columnWidth: style.columnWidth, position: style.position, zoom: style.zoom };
+        };
+        const chain = [];
+        for (let node = image; node; node = node.parentElement) chain.push(rule(node));
+        return { viewport: innerWidth, visualViewport: visualViewport.width, chain };
+      })()` });
+      throw new Error(`Real Homebrewery fixture failed: ${JSON.stringify({ fixture: result.fixture, diagnostic: diagnostic.result.value })}`);
+    }
     console.log(JSON.stringify(result, null, 2));
     await send('Browser.close');
     await Promise.race([new Promise(resolve => browser.once('exit', resolve)), delay(1500)]);
