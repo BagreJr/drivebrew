@@ -99,3 +99,11 @@ jobs:
           dotnet build src/DndCompendium.App/DndCompendium.App.csproj \
             -c Release -f net10.0-ios -p:BuildIos=true \
             -p:RuntimeIdentifier=iossimulator-arm64 -p:EnableCodeSigning=false
+          device=$(xcrun simctl list devices available -j | python3 -c 'import json, sys; devices = json.load(sys.stdin)["devices"]; print(next(d["udid"] for os, group in devices.items() if ".iOS-27" in os for d in group if d["name"].startswith("iPhone")))')
+          xcrun simctl bootstatus "$device" -b
+          app=$(find src/DndCompendium.App/bin/Release/net10.0-ios/iossimulator-arm64 -name '*.app' -maxdepth 1 -print -quit)
+          test -n "$app"
+          xcrun simctl install "$device" "$app"
+          launch=$(xcrun simctl launch "$device" com.march.dndcompendium)
+          sleep 5
+          kill -0 "${launch##*: }"
