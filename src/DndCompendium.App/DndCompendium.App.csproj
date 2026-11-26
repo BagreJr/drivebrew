@@ -38,10 +38,9 @@
 		<ApplicationId>com.march.dndcompendium</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.33</ApplicationDisplayVersion>
-		<ApplicationVersion>35</ApplicationVersion>
-		<!-- The workflow injects the repository-derived value as well. Keeping the
-		     official feed here also makes local signed builds update-aware. -->
+		<ApplicationDisplayVersion>1.34</ApplicationDisplayVersion>
+		<ApplicationVersion>36</ApplicationVersion>
+		<!-- The update feed advertises versions. Android checks the installed signer. -->
 		<AppUpdateManifestUrl>https://github.com/BagreJr/drivebrew/releases/latest/download/app-update.json</AppUpdateManifestUrl>
 
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
@@ -51,12 +50,22 @@
 
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
 		<RuntimeIdentifier Condition="'$(RuntimeIdentifierOverride)' != ''">$(RuntimeIdentifierOverride)</RuntimeIdentifier>
-		<WindowsPackageType>None</WindowsPackageType>
-		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+		<WindowsPackageType Condition="'$(BuildAppContainer)' != 'true'">None</WindowsPackageType>
+		<WindowsAppSDKSelfContained Condition="'$(BuildAppContainer)' != 'true'">true</WindowsAppSDKSelfContained>
 		<SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
 		<AssemblyName>DndCompendium</AssemblyName>
 		<Version>$(ApplicationDisplayVersion)</Version>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(BuildAppContainer)' == 'true'">
+		<WindowsPackageType>MSIX</WindowsPackageType>
+		<EnableMsixTooling>true</EnableMsixTooling>
+		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+		<AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+		<WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+		<WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
+		<DefineConstants>$(DefineConstants);DRIVEBREW_APPCONTAINER</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup>

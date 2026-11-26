@@ -13,8 +13,10 @@ on:
       - 'src/DndCompendium.Infrastructure/**'
       - 'src/DndCompendium.App/Resources/Raw/wwwroot/**'
       - 'eng/build-linux.sh'
+      - 'eng/build-flatpak.sh'
       - 'eng/linux/**'
       - 'eng/test-linux.cjs'
+      - 'global.json'
 
 permissions:
   contents: read
@@ -24,9 +26,11 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.303
+          dotnet-version: 10.0.404
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -38,10 +42,24 @@ jobs:
           tar -xzf artifacts/Drivebrew-Linux-x64.tar.gz -C "$smoke_dir"
           node eng/test-linux.cjs "$smoke_dir/Drivebrew/Drivebrew"
           dpkg-deb --info artifacts/Drivebrew-Linux-amd64.deb
+      - name: Package and test the Flatpak
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y flatpak
+          flatpak --user remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak --user install --noninteractive flathub org.freedesktop.Platform//25.08
+          bash eng/build-flatpak.sh
+          flatpak --user install --noninteractive --bundle artifacts/Drivebrew-Linux-x86_64.flatpak
+          flatpak info --show-permissions com.march.Drivebrew
+          marker="$(mktemp "$HOME/.drivebrew-isolation.XXXXXX")"
+          trap 'rm -f -- "$marker"' EXIT
+          flatpak run --command=sh com.march.Drivebrew -c 'test ! -e "$1" && test ! -e /run/host/home' sh "$marker"
+          DRIVEBREW_TEST_DATA_DIR=/tmp/drivebrew-smoke node eng/test-linux.cjs flatpak run --env=DRIVEBREW_DATA_DIR=/tmp/drivebrew-smoke com.march.Drivebrew
       - uses: actions/upload-artifact@v4
         with:
           name: Drivebrew-Linux-x64
           path: |
             artifacts/Drivebrew-Linux-x64.tar.gz
             artifacts/Drivebrew-Linux-amd64.deb
+            artifacts/Drivebrew-Linux-x86_64.flatpak
           if-no-files-found: error

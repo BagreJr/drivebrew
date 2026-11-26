@@ -72,6 +72,13 @@ using (processLock)
         context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
         if (context.Request.Path.StartsWithSegments("/api"))
         {
+            var origin = context.Request.Headers.Origin.ToString();
+            if ((origin.Length > 0 && origin != $"http://{context.Request.Host}")
+                || context.Request.Headers["Sec-Fetch-Site"] == "cross-site")
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return;
+            }
             var supplied = context.Request.Headers["X-Drivebrew-Session"].ToString();
             if (supplied.Length != token.Length || !CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(supplied), tokenBytes))
             {

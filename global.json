@@ -1,13 +1,14 @@
 {
   "sdk": {
-    "version": "10.0.303",
+    "version": "10.0.404",
     "rollForward": "latestPatch",
     "allowPrerelease": false,
-    "workloadVersion": "10.0.303.1",
+    "workloadVersion": "10.0.404",
     "paths": [
       ".dotnet",
+      ".tools/dotnet-10.0.404",
       "$host$"
     ],
-    "errorMessage": "Se requiere .NET SDK 10.0.303. Ejecutá eng/bootstrap.ps1 para instalarlo localmente."
+    "errorMessage": "Se requiere .NET SDK 10.0.404. Ejecutá eng/bootstrap.ps1 para instalarlo localmente."
   }
 }

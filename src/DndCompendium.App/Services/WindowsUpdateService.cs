@@ -8,7 +8,7 @@ namespace DndCompendium.App.Services;
 public sealed class WindowsUpdateService
 {
     private const string Repository = "BagreJr/drivebrew";
-    private const string AssetName = "DndCompendium-Windows-x64.zip";
+    private const string AssetName = "Drivebrew-AppContainer-x64.msix";
     private const string LastCheckKey = "windows.last-app-check";
     private readonly HttpClient _client = new() { Timeout = TimeSpan.FromSeconds(12) };
 
@@ -31,7 +31,7 @@ public sealed class WindowsUpdateService
             .Where(release => release.Assets.Any(asset => asset.Name == AssetName))
             .Select(release => Version.TryParse(release.Tag.TrimStart('v'), out var parsed)
                 ? new WindowsUpdate(new Version(parsed.Major, parsed.Minor, Math.Max(0, parsed.Build), Math.Max(0, parsed.Revision)),
-                    new Uri($"https://github.com/{Repository}/releases/download/{Uri.EscapeDataString(release.Tag)}/{AssetName}"))
+                    new Uri($"https://github.com/{Repository}/releases/tag/{Uri.EscapeDataString(release.Tag)}"))
                 : null)
             .OfType<WindowsUpdate>()
             .Where(update => update.Version > installed)
@@ -39,7 +39,7 @@ public sealed class WindowsUpdateService
             .FirstOrDefault();
     }
 
-    public sealed record WindowsUpdate(Version Version, Uri DownloadUri);
+    public sealed record WindowsUpdate(Version Version, Uri ReleaseUri);
 
     private sealed record GitHubRelease(
         [property: JsonPropertyName("tag_name")] string Tag,

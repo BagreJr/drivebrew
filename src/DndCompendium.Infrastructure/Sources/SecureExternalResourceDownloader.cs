@@ -21,6 +21,40 @@ public sealed class SecureExternalResourceDownloader : IExternalResourceDownload
         _maximumResourceBytes = maximumResourceBytes > 0 ? maximumResourceBytes : throw new ArgumentOutOfRangeException(nameof(maximumResourceBytes));
     }
 
+    internal static SocketsHttpHandler CreateTransport() => new()
+    {
+        AllowAutoRedirect = false,
+        UseCookies = false,
+        UseProxy = false,
+        ConnectCallback = async (context, ct) =>
+        {
+            var endpoint = context.DnsEndPoint;
+            var addresses = await ResolvePublicAddressesAsync(endpoint.Host, ct).ConfigureAwait(false);
+            SocketException? connectionError = null;
+            foreach (var address in addresses)
+            {
+                var socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+                try
+                {
+                    // Connect directly to the checked IP. TLS still validates the original hostname.
+                    await socket.ConnectAsync(address, endpoint.Port, ct).ConfigureAwait(false);
+                    return new NetworkStream(socket, ownsSocket: true);
+                }
+                catch (SocketException ex)
+                {
+                    socket.Dispose();
+                    connectionError = ex;
+                }
+                catch
+                {
+                    socket.Dispose();
+                    throw;
+                }
+            }
+            throw new HttpRequestException("No se pudo conectar con el recurso externo.", connectionError);
+        }
+    };
+
     public async Task<ExternalResourceDownload> DownloadAsync(
         ExternalResourceReference reference,
         CancellationToken cancellationToken = default)
@@ -30,7 +64,9 @@ public sealed class SecureExternalResourceDownloader : IExternalResourceDownload
 
         for (var redirect = 0; redirect <= MaximumRedirects; redirect++)
         {
-            await ValidateUriAsync(current, reference.Kind, cancellationToken).ConfigureAwait(false);
+            if (current.Scheme == Uri.UriSchemeHttp && current.IsDefaultPort && reference.Kind == DocumentResourceKind.Image)
+                current = new UriBuilder(current) { Scheme = Uri.UriSchemeHttps, Port = -1 }.Uri;
+            await ValidateUriAsync(current, cancellationToken).ConfigureAwait(false);
             using var request = new HttpRequestMessage(HttpMethod.Get, current);
             request.Headers.AcceptEncoding.Clear();
             request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("identity"));
@@ -68,24 +104,30 @@ public sealed class SecureExternalResourceDownloader : IExternalResourceDownload
         throw new HttpRequestException("External resource redirect processing failed.");
     }
 
-    private static async Task ValidateUriAsync(Uri uri, DocumentResourceKind kind, CancellationToken cancellationToken)
+    private static async Task ValidateUriAsync(Uri uri, CancellationToken cancellationToken)
     {
         if (uri.AbsoluteUri.Length > 2048 || !string.IsNullOrEmpty(uri.UserInfo)) throw new InvalidDataException("External resource URL is not allowed.");
-        if (uri.Scheme != Uri.UriSchemeHttps && !(uri.Scheme == Uri.UriSchemeHttp && kind == DocumentResourceKind.Image)) throw new InvalidDataException("Only HTTPS resources are allowed; HTTP is limited to non-executable images.");
-        if (!uri.IsDefaultPort && uri.Port is not (80 or 443)) throw new InvalidDataException("External resource port is not allowed.");
+        if (uri.Scheme != Uri.UriSchemeHttps || uri.Port != 443) throw new InvalidDataException("Los recursos externos requieren HTTPS en el puerto estándar.");
+        await ResolvePublicAddressesAsync(uri.DnsSafeHost, cancellationToken).ConfigureAwait(false);
+    }
 
+    private static async Task<IPAddress[]> ResolvePublicAddressesAsync(string host, CancellationToken cancellationToken)
+    {
         IPAddress[] addresses;
-        if (IPAddress.TryParse(uri.Host, out var literal)) addresses = [literal];
-        else addresses = await Dns.GetHostAddressesAsync(uri.DnsSafeHost, cancellationToken).ConfigureAwait(false);
+        if (IPAddress.TryParse(host, out var literal)) addresses = [literal];
+        else addresses = await Dns.GetHostAddressesAsync(host, cancellationToken).ConfigureAwait(false);
         if (addresses.Length == 0 || addresses.Any(IsPrivateOrReserved)) throw new InvalidDataException("External resource resolves to a private or reserved network address.");
+        return addresses;
     }
 
     private static bool IsPrivateOrReserved(IPAddress address)
     {
         if (address.IsIPv4MappedToIPv6) address = address.MapToIPv4();
         if (IPAddress.IsLoopback(address) || address.IsIPv6LinkLocal || address.IsIPv6Multicast || address.IsIPv6SiteLocal) return true;
-        if (address.AddressFamily == AddressFamily.InterNetworkV6) return address.Equals(IPAddress.IPv6None) || address.Equals(IPAddress.IPv6Any);
         var bytes = address.GetAddressBytes();
+        if (address.AddressFamily == AddressFamily.InterNetworkV6)
+            return (bytes[0] & 0xe0) != 0x20 || (bytes[0] == 0x20 && bytes[1] == 0x02)
+                || (bytes[0] == 0x20 && bytes[1] == 0x01 && bytes[2] == 0x0d && bytes[3] == 0xb8);
         return bytes[0] is 0 or 10 or 127 || bytes[0] >= 224
             || (bytes[0] == 169 && bytes[1] == 254)
             || (bytes[0] == 172 && bytes[1] is >= 16 and <= 31)

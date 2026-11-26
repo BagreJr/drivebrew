@@ -134,9 +134,9 @@ public partial class App : Application
             var update = await _windowsUpdates.CheckAsync(automatic: true);
             if (update is null) return;
             var download = await _shell.DisplayAlertAsync("Actualización disponible",
-                $"D&D Compendium {update.Version.ToString(2)} está disponible para Windows.",
-                "Descargar", "Más tarde");
-            if (download) await Launcher.Default.OpenAsync(update.DownloadUri);
+                $"Hay un anuncio para D&D Compendium {update.Version.ToString(2)}. Verificá la firma y el editor del MSIX antes de instalar.",
+                "Ver publicación", "Más tarde");
+            if (download) await Launcher.Default.OpenAsync(update.ReleaseUri);
         }
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
         {

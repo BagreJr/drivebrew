@@ -14,7 +14,7 @@ const root = fs.mkdtempSync(path.join(os.tmpdir(), 'drivebrew-linux-test-'));
 const chrome = process.env.DRIVEBREW_TEST_CHROME ||
   (process.platform === 'win32' ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : '/usr/bin/google-chrome');
 const app = spawn(executable, [...launchArgs, '--no-browser'], {
-  env: { ...process.env, DRIVEBREW_DATA_DIR: path.join(root, 'data') },
+  env: { ...process.env, DRIVEBREW_DATA_DIR: process.env.DRIVEBREW_TEST_DATA_DIR || path.join(root, 'data') },
   stdio: ['ignore', 'pipe', 'inherit']
 });
 let browser;
@@ -50,6 +50,9 @@ async function main() {
   }
 
   assert.equal((await fetch(endpoint + '/api/characters')).status, 403);
+  assert.equal((await fetch(endpoint + '/api/characters', {
+    headers: { Origin: 'https://other.example', 'X-Drivebrew-Session': token }
+  })).status, 403);
   const wrongHost = await new Promise((resolve, reject) =>
     http.get(endpoint + '/api/ping', { headers: { Host: 'localhost' } }, response => {
       response.resume();
@@ -116,6 +119,8 @@ async function main() {
       requests.set(id, { resolve, reject });
       socket.send(JSON.stringify({ id, method, params }));
     });
+    await send('Network.enable');
+    await send('Network.setBlockedURLs', { urls: ['https://*'] });
     async function evaluate(expression) {
       const result = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
       if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
@@ -142,6 +147,11 @@ async function main() {
     await send('Browser.close');
   } else {
     throw new Error(`Browser smoke test needs Chrome: ${chrome}`);
+  }
+  if (process.platform === 'linux' && !process.env.DRIVEBREW_TEST_DATA_DIR) {
+    const status = fs.readFileSync(`/proc/${app.pid}/status`, 'utf8');
+    const rss = status.match(/^VmRSS:\s+(\d+) kB$/m)?.[1];
+    if (rss) console.log(`Drivebrew backend RSS after the smoke test: ${(Number(rss) / 1024).toFixed(1)} MiB (browser excluded).`);
   }
   await api('/exit', 'POST');
   await until(() => app.exitCode !== null, 'graceful shutdown');

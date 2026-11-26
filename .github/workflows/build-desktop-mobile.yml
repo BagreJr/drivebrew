@@ -1,0 +1,101 @@
+name: Test isolated desktop and mobile builds
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['codex/**', main]
+    paths:
+      - '.github/workflows/build-desktop-mobile.yml'
+      - 'eng/build-msix.ps1'
+      - 'src/DndCompendium.App/**'
+      - 'src/DndCompendium.Core/**'
+      - 'src/DndCompendium.Infrastructure/**'
+      - 'global.json'
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.404
+      - name: Install Windows workload
+        run: dotnet workload install maui-windows
+      - name: Verify library and reader
+        shell: pwsh
+        env:
+          MSBuildEnableWorkloadResolver: 'false'
+        run: |
+          dotnet test tests/DndCompendium.Core.Tests -c Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet test tests/DndCompendium.Infrastructure.Tests -c Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node eng/test-character-sheet-browser.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node eng/verify-reader-layout.cjs
+      - name: Build candidate MSIX
+        shell: pwsh
+        run: ./eng/build-msix.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-appcontainer-unsigned
+          path: artifacts/Drivebrew-AppContainer-x64.msix
+          if-no-files-found: error
+
+  android:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.404
+      - uses: actions/setup-java@v5
+        with:
+          distribution: microsoft
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Build unsigned Android package
+        shell: pwsh
+        run: |
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet workload install maui-android
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet publish src/DndCompendium.App/DndCompendium.App.csproj -f net10.0-android -c Release -p:AndroidPackageFormats=apk -p:AndroidKeyStore=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $apk = Get-ChildItem src/DndCompendium.App/bin/Release/net10.0-android -Filter 'com.march.dndcompendium.apk' -Recurse | Select-Object -First 1
+          if (-not $apk) { throw 'No se encontró la APK sin firmar.' }
+          Copy-Item -LiteralPath $apk.FullName -Destination DndCompendium-unsigned.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-unsigned
+          path: DndCompendium-unsigned.apk
+          if-no-files-found: error
+
+  ios:
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.404
+      - name: Build for iOS Simulator without distribution credentials
+        run: |
+          export DEVELOPER_DIR=/Applications/Xcode_27.2.app/Contents/Developer
+          xcodebuild -version
+          dotnet workload install maui-ios
+          dotnet build src/DndCompendium.App/DndCompendium.App.csproj \
+            -c Release -f net10.0-ios -p:TargetFrameworks=net10.0-ios \
+            -p:RuntimeIdentifier=iossimulator-arm64 -p:EnableCodeSigning=false

@@ -38,7 +38,9 @@ autorización.
 
 ## Herramientas
 
-- .NET SDK 10.0.303 y workload `maui-mobile`.
+- .NET SDK 10.0.404 y las cargas de trabajo MAUI correspondientes a cada plataforma.
+
+Para crear y verificar los paquetes aislados, consultá la [guía de seguridad y distribución](docs/security-distribution.md).
 - Android Studio para SDK Manager, Device Manager, AVD y ADB. El proyecto usa
   Android SDK Platform 36.
 - Microsoft OpenJDK 21.

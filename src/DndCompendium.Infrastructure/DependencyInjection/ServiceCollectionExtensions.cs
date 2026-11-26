@@ -29,12 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IExternalResourceExtractor, HomebrewResourceExtractor>();
         services.AddSingleton<IExternalResourceDownloader>(_ =>
         {
-            var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = false,
-                UseCookies = false,
-                UseDefaultCredentials = false
-            };
+            var handler = SecureExternalResourceDownloader.CreateTransport();
             return new SecureExternalResourceDownloader(new HttpClient(handler)
             {
                 Timeout = TimeSpan.FromSeconds(30)

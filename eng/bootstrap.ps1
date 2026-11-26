@@ -1,5 +1,5 @@
 param(
-    [string]$SdkVersion = "10.0.303",
+    [string]$SdkVersion = "10.0.404",
     [string]$Workload = "maui-mobile"
 )
 

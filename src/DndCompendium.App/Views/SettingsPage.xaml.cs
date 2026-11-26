@@ -118,9 +118,9 @@ public partial class SettingsPage : ContentView
                 ? $"Estás usando la versión {AppInfo.Current.VersionString}."
                 : $"Versión {update.Version.ToString(2)} disponible.";
             if (update is not null && await Shell.Current.DisplayAlertAsync("Actualización de Windows",
-                    "Descargá y extraé el paquete nuevo. Cerrá esta ventana antes de abrir la nueva versión.",
-                    "Descargar", "Más tarde"))
-                await Launcher.Default.OpenAsync(update.DownloadUri);
+                    "Verificá la firma y el editor del MSIX antes de instalar.",
+                    "Ver publicación", "Más tarde"))
+                await Launcher.Default.OpenAsync(update.ReleaseUri);
         }
         catch (Exception exception) { WindowsUpdateStatus.Text = $"No se pudo buscar la actualización. {exception.Message}"; }
         finally { WindowsUpdateCheckButton.IsEnabled = true; }
