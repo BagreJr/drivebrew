@@ -114,16 +114,24 @@ async function main() {
       const images = [...document.querySelectorAll('.page img')];
       for (const image of images) image.loading = 'eager';
       await Promise.all(images.map(image => image.decode()));
+      await document.fonts.ready;
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       return images.every(image => image.naturalWidth > 0);
     })()`, awaitPromise: true, returnByValue: true });
     if (fixtureMediaReady.exceptionDetails || !fixtureMediaReady.result.value) throw new Error('The local fixture images did not decode.');
-    const fixtureMobile = await send('Runtime.evaluate', { expression: `(() => { const images=[...document.querySelectorAll('.page img')]; const metrics=images.filter(i=>i.classList.contains('readerArtwork')).map(i=>{const page=i.closest('.page'),p=page.getBoundingClientRect(),r=i.getBoundingClientRect(),f=i.closest('.readerArtworkFrame'),fr=f?.getBoundingClientRect();return {ratio:r.width/p.width,frameRatio:fr?fr.width/p.width:0,page:page.dataset.pageNumber,parent:i.parentElement.className||i.parentElement.tagName,frame:f?.className||''};}).sort((a,b)=>a.ratio-b.ratio); const ratios=metrics.map(x=>x.ratio); return {images:images.length,artwork:ratios.length,outside:images.filter(i=>{const p=i.closest('.page').getBoundingClientRect(),r=i.getBoundingClientRect();return r.width>0&&(r.left<p.left-1||r.right>p.right+1);}).length,metrics,medianArtworkWidth:ratios.length?ratios[Math.floor(ratios.length/2)]:0}; })()`, returnByValue: true });
+    const mobileGeometry = `(() => { const images=[...document.querySelectorAll('.page img')]; const metrics=images.filter(i=>i.classList.contains('readerArtwork')).map(i=>{const page=i.closest('.page'),p=page.getBoundingClientRect(),r=i.getBoundingClientRect(),f=i.closest('.readerArtworkFrame'),fr=f?.getBoundingClientRect();return {ratio:r.width/p.width,frameRatio:fr?fr.width/p.width:0,page:page.dataset.pageNumber,parent:i.parentElement.className||i.parentElement.tagName,frame:f?.className||''};}).sort((a,b)=>a.ratio-b.ratio); const ratios=metrics.map(x=>x.ratio); return {images:images.length,artwork:ratios.length,outside:images.filter(i=>{const p=i.closest('.page').getBoundingClientRect(),r=i.getBoundingClientRect();return r.width>0&&(r.left<p.left-1||r.right>p.right+1);}).length,metrics,medianArtworkWidth:ratios.length?ratios[Math.floor(ratios.length/2)]:0}; })()`;
+    let fixtureMobile;
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const measured = await send('Runtime.evaluate', { expression: mobileGeometry, returnByValue: true });
+      fixtureMobile = measured.result.value;
+      if (fixtureMobile.outside === 0 && fixtureMobile.medianArtworkWidth >= .9) break;
+      await delay(100);
+    }
     const result = {
       render: rendered.result.value,
       book: book.result.value,
       mobile: mobile.result.value,
-      fixture: { render: fixtureRender.result.value, repaired: fixtureBook.result.value, mobile: fixtureMobile.result.value },
+      fixture: { render: fixtureRender.result.value, repaired: fixtureBook.result.value, mobile: fixtureMobile },
       fixtureRenderMetrics: Object.fromEntries(
         ['LayoutCount', 'RecalcStyleCount', 'LayoutDuration', 'TaskDuration'].map(name => [name, afterFixture[name] - beforeFixture[name]])
       )

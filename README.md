@@ -39,12 +39,12 @@ autorización.
 ## Herramientas
 
 - .NET SDK 10.0.404 y las cargas de trabajo MAUI correspondientes a cada plataforma.
-
-Para crear y verificar los paquetes aislados, consultá la [guía de seguridad y distribución](docs/security-distribution.md).
 - Android Studio para SDK Manager, Device Manager, AVD y ADB. El proyecto usa
   Android SDK Platform 36.
 - Microsoft OpenJDK 21.
 - Un Mac con Xcode para compilar, firmar y probar iOS.
+
+Para crear y verificar los paquetes aislados, consultá la [guía de seguridad y distribución](docs/security-distribution.md).
 
 Android Studio no compila C#/XAML de MAUI por sí mismo. El SDK y emulador se
 administran allí; la solución se compila con .NET, desde la terminal o Visual
@@ -77,23 +77,16 @@ src/DndCompendium.App/bin/Debug/net10.0-android/com.march.dndcompendium-Signed.a
 Para crear un AAB de distribución, primero deben definirse la firma y los
 secretos fuera del repositorio.
 
-Las actualizaciones instalables desde la propia aplicación y el workflow manual
-de GitHub Releases se describen en [`docs/android-app-updates.md`](docs/android-app-updates.md).
+El proceso de firma local y publicación se describe en la [guía de actualizaciones de Android](docs/android-app-updates.md).
 
 ## Compilar para Windows
 
 ```powershell
 .\.dotnet\dotnet.exe workload install maui-windows
-.\eng\build-windows.ps1 -Dotnet (Resolve-Path .\.dotnet\dotnet.exe).Path
+.\eng\build-msix.ps1 -Dotnet (Resolve-Path .\.dotnet\dotnet.exe).Path
 ```
 
-Extraé por completo `artifacts/DndCompendium-Windows-x64.zip` y abrí
-`DndCompendium.exe` junto a la carpeta `App`. Movelos juntos si cambiás
-la ubicación de la aplicación. Requiere Windows 10
-versión 2004 o posterior, Windows de 64 bits y WebView2. La app guarda los
-datos en `%LOCALAPPDATA%\Drivebrew\DndCompendium`, también al abrirla desde
-una carpeta nueva. **Configuración → Actualizaciones de Windows** ofrece
-el paquete nuevo cuando se publica en GitHub.
+El MSIX usa AppContainer y almacena sus datos en el contenedor privado de la app. Requiere Windows 10 versión 2004 o posterior de 64 bits, Windows App Runtime y WebView2. El paquete de distribución requiere una firma confiable. El script `eng/build-windows.ps1` conserva la opción de compilación del ZIP portable.
 
 Para compartir un personaje con Android, activalo y usá **Configuración →
 Transferir personaje → Exportar personaje**. Abrí **Importar personaje**
@@ -114,6 +107,7 @@ Las descargas de Drive y los enlaces externos necesitan conexión.
   gestor de paquetes. Después buscá **Drivebrew** en el menú de aplicaciones.
 - Para usar el paquete portable, extraé `Drivebrew-Linux-x64.tar.gz` y ejecutá
   `./Drivebrew` dentro de la carpeta extraída.
+- El paquete aislado `Drivebrew-Linux-x86_64.flatpak` usa el runtime Freedesktop 25.08. Para crearlo, instalá ese runtime y corré `bash eng/build-flatpak.sh` después de `bash eng/build-linux.sh`.
 
 **Configuración → Transferir personaje** utiliza el mismo JSON de Windows y
 Android. La hoja también puede imprimirse o guardarse como PDF desde el

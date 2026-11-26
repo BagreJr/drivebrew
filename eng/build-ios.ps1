@@ -25,6 +25,7 @@ $arguments = @(
     $project,
     "-f", "net10.0-ios",
     "-c", $Configuration,
+    "-p:BuildIos=true",
     "-p:RuntimeIdentifier=ios-arm64",
     "-p:ArchiveOnBuild=true",
     "-p:BuildIpa=true"

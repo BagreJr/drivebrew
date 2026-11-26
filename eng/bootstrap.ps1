@@ -7,16 +7,18 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $localDotnet = Join-Path $repoRoot ".dotnet\dotnet.exe"
 
-if (-not (Test-Path -LiteralPath $localDotnet)) {
+if (-not (Test-Path -LiteralPath (Join-Path $repoRoot ".dotnet\sdk\$SdkVersion\dotnet.dll"))) {
     $installer = Join-Path ([IO.Path]::GetTempPath()) "dotnet-install-dnd-compendium.ps1"
     Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile $installer
     & powershell -NoProfile -ExecutionPolicy Bypass -File $installer `
         -Version $SdkVersion `
         -InstallDir (Join-Path $repoRoot ".dotnet") `
         -NoPath
+    if ($LASTEXITCODE -ne 0) { throw "No se pudo instalar .NET SDK $SdkVersion." }
 }
 
 & $localDotnet workload install $Workload --verbosity minimal
+if ($LASTEXITCODE -ne 0) { throw "No se pudo instalar la carga de trabajo $Workload." }
 
 $jdkRoot = Join-Path $repoRoot ".tools\jdk-21.0.12.1+1"
 if (-not (Test-Path -LiteralPath (Join-Path $jdkRoot "bin\java.exe"))) {

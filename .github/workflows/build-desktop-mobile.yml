@@ -7,6 +7,8 @@ on:
     paths:
       - '.github/workflows/build-desktop-mobile.yml'
       - 'eng/build-msix.ps1'
+      - 'eng/test-character-sheet-browser.cjs'
+      - 'eng/verify-reader-layout.cjs'
       - 'src/DndCompendium.App/**'
       - 'src/DndCompendium.Core/**'
       - 'src/DndCompendium.Infrastructure/**'
