@@ -22,25 +22,24 @@ const server = http.createServer((request, response) => {
 async function main() {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const port = server.address().port;
-  const debugPort = 9331;
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'drivebrew-sheet-'));
   const browser = spawn(chromePath, [
     '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-    `--remote-debugging-port=${debugPort}`, `--user-data-dir=${profile}`,
-    `http://127.0.0.1:${port}/character-sheet.html`
+    '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'
   ], { stdio: 'ignore' });
   let socket;
   try {
     let target;
-    for (let attempt = 0; attempt < 50; attempt += 1) {
+    for (let attempt = 0; attempt < 200; attempt += 1) {
       try {
+        const debugPort = fs.readFileSync(path.join(profile, 'DevToolsActivePort'), 'utf8').split(/\r?\n/)[0];
         const targets = await fetch(`http://127.0.0.1:${debugPort}/json/list`).then(result => result.json());
-        target = targets.find(item => item.type === 'page' && item.url.includes(`127.0.0.1:${port}`));
+        target = targets.find(item => item.type === 'page');
         if (target) break;
       } catch { /* Chrome is starting. */ }
       await delay(100);
     }
-    assert.ok(target, 'Chrome did not open the character sheet');
+    assert.ok(target, 'Chrome did not open a test page');
     socket = new WebSocket(target.webSocketDebuggerUrl);
     await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
     let id = 0;
@@ -62,6 +61,8 @@ async function main() {
     };
     await send('Runtime.enable');
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+    const navigation = await send('Page.navigate', { url: `http://127.0.0.1:${port}/character-sheet.html` });
+    assert.equal(navigation.errorText, undefined);
     let applicationReady = false;
     for (let attempt = 0; attempt < 50; attempt += 1) {
       applicationReady = await evaluate(`typeof Store !== 'undefined' && typeof App !== 'undefined'`);
