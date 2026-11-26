@@ -18,5 +18,10 @@ install -m 644 "$repo/src/DndCompendium.App/Resources/AppIcon/appicon.svg" \
 # The browser connects to the loopback server and the backend can sync Drive.
 # Local files selected by the user remain in the browser's file chooser.
 flatpak build-finish --command=drivebrew --share=network "$stage/build"
-flatpak build-export "$stage/repo" "$stage/build" stable
-flatpak build-bundle "$stage/repo" "$repo/artifacts/Drivebrew-Linux-x86_64.flatpak" "$id" stable
+export_repo="${DRIVEBREW_FLATPAK_REPOSITORY:-$stage/repo}"
+signing=()
+if [[ -n "${DRIVEBREW_FLATPAK_SIGNING_KEY:-}" ]]; then
+  signing+=("--gpg-sign=$DRIVEBREW_FLATPAK_SIGNING_KEY")
+fi
+flatpak build-export "${signing[@]}" "$export_repo" "$stage/build" stable
+flatpak build-bundle "$export_repo" "$repo/artifacts/Drivebrew-Linux-x86_64.flatpak" "$id" stable

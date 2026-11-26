@@ -97,5 +97,5 @@ jobs:
           xcodebuild -version
           dotnet workload install maui-ios
           dotnet build src/DndCompendium.App/DndCompendium.App.csproj \
-            -c Release -f net10.0-ios -p:TargetFrameworks=net10.0-ios \
+            -c Release -f net10.0-ios -p:BuildIos=true \
             -p:RuntimeIdentifier=iossimulator-arm64 -p:EnableCodeSigning=false

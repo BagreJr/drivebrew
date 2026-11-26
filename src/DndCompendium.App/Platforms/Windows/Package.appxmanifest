@@ -25,7 +25,7 @@
   </Resources>
 
   <Applications>
-    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="windows.partialTrustApplication"
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="Windows.PartialTrustApplication"
       uap10:RuntimeBehavior="packagedClassicApp" uap10:TrustLevel="appContainer">
       <uap:VisualElements
         DisplayName="$placeholder$"

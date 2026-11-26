@@ -13,6 +13,8 @@ Los paquetes de prueba de GitHub son candidatos. Para publicar una versión, rev
 
 Generá `SHA256SUMS` para los archivos revisados usando `sha256sum` y firmalo con `gpg --local-user HUELLA --armor --detach-sign SHA256SUMS`. Entregá la huella completa y la clave pública por un canal independiente de GitHub. El usuario compara la huella, importa la clave validada y corre `gpg --verify SHA256SUMS.asc SHA256SUMS` y `sha256sum -c SHA256SUMS`. Comprobá que GPG identifica al firmante esperado. Una suma descargada en la misma publicación solamente permite detectar daños de transferencia si carece de una firma confiable.
 
+Para conservar el repositorio Flatpak firmado, ejecutá `DRIVEBREW_FLATPAK_SIGNING_KEY=HUELLA DRIVEBREW_FLATPAK_REPOSITORY=/ruta/al/repositorio bash eng/build-flatpak.sh` en la máquina que custodia la llave. La huella identifica la llave del agente GPG local. Para instalar y actualizar desde ese repositorio, configurá un remoto con `flatpak remote-add --gpg-import=clave-publica.gpg drivebrew URL` después de verificar la huella de la clave pública.
+
 ## Datos locales y red
 
 - Android conserva los datos en el espacio privado de la app. El respaldo y la transferencia automáticos de esos archivos están desactivados en el paquete nuevo. Exportá los personajes desde la app antes de cambiar de dispositivo.
